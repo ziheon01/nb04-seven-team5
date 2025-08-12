@@ -15,7 +15,8 @@ datasource db {
 }
 
 model Group {
-  id                Int           @id
+
+  Id                Int           @id
   groupName         String        @unique
   description       String?
   groupPhoto        GroupPhoto?
@@ -26,6 +27,7 @@ model Group {
   tag               Tag[]
   ownerNickname     String        @unique
   ownerPassword     String
+  Badge             groupBadge    @relation(fields: [groupBadgeBadgeId], references: [Id])
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   participant       Participant[]
@@ -44,12 +46,15 @@ model Participant {
   updatedAt       DateTime         @updatedAt
   exerciseRecords ExerciseRecord[] 
   @@unique(name: "participantInfo", [nickname, password])
+
 }
 
 model Like {
-  id            Int         @id
-  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  participantId Int         @unique
+  Id                       Int         @id
+  participantId            Participant @relation(fields: [participantParticipantId], references: [Id])
+  Group                    Group?      @relation(fields: [groupGroupId], references: [Id])
+  groupGroupId             Int?
+  participantParticipantId Int         @unique
 }
 
 model ExerciseRecord {
@@ -71,29 +76,30 @@ model ParticipantPhoto {
   photoUrl         String         @unique
 }
 
-model GroupPhoto {
-  id       Int    @id
-  photoUrl String
-  group    Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId  Int    @unique
+model groupPhoto {
+  Id           Int    @id
+  groupId      Int
+  photoUrl     String
+  groups       Group  @relation(fields: [groupGroupId], references: [Id])
+  groupGroupId Int    @unique
 }
 
-model GroupBadge {
-  id                     Int     @id
-  group                  Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId                Int     @unique
+model groupBadge {
+  Id                     Int     @id
+  groupId                Group?
   participantsOver10     Boolean @default(false)
   recordsOver100         Boolean @default(false)
   recommandationsOver100 Boolean @default(false)
 }
 
 model Tag {
-  id        Int      @id
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  tagName   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-  groupId   Int
+
+  Id           String   @id
+  groupId      Group    @relation(fields: [groupGroupId], references: [Id])
+  tagName      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt()
+  groupGroupId Int
 }
 
 enum ExerciseType {
