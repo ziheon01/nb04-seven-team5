@@ -15,7 +15,7 @@ datasource db {
 }
 
 model Group {
-  groupId           Int           @id
+  Id                Int           @id
   groupName         String        @unique
   photoUrls         groupPhoto?
   goalRep           Int           @default(0)
@@ -24,7 +24,7 @@ model Group {
   tags              Tag[]
   ownerNickname     String        @unique
   ownerPassword     String
-  Badge             groupBadge    @relation(fields: [groupBadgeBadgeId], references: [badgeId])
+  Badge             groupBadge    @relation(fields: [groupBadgeBadgeId], references: [Id])
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   Participants      Participant[]
@@ -33,8 +33,8 @@ model Group {
 }
 
 model Participant {
-  participantId     Int                @id
-  groupId           Group              @relation(fields: [groupGroupId], references: [groupId])
+  Id                Int                @id
+  groupId           Group              @relation(fields: [groupGroupId], references: [Id])
   groupGroupId      Int
   nickname          String             @unique
   password          String
@@ -47,52 +47,52 @@ model Participant {
 }
 
 model Like {
-  likeId                   Int         @id
-  participantId            Participant @relation(fields: [participantParticipantId], references: [participantId])
-  Group                    Group?      @relation(fields: [groupGroupId], references: [groupId])
+  Id                       Int         @id
+  participantId            Participant @relation(fields: [participantParticipantId], references: [Id])
+  Group                    Group?      @relation(fields: [groupGroupId], references: [Id])
   groupGroupId             Int?
   participantParticipantId Int         @unique
 }
 
 model ExerciseRecord {
-  exerciseRecordid         Int              @id
+  Id                       Int              @id
   recordId                 Int
-  participantId            Participant      @relation(fields: [participantParticipantId], references: [participantId])
+  participantId            Participant      @relation(fields: [participantParticipantId], references: [Id])
   groupId                  Int
   exerciseType             exerciseType     @default(running)
   distance                 Int              @default(0)
-  photos                   ParticipantPhoto @relation(fields: [participantPhotoPhotoId], references: [photoId])
+  photos                   ParticipantPhoto @relation(fields: [participantPhotoPhotoId], references: [Id])
   participantParticipantId Int
   participantPhotoPhotoId  Int              @unique
 }
 
 model ParticipantPhoto {
-  photoId                  Int             @id
+  Id                       Int             @id
   recordId                 ExerciseRecord?
-  participantId            Participant     @relation(fields: [participantParticipantId], references: [participantId])
+  participantId            Participant     @relation(fields: [participantParticipantId], references: [Id])
   photoUrl                 String          @unique
   participantParticipantId Int
 }
 
 model groupPhoto {
-  photoId      Int    @id
+  Id           Int    @id
   groupId      Int
   photoUrl     String
-  groups       Group  @relation(fields: [groupGroupId], references: [groupId])
+  groups       Group  @relation(fields: [groupGroupId], references: [Id])
   groupGroupId Int    @unique
 }
 
 model groupBadge {
-  badgeId                Int      @id
-  groupId                Group? 
+  Id                     Int     @id
+  groupId                Group?
   participantsOver10     Boolean @default(false)
   recordsOver100         Boolean @default(false)
   RecommandationsOver100 Boolean @default(false)
 }
 
 model Tag {
-  tagId        String   @id
-  groupId      Group    @relation(fields: [groupGroupId], references: [groupId])
+  Id           String   @id
+  groupId      Group    @relation(fields: [groupGroupId], references: [Id])
   tagName      String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt()
