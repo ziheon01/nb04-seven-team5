@@ -1,11 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 import express from 'express';
-import { get } from 'http';
 
 const prisma = new PrismaClient();
 
 const app = express();
-
+const port = 3000;
 app.use(express.json());
 
 app.post('/:groupId/records', async(req, res) => {
@@ -40,7 +39,7 @@ app.get('/:groupId/records', async(req, res) => {
     const groupId = Number(req.params.groupId);
     
     try {
-        const record = await fetch.record.create({
+        const record = await fetch.record.findMany({
             where: { groupId: groupId },
 
             select: {
@@ -54,7 +53,7 @@ app.get('/:groupId/records', async(req, res) => {
                     participantId: true,
                     participantNickname: true,
                 }
-            }
+            },
         });
         res.status(201).json(record);
     } catch (err) {
@@ -63,4 +62,37 @@ app.get('/:groupId/records', async(req, res) => {
               "message": "groupId must be integer"
         })
     }
+});
+
+app.get('/:groupId/records/:recordId', async(req, res) => {
+    const groupId = Number(req.params.groupId);
+    const recordId = Number(req.params.recordId);
+
+    try {
+        const record = await fetch.record.findUnique({
+            select: {
+                groupId: groupId,
+                recordId: recordId,
+                exerciseType: true,
+                description: true,
+                time: true,
+                distance: true,
+                photos: true,
+                author: {
+                    participantId: true,
+                    participantNickname: true,
+                }
+            },
+        });
+        res.status(201).json(record);
+    } catch (err) {
+        res.status(400).json({
+              "path": "groupId",
+              "message": "groupId must be integer"
+        })
+    }
+});
+
+app.listen(port, () => {
+  console.log(`Server started at port: ${port}`);
 });
