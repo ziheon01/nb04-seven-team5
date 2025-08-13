@@ -23,8 +23,9 @@ app.post(`/groups/:groupId/participants`, async(req, res) => {
         data: {
             groupId, 
             nickname, 
-            password,}
-          });
+            password,
+          }
+        });
     console.log(`${nickname}은 사용가능합니다. 축하합니다. 그룹 참여가 가능합니다.`)
     return res.status(201).json(newParticipants);
     } else {
