@@ -3,7 +3,6 @@ import { PrismaClient } from '@prisma/client';
 
 const app = express();
 const prisma = new PrismaClient;
-const port = 3000;
 
 app.post(`/groups/:groupId/participants`, async(req, res) => {
   try{
@@ -40,8 +39,4 @@ app.post(`/groups/:groupId/participants`, async(req, res) => {
     return res.status(500).json({ message: '서버 오류로 닉네임 생성이 불가합니다.'});
   }
 });
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-})
 
