@@ -7,7 +7,7 @@ const prisma = new PrismaClient;
 app.delete('/groups/:groupId/participants', async(req,res) => {
   try{
     // 그룹이 존재하는지 확인
-    const groupId  = req.params.groupId;
+    const groupId  = parseInt(req.params.groupId);
     const existingGroup = await prisma.group.findUnique({
       where: { id: groupId },
       });      

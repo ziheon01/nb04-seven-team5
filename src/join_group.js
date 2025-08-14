@@ -6,7 +6,7 @@ const prisma = new PrismaClient;
 
 app.post(`/groups/:groupId/participants`, async(req, res) => {
   try{
-    const groupId = req.params.groupId;
+    const groupId  = parseInt (req.params.groupId );
     const existingGroup = await prisma.group.findUnique({
       where: { id: groupId},
     });
