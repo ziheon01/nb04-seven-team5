@@ -1,5 +1,7 @@
 import express from 'express';
 import groupRouter from "./routers/groupRouter.js"; // groupRouter 임포트 *경로주의*
+import participantRouter from "./routers/participantRouter.js"; // participantRouter 임포트
+import exerciseRecordRouter from "./routers/exerciseRecordRouter.js"; // exerciseRecordRouter 임포트
 
 const app = express();
 const port = 3000;
@@ -11,6 +13,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/groups', groupRouter);
+app.use('/groups', participantRouter);
+app.use('/groups', exerciseRecordRouter); // 운동 기록 라우터 연결
 
 // 전역 에러 핸들러
 app.use((err, req, res, next) => {
