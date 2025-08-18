@@ -27,29 +27,13 @@ model Group {
   tag               Tag[]
   ownerNickname     String        @unique
   ownerPassword     String
-
-  Badge             groupBadge    @relation(fields: [groupBadgeBadgeId], references: [Id])
- 3df70fc (change_schema_id)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   participant       Participant[]
 }
 
 model Participant {
-  id              Int              @id
-  group           Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId         Int
-  nickname        String           @unique
-  password        String
-  recordCount     Int              @default(0) //RecordId 데이터를 participantId랑 일치시킨 갯수를 파악해서 기입하도록
-  recordTime      Int              @default(0) //Record에서 time의 총합을 계산해서 저장할 수 있도록 확인
-  likeId          Like?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  exerciseRecords ExerciseRecord[] 
-  @@unique(name: "participantInfo", [nickname, password])
-
-  id              Int              @id
+  id              Int              @id @default(autoincrement()) // 참가자를 포함할때 자동으로 id를 증가하게 만들어 줍니다.
   group           Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId         Int
   nickname        String           @unique
@@ -64,13 +48,13 @@ model Participant {
 }
 
 model Like {
-  id            Int         @id
+  id            Int         @id @default(autoincrement())
   participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
   participantId Int         @unique
 }
 
 model ExerciseRecord {
-  id                  Int                @id
+  id                  Int                @id @default(autoincrement())
   groupId             Int
   participant         Participant        @relation(fields: [participantId], references: [id], onDelete: Cascade)
   exerciseType        ExerciseType       @default(running)
@@ -89,14 +73,14 @@ model ParticipantPhoto {
 }
 
 model GroupPhoto {
-  id       Int    @id
+  id       Int    @id @default(autoincrement())
   photoUrl String
   group    Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId  Int    @unique
 }
 
 model GroupBadge {
-  id                     Int     @id
+  id                     Int     @id @default(autoincrement())
   group                  Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId                Int     @unique
   participantsOver10     Boolean @default(false)
@@ -105,7 +89,7 @@ model GroupBadge {
 }
 
 model Tag {
-  id        Int      @id
+  id        Int      @id @default(autoincrement())
   group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   tagName   String
   createdAt DateTime @default(now())
