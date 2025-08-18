@@ -42,7 +42,8 @@ model Participant {
   likeId          Like?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
-  exerciseRecords ExerciseRecord[]
+  exerciseRecords ExerciseRecord[] 
+  @@unique(name: "participantInfo", [nickname, password])
 }
 
 model Like {
