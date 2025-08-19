@@ -1,10 +1,28 @@
 import express from 'express';
+import groupRouter from "./routers/groupRouter.js"; // groupRouter 임포트 *경로주의*
+import participantRouter from "./routers/participantRouter.js"; // participantRouter 임포트
+import exerciseRecordRouter from "./routers/exerciseRecordRouter.js"; // exerciseRecordRouter 임포트
 
 const app = express();
 const port = 3000;
 
+app.use(express.json()); // json 요청 본문을 파싱하기 위한 미들웨어
+
 app.get('/', (req, res) => {
   res.send('Hello World!');
+});
+
+app.use('/groups', groupRouter);
+app.use('/groups', participantRouter);
+app.use('/groups', exerciseRecordRouter); // 운동 기록 라우터 연결
+
+// 전역 에러 핸들러
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.statusCode || 500).json({
+    message: err.message || "Internal Server Error",
+    path: err.path // 유효성 검사 에러 시 path 필드 추가
+  });
 });
 
 app.listen(port, () => {

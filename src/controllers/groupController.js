@@ -1,0 +1,166 @@
+import GroupService from '../services/groupService.js';
+
+class GroupController {
+  constructor() {
+    this.groupService = new GroupService();
+  }
+
+  createGroup = async (req, res, next) => {
+    const groupData = req.body; 
+    
+    try {
+      // 필수 필드 유효성 검사
+      if (!groupData.name || !groupData.description || !groupData.photoUrl || groupData.goalRep === undefined || !groupData.discordWebhookUrl || !groupData.discordInviteUrl || !groupData.ownerNickname || !groupData.ownerPassword) {
+        return res.status(400).json({ message: 'All fields are required.' });
+      }
+
+      // 타입 유효성 검사
+      if (typeof groupData.name !== 'string' || typeof groupData.description !== 'string' || typeof groupData.photoUrl !== 'string' || typeof groupData.discordWebhookUrl !== 'string' || typeof groupData.discordInviteUrl !== 'string' || typeof groupData.ownerNickname !== 'string' || typeof groupData.ownerPassword !== 'string') {
+        return res.status(400).json({ message: 'Invalid data type for string fields.' });
+      }
+
+      if (typeof groupData.goalRep !== 'number' || !Number.isInteger(groupData.goalRep)) {
+        return res.status(400).json({ path: 'goalRep', message: 'goalRep must be an integer' });
+      }
+
+      if (!Array.isArray(groupData.tags) || !groupData.tags.every(tag => typeof tag === 'string')) {
+        return res.status(400).json({ path: 'tags', message: 'tags must be an array of strings.' });
+      }
+
+      const newGroup = await this.groupService.createGroup(groupData);
+      res.status(201).json(newGroup);
+    } catch (error) {
+      next(error); // Global Error Handler로 전달
+    }
+  }
+
+  getGroups = async (req, res, next) => {
+    const { page = 1, limit = 10, order = 'desc', orderBy = 'createdAt', search } = req.query;
+
+    try {
+      // 유효성 검사: page, limit은 숫자인지
+      if (isNaN(parseInt(page)) || isNaN(parseInt(limit))) {
+        return res.status(400).json({ message: 'Page and limit must be numbers.' });
+      }
+
+      // 유효성 검사: order는 'asc' 또는 'desc'인지
+      if (!['asc', 'desc'].includes(order.toLowerCase())) {
+        return res.status(400).json({ path: 'order', message: 'Order must be \'asc\' or \'desc\'.' });
+      }
+
+      // 유효성 검사: orderBy는 유효한 값인지
+      const validOrderBy = ['likeCount', 'participantCount', 'createdAt']; // likeCount, participantCount는 아직 구현 안됨
+      if (!validOrderBy.includes(orderBy)) {
+        return res.status(400).json({ path: 'orderBy', message: `The orderBy parameter must be one of the following values: [${validOrderBy.map(v => `'${v}'`).join(', ')}]` });
+      }
+
+      const options = {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        order: order.toLowerCase(),
+        orderBy,
+        search,
+      };
+
+      const { groups, total } = await this.groupService.getGroups(options);
+      res.status(200).json({ data: groups, total });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  getGroupDetail = async (req, res, next) => {
+    const { groupId } = req.params;
+
+    try {
+      // groupId 유효성 검사: 숫자인지
+      if (isNaN(parseInt(groupId))) {
+        return res.status(400).json({ message: 'Group ID must be a number.' });
+      }
+
+      const group = await this.groupService.getGroupDetail(parseInt(groupId));
+
+      if (!group) {
+        return res.status(404).json({ message: 'Group not found.' });
+      }
+
+      res.status(200).json(group);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  updateGroup = async (req, res, next) => {
+    const { groupId } = req.params;
+    const updateData = req.body;
+    const { ownerPassword } = updateData; // 비밀번호 인증을 위해 ownerPassword 추출
+
+    try {
+      // groupId 유효성 검사
+      if (isNaN(parseInt(groupId))) {
+        return res.status(400).json({ message: 'Group ID must be a number.' });
+      }
+
+      // ownerPassword 필수 검사
+      if (!ownerPassword) {
+        return res.status(400).json({ message: 'Owner password is required for update.' });
+      }
+
+      // 업데이트할 필드 유효성 검사 (선택적 필드이므로, 존재하는 경우에만 타입 검사)
+      if (updateData.name !== undefined && typeof updateData.name !== 'string') return res.status(400).json({ message: 'Invalid type for name.' });
+      if (updateData.description !== undefined && typeof updateData.description !== 'string') return res.status(400).json({ message: 'Invalid type for description.' });
+      if (updateData.photoUrl !== undefined && typeof updateData.photoUrl !== 'string') return res.status(400).json({ message: 'Invalid type for photoUrl.' });
+      if (updateData.goalRep !== undefined && (typeof updateData.goalRep !== 'number' || !Number.isInteger(updateData.goalRep))) return res.status(400).json({ message: 'Invalid type for goalRep.' });
+      if (updateData.discordWebhookUrl !== undefined && typeof updateData.discordWebhookUrl !== 'string') return res.status(400).json({ message: 'Invalid type for discordWebhookUrl.' });
+      if (updateData.discordInviteUrl !== undefined && typeof updateData.discordInviteUrl !== 'string') return res.status(400).json({ message: 'Invalid type for discordInviteUrl.' });
+      if (updateData.tags !== undefined && (!Array.isArray(updateData.tags) || !updateData.tags.every(tag => typeof tag === 'string'))) return res.status(400).json({ message: 'Invalid type for tags.' });
+      if (updateData.ownerNickname !== undefined && typeof updateData.ownerNickname !== 'string') return res.status(400).json({ message: 'Invalid type for ownerNickname.' });
+      // ownerPassword는 인증용이므로 업데이트 데이터에서 제외
+      const dataToUpdate = { ...updateData };
+      delete dataToUpdate.ownerPassword;
+
+      const updatedGroup = await this.groupService.updateGroup(parseInt(groupId), dataToUpdate, ownerPassword);
+
+      res.status(200).json(updatedGroup);
+    } catch (error) {
+      if (error.message === 'Group not found.') {
+        return res.status(404).json({ message: error.message });
+      }
+      if (error.message === 'Invalid owner password.') {
+        return res.status(403).json({ message: error.message }); // 403 Forbidden
+      }
+      next(error);
+    }
+  }
+
+  deleteGroup = async (req, res, next) => {
+    const { groupId } = req.params;
+    const { ownerPassword } = req.body; // 비밀번호 인증을 위해 ownerPassword 추출
+
+    try {
+      // groupId 유효성 검사
+      if (isNaN(parseInt(groupId))) {
+        return res.status(400).json({ message: '그룹 아이디가 있어야 합니다.' });
+      }
+
+      // ownerPassword 필수 검사
+      if (!ownerPassword) {
+        return res.status(400).json({ message: '그룹장 비밀번호가 필요합니다.' });
+      }
+
+      await this.groupService.deleteGroup(parseInt(groupId), ownerPassword);
+
+      res.status(204).send(); // 204 No Content: 성공적으로 처리되었지만 응답 본문이 없음
+    } catch (error) {
+      if (error.message === 'Group not found.') {
+        return res.status(404).json({ message: error.message });
+      }
+      if (error.message === 'Invalid owner password.') {
+        return res.status(403).json({ message: error.message }); // 403 Forbidden
+      }
+      next(error);
+    }
+  }
+}
+
+export default GroupController;
