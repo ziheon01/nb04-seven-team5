@@ -10,23 +10,23 @@ class ExerciseRecordController {
     const recordData = req.body;
     
     try {
-      if (isNaN(groupId)) { 
+      if (isNaN(parseInt(groupId))) { //groupId의 유효성 검사
     return res.status(400).json({ path: "groupId", message: "groupId must be integer" });
     }
 
-        const newRecord = await this.exerciseRecordService.createRecord(groupId, recordData);
-        res.status(201).json({ 
-            id: newRecord.id,
-            exerciseType: newRecord.exerciseType,
-            description: newRecord.description,
-            time: newRecord.time,
-            distance: newRecord.distance,
-            participantPhoto: newRecord.participantPhoto,
-            participant: {
-                id: newRecord.participant.id,
-                nickname: newRecord.participant.nickname
-            }
-        });
+    const newRecord = await this.exerciseRecordService.createRecord(groupId, recordData); //service에서 받아온 데이터를 프론트엔드 형식에 맞게 변형
+    res.status(201).json({ 
+        id: newRecord.id,
+        exerciseType: newRecord.exerciseType,
+        description: newRecord.description,
+        time: newRecord.time,
+        distance: newRecord.distance,
+        participantPhoto: newRecord.participantPhoto,
+        participant: {
+            id: newRecord.participant.id,
+            nickname: newRecord.participant.nickname
+        }
+    });
     } catch (error) {
       next(error);
     }
@@ -37,14 +37,14 @@ class ExerciseRecordController {
     const { page = 1, limit = 10, order = 'desc', orderBy = 'createdAt', search } = req.query;
 
     try {
-      if (isNaN(groupId)) { 
+      if (isNaN(groupId)) { //groupId의 유효성 검사
     return res.status(400).json({
         path: "groupId",
         message: "groupId must be integer",
     });
     }
 
-    const options = {
+    const options = { //페이지네이션을 위한 옵션
       page: parseInt(page),
       limit: parseInt(limit),
       order: order.toLowerCase(),
@@ -66,14 +66,14 @@ class ExerciseRecordController {
     const { groupId, recordId } = req.params;
 
     try {
-      if (isNaN(parseInt(groupId))) { 
+      if (isNaN(parseInt(groupId))) {  //groupId의 유효성 검사
         return res.status(400).json({
             path: 'groupId',
             message: 'groupId must be integer', 
         });
       }
       
-      if (isNaN(parseInt(recordId))) { 
+      if (isNaN(parseInt(recordId))) {  //recordId의 유효성 검사
         return res.status(400).json({
             path: 'recordId',
             message: 'recordId must be integer', 
@@ -86,7 +86,7 @@ class ExerciseRecordController {
         return res.status(404).json({ message: 'Record not found' });
       }
 
-      res.status(200).json({
+      res.status(200).json({ //service에서 받아온 데이터를 프론트엔드 형식에 맞게 변형
         id: record.id,
         exerciseType: record.exerciseType,
         description: record.description,

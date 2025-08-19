@@ -152,6 +152,7 @@ exports.Prisma.LikeScalarFieldEnum = {
 
 exports.Prisma.ExerciseRecordScalarFieldEnum = {
   id: 'id',
+  groupId: 'groupId',
   exerciseType: 'exerciseType',
   description: 'description',
   time: 'time',
@@ -160,7 +161,7 @@ exports.Prisma.ExerciseRecordScalarFieldEnum = {
 };
 
 exports.Prisma.ParticipantPhotoScalarFieldEnum = {
-  Id: 'Id',
+  id: 'id',
   exerciseRecordId: 'exerciseRecordId',
   photoUrl: 'photoUrl'
 };

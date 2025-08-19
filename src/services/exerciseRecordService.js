@@ -6,14 +6,14 @@ class ExerciseRecordService {
     const { exerciseType, description, time, distance, participantPhoto, participantNickname, participantPassword } = recordData;
 
     try {
-        const participant = await prisma.participant.findUnique({ 
+        const participant = await prisma.participant.findUnique({ //participant 스키마의 '@@unique(name: "participantInfo", [nickname, password])'를 통해 한번에 검증
           where: {
                  nickname: participantNickname ,
                  password: participantPassword ,
             },
         });
 
-        if (!participant) {
+        if (!participant) { //participant의 값이 일치하지 않은 경우 에러처리
           throw new Error("Participant not found or password incorrect");
         }
 
@@ -54,7 +54,7 @@ class ExerciseRecordService {
       where.participant = {
         nickname: {
           contains: search,
-          mode: 'insensitive',
+          mode: 'insensitive', //대소문자 구별 없이 검색 가능
         },
       };
     }
@@ -65,7 +65,7 @@ class ExerciseRecordService {
     } else if (orderBy === 'time') {
       orderByClause.time = order;
     } else if (orderBy === 'recordCount') {
-      orderByClause.recordCount = order;
+      orderByClause.recordCount = order; //기록횟수에 대해서는 아직 정리가 안되었지만 임시적으로 'recordCount'라 써둠
     }
 
     try {
@@ -79,7 +79,7 @@ class ExerciseRecordService {
         },
       });
 
-      const datas = records.map((record) => ({ 
+      const datas = records.map((record) => ({  // 분류처리가 된 데이터들를 프론트엔드 형식에 맞게 임시 변형
           id: record.id,
           exerciseType: record.exerciseType,
           description: record.description,
@@ -92,7 +92,7 @@ class ExerciseRecordService {
           },
       }));
 
-      const total = await prisma.exerciseRecord.count({ where });
+      const total = await prisma.exerciseRecord.count({ where }); // 데이터중 검색조건에 맞는 데이터들을 count를 사용해 계산
         
       return { datas, total }
     } catch (error) {
@@ -105,15 +105,15 @@ class ExerciseRecordService {
     try {
       const record = await prisma.exerciseRecord.findFirst({
         where: {
-          id: parseInt(recordId),
-          groupId: parseInt(groupId),
+          id: recordId,
+          groupId: groupId,
         },
         include: {
           participant: true,
         },
       });
 
-      if (!record) {
+      if (!record) { //recordId가 일치한 데이터가 없을경우 오류 처리
         throw new Error("Record not found");
       }
 
