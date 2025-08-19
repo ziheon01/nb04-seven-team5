@@ -15,9 +15,39 @@ app.use(express.json());
 */
 const [COUNT, TIME] = ['count', 'time']
 
-const groupId = Number(req.params.groupId)
+// 조회하는 달과 다음 달 첫날을 생성해주는 생성자 함수
+function getMonth(){
+    const now  = new Date();
+    const [startOfMonth, startOfNextMonth] = [
+        new Date(now.getFullYear(), now.getMonth(), 1),
+        new Date(now.getFullYear(), now.getMonth() + 1, 1)
+    ]
+    return {startOfMonth, startOfNextMonth};
+}
+
+// 주간, 월간에 대한 기간 필터링 미들웨어
+
+function dateFilter(req, res, next) {
+    const duration = req.query.duration
+    const now = new Date();
+  if (duration === 'weekly') {
+    const weeklyFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    //gte: greater than or equal: 해당 날짜 이상 포함하는 데이터를 조회해주는  prisma 전용 조건 연산자
+    req.dateFilter = { createdAt: { gte: weeklyFilter } };
+  } else if (duration === 'monthly') {
+    const { startOfMonth, startOfNextMonth } = getMonth();
+    //lt: less than: 해당 날짜이전인 데이터만 조회
+    req.dateFilter = { createdAt: { gte: startOfMonth, lt: startOfNextMonth } }  // 시작 이상, 다음 달 미만
+  } else {
+    req.dateFilter = {}
+  }
+
+  next()
+}
+
 
 async function getRanks(req, res, next) {
+    const groupId = Number(req.params.groupId)
     const ranking = req.query.ranking;
     //잘못된 ID접근에 대해 early return
     if (!groupId || isNaN(groupId)) {
@@ -76,4 +106,5 @@ async function getRanks(req, res, next) {
 
 
 
-app.get(`/groups/${groupId}/rank`, getRanks)
+
+app.get(`/groups/${groupId}/rank`, dateFilter, getRanks)
