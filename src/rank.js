@@ -26,7 +26,6 @@ function getMonth(){
 }
 
 // 주간, 월간에 대한 기간 필터링 미들웨어
-
 function dateFilter(req, res, next) {
     const duration = req.query.duration
     const now = new Date();
@@ -36,15 +35,14 @@ function dateFilter(req, res, next) {
     req.dateFilter = { createdAt: { gte: weeklyFilter } };
   } else if (duration === 'monthly') {
     const { startOfMonth, startOfNextMonth } = getMonth();
-    //lt: less than: 해당 날짜이전인 데이터만 조회
-    req.dateFilter = { createdAt: { gte: startOfMonth, lt: startOfNextMonth } }  // 시작 이상, 다음 달 미만
+    //lt: less than: 해당 날짜이전인 데이터만 조회, 
+    req.dateFilter = { createdAt: { gte: startOfMonth, lt: startOfNextMonth } }  
   } else {
     req.dateFilter = {}
   }
 
   next()
 }
-
 
 async function getRanks(req, res, next) {
     const groupId = Number(req.params.groupId)
@@ -69,7 +67,9 @@ async function getRanks(req, res, next) {
                     recordCount: true
                 },
                 where: {
-                    groupId
+                    groupId,
+                    //기간 필터 미들웨어 추가
+                    ...req.dateFilter
                 },
                 orderBy: {
                     recordCount: 'desc',
@@ -86,7 +86,8 @@ async function getRanks(req, res, next) {
                     recordCount: true,
                 },
                 where: {
-                    groupId
+                    groupId,
+                    ...req.dateFilter
                 },
                 orderBy: {
                     recordTime: 'desc',
