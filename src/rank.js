@@ -108,4 +108,4 @@ async function getRanks(req, res, next) {
 
 
 
-app.get(`/groups/${groupId}/rank`, dateFilter, getRanks)
+app.get(`/groups/:groupId/rank`, dateFilter, getRanks)
