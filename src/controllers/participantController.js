@@ -7,7 +7,7 @@ class ParticipantController {
 
   joinGroup = async (req, res, next) => {
     const { nickname, password } = req.body;
-    const groupId = parseInt(req.params.groupId); 
+    const groupId = Number(parseInt(req.params.groupId)); 
     try{
       // req.body에 필요한 필드가 다 들어왔는지 확인
       if(!nickname || !password){
@@ -16,15 +16,15 @@ class ParticipantController {
           message: "All fields are required"});
       }
       if(isNaN(groupId)){
-        return res.status(400).json({ 
+        return res.status(400).json({   
           path: "groupId",
           message: "Invalid groupId"});
       }
       // 타입이 유효한지 확인
-      if(typeof nickname !== 'string' || typeof password !== 'string' || typeof groupId !== "string"){
+      if(typeof nickname !== 'string' || typeof password !== 'string' || typeof groupId !== "number"){
         return res.status(400).json({ message: "Invalid field types"});
       }
-      const updatedGroup = await this.participantService.joinGroup({ nickname, password, groupId });
+      const updatedGroup = await this.participantService.joinGroup( groupId, nickname, password);
       return res.status(200).json({ updatedGroup });  
     }catch(error){
       next(error)
@@ -52,7 +52,7 @@ class ParticipantController {
       if(typeof nickname !== 'string' || typeof password !== 'string'){
         res.status(400).json({ message: "Invalid field types"});
       }
-      const updatedGroup = await this. participantService.leaveGroup({ nickname, password, groupId});
+      const updatedGroup = await this. participantService.leaveGroup({ groupId, nickname, password });
       res.status(200).json({ updatedGroup});
     } catch(error){
       next(error)

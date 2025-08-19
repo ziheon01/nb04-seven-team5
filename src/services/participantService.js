@@ -20,7 +20,7 @@ class ParticipantService {
       if(existingParticipant){
         throw new Error("Nickname is already used in this group")
       }
-
+      console.log(groupId, nickname, password);
       const newParticipant = await prisma.participant.create({
         data: {
           groupId,
@@ -28,7 +28,8 @@ class ParticipantService {
           password,
         }
       });
-      
+      console.log(newParticipant);
+
       const updatedGroup = await prisma.group.findUnique({
         where: { id: groupId },
         include: {

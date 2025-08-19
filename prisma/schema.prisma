@@ -29,7 +29,7 @@ model Group {
   ownerPassword     String
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
-  participant       Participant[]
+  participant       Participant[] 
 }
 
 model Participant {
@@ -40,10 +40,11 @@ model Participant {
   password        String
   recordCount     Int              @default(0) //RecordId 데이터를 participantId랑 일치시킨 갯수를 파악해서 기입하도록
   recordTime      Int              @default(0) //Record에서 time의 총합을 계산해서 저장할 수 있도록 확인
-  likeId          Like?
+  likeId          Like?            
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
-  exerciseRecords ExerciseRecord[] 
+  exerciseRecords ExerciseRecord[]
+
   @@unique(name: "participantInfo", [nickname, password])
 }
 
@@ -54,15 +55,15 @@ model Like {
 }
 
 model ExerciseRecord {
-  id                  Int                @id @default(autoincrement())
-  groupId             Int
-  participant         Participant        @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  exerciseType        ExerciseType       @default(running)
-  description         String
-  time                Int                @default(0) //프론트 엔드의 스톱워치 시스템을 확인
-  distance            Int                @default(0)
-  participantId       Int
-  participantPhoto    ParticipantPhoto[]
+  id               Int                @id @default(autoincrement())
+  groupId          Int
+  participant      Participant        @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  exerciseType     ExerciseType       @default(running)
+  description      String
+  time             Int                @default(0) //프론트 엔드의 스톱워치 시스템을 확인
+  distance         Int                @default(0)
+  participantId    Int
+  participantPhoto ParticipantPhoto[]
 }
 
 model ParticipantPhoto {
