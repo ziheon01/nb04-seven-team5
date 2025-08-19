@@ -29,18 +29,18 @@ model Group {
   ownerPassword     String
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
-  participant       Participant[] @relation("participant")
+  participant       Participant[]
 }
 
 model Participant {
   id              Int              @id @default(autoincrement()) // 참가자를 포함할때 자동으로 id를 증가하게 만들어 줍니다.
-  group           Group            @relation("participant", fields: [groupId], references: [id], onDelete: Cascade)
+  group           Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId         Int
   nickname        String           @unique
   password        String
   recordCount     Int              @default(0) //RecordId 데이터를 participantId랑 일치시킨 갯수를 파악해서 기입하도록
   recordTime      Int              @default(0) //Record에서 time의 총합을 계산해서 저장할 수 있도록 확인
-  likeId          Like?            @relation("like")
+  likeId          Like?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   exerciseRecords ExerciseRecord[]
@@ -50,7 +50,7 @@ model Participant {
 
 model Like {
   id            Int         @id @default(autoincrement())
-  participant   Participant @relation("like", fields: [participantId], references: [id], onDelete: Cascade)
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
   participantId Int         @unique
 }
 
@@ -67,7 +67,7 @@ model ExerciseRecord {
 }
 
 model ParticipantPhoto {
-  id               Int            @id
+  id               Int            @id @default(autoincrement())
   exerciseRecordId Int
   exerciseRecord   ExerciseRecord @relation(fields: [exerciseRecordId], references: [id], onDelete: Cascade)
   photoUrl         String         @unique

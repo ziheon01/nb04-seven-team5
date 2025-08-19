@@ -11652,19 +11652,17 @@ export namespace Prisma {
   }
 
   export type ParticipantPhotoCreateInput = {
-    id: number
     photoUrl: string
     exerciseRecord: ExerciseRecordCreateNestedOneWithoutParticipantPhotoInput
   }
 
   export type ParticipantPhotoUncheckedCreateInput = {
-    id: number
+    id?: number
     exerciseRecordId: number
     photoUrl: string
   }
 
   export type ParticipantPhotoUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
     photoUrl?: StringFieldUpdateOperationsInput | string
     exerciseRecord?: ExerciseRecordUpdateOneRequiredWithoutParticipantPhotoNestedInput
   }
@@ -11676,13 +11674,12 @@ export namespace Prisma {
   }
 
   export type ParticipantPhotoCreateManyInput = {
-    id: number
+    id?: number
     exerciseRecordId: number
     photoUrl: string
   }
 
   export type ParticipantPhotoUpdateManyMutationInput = {
-    id?: IntFieldUpdateOperationsInput | number
     photoUrl?: StringFieldUpdateOperationsInput | string
   }
 
@@ -13364,12 +13361,11 @@ export namespace Prisma {
   }
 
   export type ParticipantPhotoCreateWithoutExerciseRecordInput = {
-    id: number
     photoUrl: string
   }
 
   export type ParticipantPhotoUncheckedCreateWithoutExerciseRecordInput = {
-    id: number
+    id?: number
     photoUrl: string
   }
 
@@ -13850,12 +13846,11 @@ export namespace Prisma {
   }
 
   export type ParticipantPhotoCreateManyExerciseRecordInput = {
-    id: number
+    id?: number
     photoUrl: string
   }
 
   export type ParticipantPhotoUpdateWithoutExerciseRecordInput = {
-    id?: IntFieldUpdateOperationsInput | number
     photoUrl?: StringFieldUpdateOperationsInput | string
   }
 

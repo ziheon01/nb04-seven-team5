@@ -41,12 +41,8 @@ class ParticipantService {
               updatedAt: true
             },
           },
-          photoUrl: true, 
-          tag: true,
-          groupBadge: true,
-          like: true
-          }  
-        });
+        }  
+      });
 
       console.log(`Joining group ${groupId} with ${nickname}`);
       return updatedGroup

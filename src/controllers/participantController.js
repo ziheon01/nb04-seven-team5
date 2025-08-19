@@ -52,7 +52,7 @@ class ParticipantController {
       if(typeof nickname !== 'string' || typeof password !== 'string'){
         res.status(400).json({ message: "Invalid field types"});
       }
-      const updatedGroup = await this. participantService.leaveGroup({ groupId, nickname, password });
+      const updatedGroup = await this. participantService.leaveGroup( groupId, nickname, password );
       res.status(200).json({ updatedGroup});
     } catch(error){
       next(error)
