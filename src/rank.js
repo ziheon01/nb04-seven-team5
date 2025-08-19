@@ -16,32 +16,32 @@ app.use(express.json());
 const [COUNT, TIME] = ['count', 'time']
 
 // 조회하는 달과 다음 달 첫날을 생성해주는 생성자 함수
-function getMonth(){
-    const now  = new Date();
+function getMonth() {
+    const now = new Date();
     const [startOfMonth, startOfNextMonth] = [
         new Date(now.getFullYear(), now.getMonth(), 1),
         new Date(now.getFullYear(), now.getMonth() + 1, 1)
     ]
-    return {startOfMonth, startOfNextMonth};
+    return { startOfMonth, startOfNextMonth };
 }
 
 // 주간, 월간에 대한 기간 필터링 미들웨어
 function dateFilter(req, res, next) {
     const duration = req.query.duration
     const now = new Date();
-  if (duration === 'weekly') {
-    const weeklyFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    //gte: greater than or equal: 해당 날짜 이상 포함하는 데이터를 조회해주는  prisma 전용 조건 연산자
-    req.dateFilter = { createdAt: { gte: weeklyFilter } };
-  } else if (duration === 'monthly') {
-    const { startOfMonth, startOfNextMonth } = getMonth();
-    //lt: less than: 해당 날짜이전인 데이터만 조회, 
-    req.dateFilter = { createdAt: { gte: startOfMonth, lt: startOfNextMonth } }  
-  } else {
-    req.dateFilter = {}
-  }
+    if (duration === 'weekly') {
+        const weeklyFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        //gte: greater than or equal: 해당 날짜 이상 포함하는 데이터를 조회해주는  prisma 전용 조건 연산자
+        req.dateFilter = { createdAt: { gte: weeklyFilter } };
+    } else if (duration === 'monthly') {
+        const { startOfMonth, startOfNextMonth } = getMonth();
+        //lt: less than: 해당 날짜이전인 데이터만 조회, 
+        req.dateFilter = { createdAt: { gte: startOfMonth, lt: startOfNextMonth } }
+    } else {
+        req.dateFilter = {}
+    }
 
-  next()
+    next()
 }
 
 async function getRanks(req, res, next) {
@@ -104,8 +104,5 @@ async function getRanks(req, res, next) {
         next(err)
     }
 }
-
-
-
 
 app.get(`/groups/:groupId/rank`, dateFilter, getRanks)
