@@ -3,16 +3,92 @@ const prisma = new PrismaClient();
 
 class ParticipantService {
   joinGroup = async (groupId, nickname, password) => {
-    // 최지희님이 src/join_group.js의 Prisma 로직을 여기에 옮겨주세요.
-    // 닉네임 중복 확인 범위 수정 필요 (그룹 내에서만 중복 불가)
-    console.log(`Joining group ${groupId} with ${nickname}`);
-    return { message: 'Participant joined (placeholder)' };
+    try{
+      const existingGroup = await prisma.group.findUnique({
+        where: { id: groupId },
+      });
+      if(!existingGroup){
+        throw new Error('Group not found')
+      }
+
+      const existingParticipant = await prisma.participant.findFirst({
+        where: { 
+          groupId, 
+          nickname,
+         }
+      });
+      if(existingParticipant){
+        throw new Error("Nickname is already used in this group")
+      }
+
+      const newParticipant = await prisma.participant.create({
+        data: {
+          groupId,
+          nickname,
+          password,
+        }
+      });
+      
+      const updatedGroup = await prisma.group.findUnique({
+        where: { id: groupId },
+        include: {
+          participant: {
+            select: {
+              id: true,
+              nickname: true,
+              createdAt: true,
+              updatedAt: true
+            },
+          },
+          photoUrl: true, 
+          tag: true,
+          groupBadge: true,
+          like: true
+          }  
+        });
+
+      console.log(`Joining group ${groupId} with ${nickname}`);
+      return updatedGroup
+      } catch (error){
+        throw(error);
+      }
   }
 
   leaveGroup = async (groupId, nickname, password) => {
-    // 최지희님이 src/leave_group.js의 Prisma 로직을 여기에 옮겨주세요.
-    console.log(`Leaving group ${groupId} with ${nickname}`);
-    return { message: 'Participant left (placeholder)' };
+    try{   
+      const existingGroup = await prisma.group.findUnique({
+        where: { id: groupId }
+      })
+      if(!existingGroup){
+        throw new Error('Group not found');
+      }
+
+      const existingParticipant = await prisma.participant.findFirst({
+        where: {
+          groupId,
+          nickname,
+        },
+      })
+
+      if(!existingParticipant){
+        throw new Error ('Participant not found');
+      }
+
+      if(existingParticipant.groupId !== groupId){
+        throw new Error ('Not a participant of this group')
+      }
+
+      const deleteParticipant = await prisma.participant.delete({
+        where: {
+          id: existingParticipant.id
+        }
+      });
+
+      console.log(`Leaving group ${groupId} with ${nickname}`);
+      return deleteParticipant;
+    } catch(error){
+      throw (error)
+    }
   }
 }
 

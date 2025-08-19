@@ -2,9 +2,11 @@ import express from 'express';
 import groupRouter from "./routers/groupRouter.js"; // groupRouter 임포트 *경로주의*
 import participantRouter from "./routers/participantRouter.js"; // participantRouter 임포트
 import exerciseRecordRouter from "./routers/exerciseRecordRouter.js"; // exerciseRecordRouter 임포트
+import  * as dotenv from 'dotenv';
 
 const app = express();
 const port = 3000;
+dotenv.config();
 
 app.use(express.json()); // json 요청 본문을 파싱하기 위한 미들웨어
 

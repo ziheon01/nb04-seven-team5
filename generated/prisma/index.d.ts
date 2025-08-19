@@ -5165,6 +5165,7 @@ export namespace Prisma {
 
   export type ExerciseRecordAvgAggregateOutputType = {
     id: number | null
+    groupId: number | null
     time: number | null
     distance: number | null
     participantId: number | null
@@ -5172,6 +5173,7 @@ export namespace Prisma {
 
   export type ExerciseRecordSumAggregateOutputType = {
     id: number | null
+    groupId: number | null
     time: number | null
     distance: number | null
     participantId: number | null
@@ -5179,6 +5181,7 @@ export namespace Prisma {
 
   export type ExerciseRecordMinAggregateOutputType = {
     id: number | null
+    groupId: number | null
     exerciseType: $Enums.ExerciseType | null
     description: string | null
     time: number | null
@@ -5188,6 +5191,7 @@ export namespace Prisma {
 
   export type ExerciseRecordMaxAggregateOutputType = {
     id: number | null
+    groupId: number | null
     exerciseType: $Enums.ExerciseType | null
     description: string | null
     time: number | null
@@ -5197,6 +5201,7 @@ export namespace Prisma {
 
   export type ExerciseRecordCountAggregateOutputType = {
     id: number
+    groupId: number
     exerciseType: number
     description: number
     time: number
@@ -5208,6 +5213,7 @@ export namespace Prisma {
 
   export type ExerciseRecordAvgAggregateInputType = {
     id?: true
+    groupId?: true
     time?: true
     distance?: true
     participantId?: true
@@ -5215,6 +5221,7 @@ export namespace Prisma {
 
   export type ExerciseRecordSumAggregateInputType = {
     id?: true
+    groupId?: true
     time?: true
     distance?: true
     participantId?: true
@@ -5222,6 +5229,7 @@ export namespace Prisma {
 
   export type ExerciseRecordMinAggregateInputType = {
     id?: true
+    groupId?: true
     exerciseType?: true
     description?: true
     time?: true
@@ -5231,6 +5239,7 @@ export namespace Prisma {
 
   export type ExerciseRecordMaxAggregateInputType = {
     id?: true
+    groupId?: true
     exerciseType?: true
     description?: true
     time?: true
@@ -5240,6 +5249,7 @@ export namespace Prisma {
 
   export type ExerciseRecordCountAggregateInputType = {
     id?: true
+    groupId?: true
     exerciseType?: true
     description?: true
     time?: true
@@ -5336,6 +5346,7 @@ export namespace Prisma {
 
   export type ExerciseRecordGroupByOutputType = {
     id: number
+    groupId: number
     exerciseType: $Enums.ExerciseType
     description: string
     time: number
@@ -5364,6 +5375,7 @@ export namespace Prisma {
 
   export type ExerciseRecordSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    groupId?: boolean
     exerciseType?: boolean
     description?: boolean
     time?: boolean
@@ -5376,6 +5388,7 @@ export namespace Prisma {
 
   export type ExerciseRecordSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    groupId?: boolean
     exerciseType?: boolean
     description?: boolean
     time?: boolean
@@ -5386,6 +5399,7 @@ export namespace Prisma {
 
   export type ExerciseRecordSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    groupId?: boolean
     exerciseType?: boolean
     description?: boolean
     time?: boolean
@@ -5396,6 +5410,7 @@ export namespace Prisma {
 
   export type ExerciseRecordSelectScalar = {
     id?: boolean
+    groupId?: boolean
     exerciseType?: boolean
     description?: boolean
     time?: boolean
@@ -5403,7 +5418,7 @@ export namespace Prisma {
     participantId?: boolean
   }
 
-  export type ExerciseRecordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "exerciseType" | "description" | "time" | "distance" | "participantId", ExtArgs["result"]["exerciseRecord"]>
+  export type ExerciseRecordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "groupId" | "exerciseType" | "description" | "time" | "distance" | "participantId", ExtArgs["result"]["exerciseRecord"]>
   export type ExerciseRecordInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     participant?: boolean | ParticipantDefaultArgs<ExtArgs>
     participantPhoto?: boolean | ExerciseRecord$participantPhotoArgs<ExtArgs>
@@ -5424,6 +5439,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
+      groupId: number
       exerciseType: $Enums.ExerciseType
       description: string
       time: number
@@ -5855,6 +5871,7 @@ export namespace Prisma {
    */
   interface ExerciseRecordFieldRefs {
     readonly id: FieldRef<"ExerciseRecord", 'Int'>
+    readonly groupId: FieldRef<"ExerciseRecord", 'Int'>
     readonly exerciseType: FieldRef<"ExerciseRecord", 'ExerciseType'>
     readonly description: FieldRef<"ExerciseRecord", 'String'>
     readonly time: FieldRef<"ExerciseRecord", 'Int'>
@@ -6311,29 +6328,29 @@ export namespace Prisma {
   }
 
   export type ParticipantPhotoAvgAggregateOutputType = {
-    Id: number | null
+    id: number | null
     exerciseRecordId: number | null
   }
 
   export type ParticipantPhotoSumAggregateOutputType = {
-    Id: number | null
+    id: number | null
     exerciseRecordId: number | null
   }
 
   export type ParticipantPhotoMinAggregateOutputType = {
-    Id: number | null
+    id: number | null
     exerciseRecordId: number | null
     photoUrl: string | null
   }
 
   export type ParticipantPhotoMaxAggregateOutputType = {
-    Id: number | null
+    id: number | null
     exerciseRecordId: number | null
     photoUrl: string | null
   }
 
   export type ParticipantPhotoCountAggregateOutputType = {
-    Id: number
+    id: number
     exerciseRecordId: number
     photoUrl: number
     _all: number
@@ -6341,29 +6358,29 @@ export namespace Prisma {
 
 
   export type ParticipantPhotoAvgAggregateInputType = {
-    Id?: true
+    id?: true
     exerciseRecordId?: true
   }
 
   export type ParticipantPhotoSumAggregateInputType = {
-    Id?: true
+    id?: true
     exerciseRecordId?: true
   }
 
   export type ParticipantPhotoMinAggregateInputType = {
-    Id?: true
+    id?: true
     exerciseRecordId?: true
     photoUrl?: true
   }
 
   export type ParticipantPhotoMaxAggregateInputType = {
-    Id?: true
+    id?: true
     exerciseRecordId?: true
     photoUrl?: true
   }
 
   export type ParticipantPhotoCountAggregateInputType = {
-    Id?: true
+    id?: true
     exerciseRecordId?: true
     photoUrl?: true
     _all?: true
@@ -6456,7 +6473,7 @@ export namespace Prisma {
   }
 
   export type ParticipantPhotoGroupByOutputType = {
-    Id: number
+    id: number
     exerciseRecordId: number
     photoUrl: string
     _count: ParticipantPhotoCountAggregateOutputType | null
@@ -6481,33 +6498,33 @@ export namespace Prisma {
 
 
   export type ParticipantPhotoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    Id?: boolean
+    id?: boolean
     exerciseRecordId?: boolean
     photoUrl?: boolean
     exerciseRecord?: boolean | ExerciseRecordDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["participantPhoto"]>
 
   export type ParticipantPhotoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    Id?: boolean
+    id?: boolean
     exerciseRecordId?: boolean
     photoUrl?: boolean
     exerciseRecord?: boolean | ExerciseRecordDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["participantPhoto"]>
 
   export type ParticipantPhotoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    Id?: boolean
+    id?: boolean
     exerciseRecordId?: boolean
     photoUrl?: boolean
     exerciseRecord?: boolean | ExerciseRecordDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["participantPhoto"]>
 
   export type ParticipantPhotoSelectScalar = {
-    Id?: boolean
+    id?: boolean
     exerciseRecordId?: boolean
     photoUrl?: boolean
   }
 
-  export type ParticipantPhotoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"Id" | "exerciseRecordId" | "photoUrl", ExtArgs["result"]["participantPhoto"]>
+  export type ParticipantPhotoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "exerciseRecordId" | "photoUrl", ExtArgs["result"]["participantPhoto"]>
   export type ParticipantPhotoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     exerciseRecord?: boolean | ExerciseRecordDefaultArgs<ExtArgs>
   }
@@ -6524,7 +6541,7 @@ export namespace Prisma {
       exerciseRecord: Prisma.$ExerciseRecordPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      Id: number
+      id: number
       exerciseRecordId: number
       photoUrl: string
     }, ExtArgs["result"]["participantPhoto"]>
@@ -6610,8 +6627,8 @@ export namespace Prisma {
      * // Get first 10 ParticipantPhotos
      * const participantPhotos = await prisma.participantPhoto.findMany({ take: 10 })
      * 
-     * // Only select the `Id`
-     * const participantPhotoWithIdOnly = await prisma.participantPhoto.findMany({ select: { Id: true } })
+     * // Only select the `id`
+     * const participantPhotoWithIdOnly = await prisma.participantPhoto.findMany({ select: { id: true } })
      * 
      */
     findMany<T extends ParticipantPhotoFindManyArgs>(args?: SelectSubset<T, ParticipantPhotoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ParticipantPhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
@@ -6655,9 +6672,9 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Create many ParticipantPhotos and only return the `Id`
+     * // Create many ParticipantPhotos and only return the `id`
      * const participantPhotoWithIdOnly = await prisma.participantPhoto.createManyAndReturn({
-     *   select: { Id: true },
+     *   select: { id: true },
      *   data: [
      *     // ... provide data here
      *   ]
@@ -6746,9 +6763,9 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Update zero or more ParticipantPhotos and only return the `Id`
+     * // Update zero or more ParticipantPhotos and only return the `id`
      * const participantPhotoWithIdOnly = await prisma.participantPhoto.updateManyAndReturn({
-     *   select: { Id: true },
+     *   select: { id: true },
      *   where: {
      *     // ... provide filter here
      *   },
@@ -6951,7 +6968,7 @@ export namespace Prisma {
    * Fields of the ParticipantPhoto model
    */
   interface ParticipantPhotoFieldRefs {
-    readonly Id: FieldRef<"ParticipantPhoto", 'Int'>
+    readonly id: FieldRef<"ParticipantPhoto", 'Int'>
     readonly exerciseRecordId: FieldRef<"ParticipantPhoto", 'Int'>
     readonly photoUrl: FieldRef<"ParticipantPhoto", 'String'>
   }
@@ -10685,6 +10702,7 @@ export namespace Prisma {
 
   export const ExerciseRecordScalarFieldEnum: {
     id: 'id',
+    groupId: 'groupId',
     exerciseType: 'exerciseType',
     description: 'description',
     time: 'time',
@@ -10696,7 +10714,7 @@ export namespace Prisma {
 
 
   export const ParticipantPhotoScalarFieldEnum: {
-    Id: 'Id',
+    id: 'id',
     exerciseRecordId: 'exerciseRecordId',
     photoUrl: 'photoUrl'
   };
@@ -11066,6 +11084,7 @@ export namespace Prisma {
     OR?: ExerciseRecordWhereInput[]
     NOT?: ExerciseRecordWhereInput | ExerciseRecordWhereInput[]
     id?: IntFilter<"ExerciseRecord"> | number
+    groupId?: IntFilter<"ExerciseRecord"> | number
     exerciseType?: EnumExerciseTypeFilter<"ExerciseRecord"> | $Enums.ExerciseType
     description?: StringFilter<"ExerciseRecord"> | string
     time?: IntFilter<"ExerciseRecord"> | number
@@ -11077,6 +11096,7 @@ export namespace Prisma {
 
   export type ExerciseRecordOrderByWithRelationInput = {
     id?: SortOrder
+    groupId?: SortOrder
     exerciseType?: SortOrder
     description?: SortOrder
     time?: SortOrder
@@ -11091,6 +11111,7 @@ export namespace Prisma {
     AND?: ExerciseRecordWhereInput | ExerciseRecordWhereInput[]
     OR?: ExerciseRecordWhereInput[]
     NOT?: ExerciseRecordWhereInput | ExerciseRecordWhereInput[]
+    groupId?: IntFilter<"ExerciseRecord"> | number
     exerciseType?: EnumExerciseTypeFilter<"ExerciseRecord"> | $Enums.ExerciseType
     description?: StringFilter<"ExerciseRecord"> | string
     time?: IntFilter<"ExerciseRecord"> | number
@@ -11102,6 +11123,7 @@ export namespace Prisma {
 
   export type ExerciseRecordOrderByWithAggregationInput = {
     id?: SortOrder
+    groupId?: SortOrder
     exerciseType?: SortOrder
     description?: SortOrder
     time?: SortOrder
@@ -11119,6 +11141,7 @@ export namespace Prisma {
     OR?: ExerciseRecordScalarWhereWithAggregatesInput[]
     NOT?: ExerciseRecordScalarWhereWithAggregatesInput | ExerciseRecordScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"ExerciseRecord"> | number
+    groupId?: IntWithAggregatesFilter<"ExerciseRecord"> | number
     exerciseType?: EnumExerciseTypeWithAggregatesFilter<"ExerciseRecord"> | $Enums.ExerciseType
     description?: StringWithAggregatesFilter<"ExerciseRecord"> | string
     time?: IntWithAggregatesFilter<"ExerciseRecord"> | number
@@ -11130,31 +11153,31 @@ export namespace Prisma {
     AND?: ParticipantPhotoWhereInput | ParticipantPhotoWhereInput[]
     OR?: ParticipantPhotoWhereInput[]
     NOT?: ParticipantPhotoWhereInput | ParticipantPhotoWhereInput[]
-    Id?: IntFilter<"ParticipantPhoto"> | number
+    id?: IntFilter<"ParticipantPhoto"> | number
     exerciseRecordId?: IntFilter<"ParticipantPhoto"> | number
     photoUrl?: StringFilter<"ParticipantPhoto"> | string
     exerciseRecord?: XOR<ExerciseRecordScalarRelationFilter, ExerciseRecordWhereInput>
   }
 
   export type ParticipantPhotoOrderByWithRelationInput = {
-    Id?: SortOrder
+    id?: SortOrder
     exerciseRecordId?: SortOrder
     photoUrl?: SortOrder
     exerciseRecord?: ExerciseRecordOrderByWithRelationInput
   }
 
   export type ParticipantPhotoWhereUniqueInput = Prisma.AtLeast<{
-    Id?: number
+    id?: number
     photoUrl?: string
     AND?: ParticipantPhotoWhereInput | ParticipantPhotoWhereInput[]
     OR?: ParticipantPhotoWhereInput[]
     NOT?: ParticipantPhotoWhereInput | ParticipantPhotoWhereInput[]
     exerciseRecordId?: IntFilter<"ParticipantPhoto"> | number
     exerciseRecord?: XOR<ExerciseRecordScalarRelationFilter, ExerciseRecordWhereInput>
-  }, "Id" | "photoUrl">
+  }, "id" | "photoUrl">
 
   export type ParticipantPhotoOrderByWithAggregationInput = {
-    Id?: SortOrder
+    id?: SortOrder
     exerciseRecordId?: SortOrder
     photoUrl?: SortOrder
     _count?: ParticipantPhotoCountOrderByAggregateInput
@@ -11168,7 +11191,7 @@ export namespace Prisma {
     AND?: ParticipantPhotoScalarWhereWithAggregatesInput | ParticipantPhotoScalarWhereWithAggregatesInput[]
     OR?: ParticipantPhotoScalarWhereWithAggregatesInput[]
     NOT?: ParticipantPhotoScalarWhereWithAggregatesInput | ParticipantPhotoScalarWhereWithAggregatesInput[]
-    Id?: IntWithAggregatesFilter<"ParticipantPhoto"> | number
+    id?: IntWithAggregatesFilter<"ParticipantPhoto"> | number
     exerciseRecordId?: IntWithAggregatesFilter<"ParticipantPhoto"> | number
     photoUrl?: StringWithAggregatesFilter<"ParticipantPhoto"> | string
   }
@@ -11446,7 +11469,6 @@ export namespace Prisma {
   }
 
   export type ParticipantCreateInput = {
-    id: number
     nickname: string
     password: string
     recordCount?: number
@@ -11459,7 +11481,7 @@ export namespace Prisma {
   }
 
   export type ParticipantUncheckedCreateInput = {
-    id: number
+    id?: number
     groupId: number
     nickname: string
     password: string
@@ -11472,7 +11494,6 @@ export namespace Prisma {
   }
 
   export type ParticipantUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
     nickname?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     recordCount?: IntFieldUpdateOperationsInput | number
@@ -11498,7 +11519,7 @@ export namespace Prisma {
   }
 
   export type ParticipantCreateManyInput = {
-    id: number
+    id?: number
     groupId: number
     nickname: string
     password: string
@@ -11509,7 +11530,6 @@ export namespace Prisma {
   }
 
   export type ParticipantUpdateManyMutationInput = {
-    id?: IntFieldUpdateOperationsInput | number
     nickname?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     recordCount?: IntFieldUpdateOperationsInput | number
@@ -11530,17 +11550,15 @@ export namespace Prisma {
   }
 
   export type LikeCreateInput = {
-    id: number
     participant: ParticipantCreateNestedOneWithoutLikeIdInput
   }
 
   export type LikeUncheckedCreateInput = {
-    id: number
+    id?: number
     participantId: number
   }
 
   export type LikeUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
     participant?: ParticipantUpdateOneRequiredWithoutLikeIdNestedInput
   }
 
@@ -11550,12 +11568,12 @@ export namespace Prisma {
   }
 
   export type LikeCreateManyInput = {
-    id: number
+    id?: number
     participantId: number
   }
 
   export type LikeUpdateManyMutationInput = {
-    id?: IntFieldUpdateOperationsInput | number
+
   }
 
   export type LikeUncheckedUpdateManyInput = {
@@ -11564,7 +11582,7 @@ export namespace Prisma {
   }
 
   export type ExerciseRecordCreateInput = {
-    id: number
+    groupId: number
     exerciseType?: $Enums.ExerciseType
     description: string
     time?: number
@@ -11574,7 +11592,8 @@ export namespace Prisma {
   }
 
   export type ExerciseRecordUncheckedCreateInput = {
-    id: number
+    id?: number
+    groupId: number
     exerciseType?: $Enums.ExerciseType
     description: string
     time?: number
@@ -11584,7 +11603,7 @@ export namespace Prisma {
   }
 
   export type ExerciseRecordUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    groupId?: IntFieldUpdateOperationsInput | number
     exerciseType?: EnumExerciseTypeFieldUpdateOperationsInput | $Enums.ExerciseType
     description?: StringFieldUpdateOperationsInput | string
     time?: IntFieldUpdateOperationsInput | number
@@ -11595,6 +11614,7 @@ export namespace Prisma {
 
   export type ExerciseRecordUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
+    groupId?: IntFieldUpdateOperationsInput | number
     exerciseType?: EnumExerciseTypeFieldUpdateOperationsInput | $Enums.ExerciseType
     description?: StringFieldUpdateOperationsInput | string
     time?: IntFieldUpdateOperationsInput | number
@@ -11604,7 +11624,8 @@ export namespace Prisma {
   }
 
   export type ExerciseRecordCreateManyInput = {
-    id: number
+    id?: number
+    groupId: number
     exerciseType?: $Enums.ExerciseType
     description: string
     time?: number
@@ -11613,7 +11634,7 @@ export namespace Prisma {
   }
 
   export type ExerciseRecordUpdateManyMutationInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    groupId?: IntFieldUpdateOperationsInput | number
     exerciseType?: EnumExerciseTypeFieldUpdateOperationsInput | $Enums.ExerciseType
     description?: StringFieldUpdateOperationsInput | string
     time?: IntFieldUpdateOperationsInput | number
@@ -11622,6 +11643,7 @@ export namespace Prisma {
 
   export type ExerciseRecordUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
+    groupId?: IntFieldUpdateOperationsInput | number
     exerciseType?: EnumExerciseTypeFieldUpdateOperationsInput | $Enums.ExerciseType
     description?: StringFieldUpdateOperationsInput | string
     time?: IntFieldUpdateOperationsInput | number
@@ -11630,60 +11652,58 @@ export namespace Prisma {
   }
 
   export type ParticipantPhotoCreateInput = {
-    Id: number
+    id: number
     photoUrl: string
     exerciseRecord: ExerciseRecordCreateNestedOneWithoutParticipantPhotoInput
   }
 
   export type ParticipantPhotoUncheckedCreateInput = {
-    Id: number
+    id: number
     exerciseRecordId: number
     photoUrl: string
   }
 
   export type ParticipantPhotoUpdateInput = {
-    Id?: IntFieldUpdateOperationsInput | number
+    id?: IntFieldUpdateOperationsInput | number
     photoUrl?: StringFieldUpdateOperationsInput | string
     exerciseRecord?: ExerciseRecordUpdateOneRequiredWithoutParticipantPhotoNestedInput
   }
 
   export type ParticipantPhotoUncheckedUpdateInput = {
-    Id?: IntFieldUpdateOperationsInput | number
+    id?: IntFieldUpdateOperationsInput | number
     exerciseRecordId?: IntFieldUpdateOperationsInput | number
     photoUrl?: StringFieldUpdateOperationsInput | string
   }
 
   export type ParticipantPhotoCreateManyInput = {
-    Id: number
+    id: number
     exerciseRecordId: number
     photoUrl: string
   }
 
   export type ParticipantPhotoUpdateManyMutationInput = {
-    Id?: IntFieldUpdateOperationsInput | number
+    id?: IntFieldUpdateOperationsInput | number
     photoUrl?: StringFieldUpdateOperationsInput | string
   }
 
   export type ParticipantPhotoUncheckedUpdateManyInput = {
-    Id?: IntFieldUpdateOperationsInput | number
+    id?: IntFieldUpdateOperationsInput | number
     exerciseRecordId?: IntFieldUpdateOperationsInput | number
     photoUrl?: StringFieldUpdateOperationsInput | string
   }
 
   export type GroupPhotoCreateInput = {
-    id: number
     photoUrl: string
     group: GroupCreateNestedOneWithoutGroupPhotoInput
   }
 
   export type GroupPhotoUncheckedCreateInput = {
-    id: number
+    id?: number
     photoUrl: string
     groupId: number
   }
 
   export type GroupPhotoUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
     photoUrl?: StringFieldUpdateOperationsInput | string
     group?: GroupUpdateOneRequiredWithoutGroupPhotoNestedInput
   }
@@ -11695,13 +11715,12 @@ export namespace Prisma {
   }
 
   export type GroupPhotoCreateManyInput = {
-    id: number
+    id?: number
     photoUrl: string
     groupId: number
   }
 
   export type GroupPhotoUpdateManyMutationInput = {
-    id?: IntFieldUpdateOperationsInput | number
     photoUrl?: StringFieldUpdateOperationsInput | string
   }
 
@@ -11712,7 +11731,6 @@ export namespace Prisma {
   }
 
   export type GroupBadgeCreateInput = {
-    id: number
     participantsOver10?: boolean
     recordsOver100?: boolean
     recommandationsOver100?: boolean
@@ -11720,7 +11738,7 @@ export namespace Prisma {
   }
 
   export type GroupBadgeUncheckedCreateInput = {
-    id: number
+    id?: number
     groupId: number
     participantsOver10?: boolean
     recordsOver100?: boolean
@@ -11728,7 +11746,6 @@ export namespace Prisma {
   }
 
   export type GroupBadgeUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
     participantsOver10?: BoolFieldUpdateOperationsInput | boolean
     recordsOver100?: BoolFieldUpdateOperationsInput | boolean
     recommandationsOver100?: BoolFieldUpdateOperationsInput | boolean
@@ -11744,7 +11761,7 @@ export namespace Prisma {
   }
 
   export type GroupBadgeCreateManyInput = {
-    id: number
+    id?: number
     groupId: number
     participantsOver10?: boolean
     recordsOver100?: boolean
@@ -11752,7 +11769,6 @@ export namespace Prisma {
   }
 
   export type GroupBadgeUpdateManyMutationInput = {
-    id?: IntFieldUpdateOperationsInput | number
     participantsOver10?: BoolFieldUpdateOperationsInput | boolean
     recordsOver100?: BoolFieldUpdateOperationsInput | boolean
     recommandationsOver100?: BoolFieldUpdateOperationsInput | boolean
@@ -11767,7 +11783,6 @@ export namespace Prisma {
   }
 
   export type TagCreateInput = {
-    id: number
     tagName: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11775,7 +11790,7 @@ export namespace Prisma {
   }
 
   export type TagUncheckedCreateInput = {
-    id: number
+    id?: number
     tagName: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11783,7 +11798,6 @@ export namespace Prisma {
   }
 
   export type TagUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
     tagName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11799,7 +11813,7 @@ export namespace Prisma {
   }
 
   export type TagCreateManyInput = {
-    id: number
+    id?: number
     tagName: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11807,7 +11821,6 @@ export namespace Prisma {
   }
 
   export type TagUpdateManyMutationInput = {
-    id?: IntFieldUpdateOperationsInput | number
     tagName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12147,6 +12160,7 @@ export namespace Prisma {
 
   export type ExerciseRecordCountOrderByAggregateInput = {
     id?: SortOrder
+    groupId?: SortOrder
     exerciseType?: SortOrder
     description?: SortOrder
     time?: SortOrder
@@ -12156,6 +12170,7 @@ export namespace Prisma {
 
   export type ExerciseRecordAvgOrderByAggregateInput = {
     id?: SortOrder
+    groupId?: SortOrder
     time?: SortOrder
     distance?: SortOrder
     participantId?: SortOrder
@@ -12163,6 +12178,7 @@ export namespace Prisma {
 
   export type ExerciseRecordMaxOrderByAggregateInput = {
     id?: SortOrder
+    groupId?: SortOrder
     exerciseType?: SortOrder
     description?: SortOrder
     time?: SortOrder
@@ -12172,6 +12188,7 @@ export namespace Prisma {
 
   export type ExerciseRecordMinOrderByAggregateInput = {
     id?: SortOrder
+    groupId?: SortOrder
     exerciseType?: SortOrder
     description?: SortOrder
     time?: SortOrder
@@ -12181,6 +12198,7 @@ export namespace Prisma {
 
   export type ExerciseRecordSumOrderByAggregateInput = {
     id?: SortOrder
+    groupId?: SortOrder
     time?: SortOrder
     distance?: SortOrder
     participantId?: SortOrder
@@ -12202,30 +12220,30 @@ export namespace Prisma {
   }
 
   export type ParticipantPhotoCountOrderByAggregateInput = {
-    Id?: SortOrder
+    id?: SortOrder
     exerciseRecordId?: SortOrder
     photoUrl?: SortOrder
   }
 
   export type ParticipantPhotoAvgOrderByAggregateInput = {
-    Id?: SortOrder
+    id?: SortOrder
     exerciseRecordId?: SortOrder
   }
 
   export type ParticipantPhotoMaxOrderByAggregateInput = {
-    Id?: SortOrder
+    id?: SortOrder
     exerciseRecordId?: SortOrder
     photoUrl?: SortOrder
   }
 
   export type ParticipantPhotoMinOrderByAggregateInput = {
-    Id?: SortOrder
+    id?: SortOrder
     exerciseRecordId?: SortOrder
     photoUrl?: SortOrder
   }
 
   export type ParticipantPhotoSumOrderByAggregateInput = {
-    Id?: SortOrder
+    id?: SortOrder
     exerciseRecordId?: SortOrder
   }
 
@@ -12895,12 +12913,11 @@ export namespace Prisma {
   }
 
   export type GroupPhotoCreateWithoutGroupInput = {
-    id: number
     photoUrl: string
   }
 
   export type GroupPhotoUncheckedCreateWithoutGroupInput = {
-    id: number
+    id?: number
     photoUrl: string
   }
 
@@ -12910,14 +12927,13 @@ export namespace Prisma {
   }
 
   export type GroupBadgeCreateWithoutGroupInput = {
-    id: number
     participantsOver10?: boolean
     recordsOver100?: boolean
     recommandationsOver100?: boolean
   }
 
   export type GroupBadgeUncheckedCreateWithoutGroupInput = {
-    id: number
+    id?: number
     participantsOver10?: boolean
     recordsOver100?: boolean
     recommandationsOver100?: boolean
@@ -12929,14 +12945,13 @@ export namespace Prisma {
   }
 
   export type TagCreateWithoutGroupInput = {
-    id: number
     tagName: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type TagUncheckedCreateWithoutGroupInput = {
-    id: number
+    id?: number
     tagName: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -12953,7 +12968,6 @@ export namespace Prisma {
   }
 
   export type ParticipantCreateWithoutGroupInput = {
-    id: number
     nickname: string
     password: string
     recordCount?: number
@@ -12965,7 +12979,7 @@ export namespace Prisma {
   }
 
   export type ParticipantUncheckedCreateWithoutGroupInput = {
-    id: number
+    id?: number
     nickname: string
     password: string
     recordCount?: number
@@ -12998,7 +13012,6 @@ export namespace Prisma {
   }
 
   export type GroupPhotoUpdateWithoutGroupInput = {
-    id?: IntFieldUpdateOperationsInput | number
     photoUrl?: StringFieldUpdateOperationsInput | string
   }
 
@@ -13019,7 +13032,6 @@ export namespace Prisma {
   }
 
   export type GroupBadgeUpdateWithoutGroupInput = {
-    id?: IntFieldUpdateOperationsInput | number
     participantsOver10?: BoolFieldUpdateOperationsInput | boolean
     recordsOver100?: BoolFieldUpdateOperationsInput | boolean
     recommandationsOver100?: BoolFieldUpdateOperationsInput | boolean
@@ -13128,11 +13140,11 @@ export namespace Prisma {
   }
 
   export type LikeCreateWithoutParticipantInput = {
-    id: number
+
   }
 
   export type LikeUncheckedCreateWithoutParticipantInput = {
-    id: number
+    id?: number
   }
 
   export type LikeCreateOrConnectWithoutParticipantInput = {
@@ -13141,7 +13153,7 @@ export namespace Prisma {
   }
 
   export type ExerciseRecordCreateWithoutParticipantInput = {
-    id: number
+    groupId: number
     exerciseType?: $Enums.ExerciseType
     description: string
     time?: number
@@ -13150,7 +13162,8 @@ export namespace Prisma {
   }
 
   export type ExerciseRecordUncheckedCreateWithoutParticipantInput = {
-    id: number
+    id?: number
+    groupId: number
     exerciseType?: $Enums.ExerciseType
     description: string
     time?: number
@@ -13224,7 +13237,7 @@ export namespace Prisma {
   }
 
   export type LikeUpdateWithoutParticipantInput = {
-    id?: IntFieldUpdateOperationsInput | number
+
   }
 
   export type LikeUncheckedUpdateWithoutParticipantInput = {
@@ -13252,6 +13265,7 @@ export namespace Prisma {
     OR?: ExerciseRecordScalarWhereInput[]
     NOT?: ExerciseRecordScalarWhereInput | ExerciseRecordScalarWhereInput[]
     id?: IntFilter<"ExerciseRecord"> | number
+    groupId?: IntFilter<"ExerciseRecord"> | number
     exerciseType?: EnumExerciseTypeFilter<"ExerciseRecord"> | $Enums.ExerciseType
     description?: StringFilter<"ExerciseRecord"> | string
     time?: IntFilter<"ExerciseRecord"> | number
@@ -13260,7 +13274,6 @@ export namespace Prisma {
   }
 
   export type ParticipantCreateWithoutLikeIdInput = {
-    id: number
     nickname: string
     password: string
     recordCount?: number
@@ -13272,7 +13285,7 @@ export namespace Prisma {
   }
 
   export type ParticipantUncheckedCreateWithoutLikeIdInput = {
-    id: number
+    id?: number
     groupId: number
     nickname: string
     password: string
@@ -13300,7 +13313,6 @@ export namespace Prisma {
   }
 
   export type ParticipantUpdateWithoutLikeIdInput = {
-    id?: IntFieldUpdateOperationsInput | number
     nickname?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     recordCount?: IntFieldUpdateOperationsInput | number
@@ -13324,7 +13336,6 @@ export namespace Prisma {
   }
 
   export type ParticipantCreateWithoutExerciseRecordsInput = {
-    id: number
     nickname: string
     password: string
     recordCount?: number
@@ -13336,7 +13347,7 @@ export namespace Prisma {
   }
 
   export type ParticipantUncheckedCreateWithoutExerciseRecordsInput = {
-    id: number
+    id?: number
     groupId: number
     nickname: string
     password: string
@@ -13353,12 +13364,12 @@ export namespace Prisma {
   }
 
   export type ParticipantPhotoCreateWithoutExerciseRecordInput = {
-    Id: number
+    id: number
     photoUrl: string
   }
 
   export type ParticipantPhotoUncheckedCreateWithoutExerciseRecordInput = {
-    Id: number
+    id: number
     photoUrl: string
   }
 
@@ -13384,7 +13395,6 @@ export namespace Prisma {
   }
 
   export type ParticipantUpdateWithoutExerciseRecordsInput = {
-    id?: IntFieldUpdateOperationsInput | number
     nickname?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     recordCount?: IntFieldUpdateOperationsInput | number
@@ -13427,13 +13437,13 @@ export namespace Prisma {
     AND?: ParticipantPhotoScalarWhereInput | ParticipantPhotoScalarWhereInput[]
     OR?: ParticipantPhotoScalarWhereInput[]
     NOT?: ParticipantPhotoScalarWhereInput | ParticipantPhotoScalarWhereInput[]
-    Id?: IntFilter<"ParticipantPhoto"> | number
+    id?: IntFilter<"ParticipantPhoto"> | number
     exerciseRecordId?: IntFilter<"ParticipantPhoto"> | number
     photoUrl?: StringFilter<"ParticipantPhoto"> | string
   }
 
   export type ExerciseRecordCreateWithoutParticipantPhotoInput = {
-    id: number
+    groupId: number
     exerciseType?: $Enums.ExerciseType
     description: string
     time?: number
@@ -13442,7 +13452,8 @@ export namespace Prisma {
   }
 
   export type ExerciseRecordUncheckedCreateWithoutParticipantPhotoInput = {
-    id: number
+    id?: number
+    groupId: number
     exerciseType?: $Enums.ExerciseType
     description: string
     time?: number
@@ -13467,7 +13478,7 @@ export namespace Prisma {
   }
 
   export type ExerciseRecordUpdateWithoutParticipantPhotoInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    groupId?: IntFieldUpdateOperationsInput | number
     exerciseType?: EnumExerciseTypeFieldUpdateOperationsInput | $Enums.ExerciseType
     description?: StringFieldUpdateOperationsInput | string
     time?: IntFieldUpdateOperationsInput | number
@@ -13477,6 +13488,7 @@ export namespace Prisma {
 
   export type ExerciseRecordUncheckedUpdateWithoutParticipantPhotoInput = {
     id?: IntFieldUpdateOperationsInput | number
+    groupId?: IntFieldUpdateOperationsInput | number
     exerciseType?: EnumExerciseTypeFieldUpdateOperationsInput | $Enums.ExerciseType
     description?: StringFieldUpdateOperationsInput | string
     time?: IntFieldUpdateOperationsInput | number
@@ -13731,14 +13743,14 @@ export namespace Prisma {
   }
 
   export type TagCreateManyGroupInput = {
-    id: number
+    id?: number
     tagName: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type ParticipantCreateManyGroupInput = {
-    id: number
+    id?: number
     nickname: string
     password: string
     recordCount?: number
@@ -13748,7 +13760,6 @@ export namespace Prisma {
   }
 
   export type TagUpdateWithoutGroupInput = {
-    id?: IntFieldUpdateOperationsInput | number
     tagName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13769,7 +13780,6 @@ export namespace Prisma {
   }
 
   export type ParticipantUpdateWithoutGroupInput = {
-    id?: IntFieldUpdateOperationsInput | number
     nickname?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     recordCount?: IntFieldUpdateOperationsInput | number
@@ -13803,7 +13813,8 @@ export namespace Prisma {
   }
 
   export type ExerciseRecordCreateManyParticipantInput = {
-    id: number
+    id?: number
+    groupId: number
     exerciseType?: $Enums.ExerciseType
     description: string
     time?: number
@@ -13811,7 +13822,7 @@ export namespace Prisma {
   }
 
   export type ExerciseRecordUpdateWithoutParticipantInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    groupId?: IntFieldUpdateOperationsInput | number
     exerciseType?: EnumExerciseTypeFieldUpdateOperationsInput | $Enums.ExerciseType
     description?: StringFieldUpdateOperationsInput | string
     time?: IntFieldUpdateOperationsInput | number
@@ -13821,6 +13832,7 @@ export namespace Prisma {
 
   export type ExerciseRecordUncheckedUpdateWithoutParticipantInput = {
     id?: IntFieldUpdateOperationsInput | number
+    groupId?: IntFieldUpdateOperationsInput | number
     exerciseType?: EnumExerciseTypeFieldUpdateOperationsInput | $Enums.ExerciseType
     description?: StringFieldUpdateOperationsInput | string
     time?: IntFieldUpdateOperationsInput | number
@@ -13830,6 +13842,7 @@ export namespace Prisma {
 
   export type ExerciseRecordUncheckedUpdateManyWithoutParticipantInput = {
     id?: IntFieldUpdateOperationsInput | number
+    groupId?: IntFieldUpdateOperationsInput | number
     exerciseType?: EnumExerciseTypeFieldUpdateOperationsInput | $Enums.ExerciseType
     description?: StringFieldUpdateOperationsInput | string
     time?: IntFieldUpdateOperationsInput | number
@@ -13837,22 +13850,22 @@ export namespace Prisma {
   }
 
   export type ParticipantPhotoCreateManyExerciseRecordInput = {
-    Id: number
+    id: number
     photoUrl: string
   }
 
   export type ParticipantPhotoUpdateWithoutExerciseRecordInput = {
-    Id?: IntFieldUpdateOperationsInput | number
+    id?: IntFieldUpdateOperationsInput | number
     photoUrl?: StringFieldUpdateOperationsInput | string
   }
 
   export type ParticipantPhotoUncheckedUpdateWithoutExerciseRecordInput = {
-    Id?: IntFieldUpdateOperationsInput | number
+    id?: IntFieldUpdateOperationsInput | number
     photoUrl?: StringFieldUpdateOperationsInput | string
   }
 
   export type ParticipantPhotoUncheckedUpdateManyWithoutExerciseRecordInput = {
-    Id?: IntFieldUpdateOperationsInput | number
+    id?: IntFieldUpdateOperationsInput | number
     photoUrl?: StringFieldUpdateOperationsInput | string
   }
 
