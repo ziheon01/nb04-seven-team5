@@ -13,10 +13,6 @@ class ExerciseRecordService {
             },
         });
 
-        if (!participant) { //participant의 값이 일치하지 않은 경우 에러처리
-          throw new Error("Participant not found or password incorrect");
-        }
-
       const newRecord = await prisma.exerciseRecord.create({ 
             data:{
                 groupId,
@@ -50,7 +46,7 @@ class ExerciseRecordService {
       groupId,
     };
 
-    if (search) {
+    if (search) { //
       where.participant = {
         nickname: {
           contains: search,
@@ -61,7 +57,7 @@ class ExerciseRecordService {
 
     const orderByClause = {};
     if (orderBy === 'createdAt') {
-      orderByClause.createAt = order;
+      orderByClause.createdAt = order;
     } else if (orderBy === 'time') {
       orderByClause.time = order;
     } else if (orderBy === 'recordCount') {
@@ -112,10 +108,6 @@ class ExerciseRecordService {
           participant: true,
         },
       });
-
-      if (!record) { //recordId가 일치한 데이터가 없을경우 오류 처리
-        throw new Error("Record not found");
-      }
 
       return record;
     } catch (error) {
