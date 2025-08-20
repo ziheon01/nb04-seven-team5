@@ -53,7 +53,7 @@ class ParticipantController {
         return res.status(400).json({ message: "Invalid field types"});
       }
       const updatedGroup = await this. participantService.leaveGroup( groupId, nickname, password );
-      return res.status(204).json({ updatedGroup});
+      return res.status(204).send();
     } catch(error){
       next(error)
     }
