@@ -1,8 +1,8 @@
 import { PrismaClient } from '../../generated/prisma/index.js'; // 올바른 Prisma Client 임포트 경로
 const prisma = new PrismaClient();
-
 class ExerciseRecordService {
   createRecord = async (groupId, recordData) => {
+
     const { exerciseType, description, time, distance, participantPhoto, participantNickname, participantPassword } = recordData;
 
     try {

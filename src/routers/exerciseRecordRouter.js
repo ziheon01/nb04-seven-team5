@@ -6,11 +6,9 @@ const exerciseRecordController = new ExerciseRecordController();
 
 // 운동 기록 생성
 router.post('/:groupId/records', exerciseRecordController.createRecord);
-
 // 운동 기록 목록 조회
 router.get('/:groupId/records', exerciseRecordController.getRecords);
-
-// 운동 기록 상세 조회
+// 운동 기록 상세 조회  
 router.get('/:groupId/records/:recordId', exerciseRecordController.getRecordDetail);
 
 export default router;
