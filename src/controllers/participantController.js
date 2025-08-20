@@ -7,7 +7,7 @@ class ParticipantController {
 
   joinGroup = async (req, res, next) => {
     const { nickname, password } = req.body;
-    const groupId = Number(parseInt(req.params.groupId)); 
+    const groupId = parseInt(req.params.groupId,10); 
     try{
       // req.body에 필요한 필드가 다 들어왔는지 확인
       if(!nickname || !password){
@@ -25,7 +25,7 @@ class ParticipantController {
         return res.status(400).json({ message: "Invalid field types"});
       }
       const updatedGroup = await this.participantService.joinGroup( groupId, nickname, password);
-      return res.status(200).json({ updatedGroup });  
+      return res.status(201).json({ updatedGroup });  
     }catch(error){
       next(error)
     }
@@ -50,10 +50,10 @@ class ParticipantController {
       }
       // 닉네임과 비밀번호가 유효한지 확인
       if(typeof nickname !== 'string' || typeof password !== 'string'){
-        res.status(400).json({ message: "Invalid field types"});
+        return res.status(400).json({ message: "Invalid field types"});
       }
       const updatedGroup = await this. participantService.leaveGroup( groupId, nickname, password );
-      res.status(200).json({ updatedGroup});
+      return res.status(204).json({ updatedGroup});
     } catch(error){
       next(error)
     }
