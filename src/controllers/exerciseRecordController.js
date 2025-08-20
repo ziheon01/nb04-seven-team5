@@ -14,14 +14,13 @@ class ExerciseRecordController {
     return res.status(400).json({ path: "groupId", message: "groupId must be integer" });
     }
 
-    const newRecord = await this.exerciseRecordService.createRecord(groupId, recordData); //service에서 받아온 데이터를 프론트엔드 형식에 맞게 변형
+    const newRecord = await this.exerciseRecordService.createRecord(parseInt(groupId), recordData); //service에서 받아온 데이터를 프론트엔드 형식에 맞게 변형
     res.status(201).json({ 
-        id: newRecord.id,
         exerciseType: newRecord.exerciseType,
         description: newRecord.description,
         time: newRecord.time,
         distance: newRecord.distance,
-        participantPhoto: newRecord.participantPhoto,
+        participantPhoto: newRecord.participantPhoto ?? [],
         participant: {
             id: newRecord.participant.id,
             nickname: newRecord.participant.nickname
@@ -37,7 +36,7 @@ class ExerciseRecordController {
     const { page = 1, limit = 10, order = 'desc', orderBy = 'createdAt', search } = req.query;
 
     try {
-      if (isNaN(groupId)) { //groupId의 유효성 검사
+      if (isNaN(parseInt(groupId))) { //groupId의 유효성 검사
     return res.status(400).json({
         path: "groupId",
         message: "groupId must be integer",
@@ -52,7 +51,7 @@ class ExerciseRecordController {
       search,
     };
 
-    const { datas, total } = await this.exerciseRecordService.getRecords(options);
+    const { datas, total } = await this.exerciseRecordService.getRecords(parseInt(groupId), options);
     res.status(200).json({ 
       data: datas,
       total,
@@ -92,7 +91,7 @@ class ExerciseRecordController {
         description: record.description,
         time: record.time,
         distance: record.distance,
-        participantPhoto: record.participantPhoto,
+        participantPhoto: record.participantPhoto ?? [],
         participant: {
             id: record.participant.id,
             nickname: record.participant.nickname

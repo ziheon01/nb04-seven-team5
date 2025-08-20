@@ -3,11 +3,12 @@ CREATE TYPE "public"."ExerciseType" AS ENUM ('running', 'cycling', 'swimming');
 
 -- CreateTable
 CREATE TABLE "public"."Group" (
-    "id" INTEGER NOT NULL,
+    "id" SERIAL NOT NULL,
     "groupName" TEXT NOT NULL,
     "description" TEXT,
+    "photoUrl" TEXT,
     "goalRep" INTEGER NOT NULL DEFAULT 0,
-    "discordWebHookURl" TEXT NOT NULL,
+    "discordWebhookUrl" TEXT NOT NULL,
     "discordInviteUrl" TEXT NOT NULL,
     "ownerNickname" TEXT NOT NULL,
     "ownerPassword" TEXT NOT NULL,
@@ -19,7 +20,7 @@ CREATE TABLE "public"."Group" (
 
 -- CreateTable
 CREATE TABLE "public"."Participant" (
-    "id" INTEGER NOT NULL,
+    "id" SERIAL NOT NULL,
     "groupId" INTEGER NOT NULL,
     "nickname" TEXT NOT NULL,
     "password" TEXT NOT NULL,
@@ -33,7 +34,7 @@ CREATE TABLE "public"."Participant" (
 
 -- CreateTable
 CREATE TABLE "public"."Like" (
-    "id" INTEGER NOT NULL,
+    "id" SERIAL NOT NULL,
     "participantId" INTEGER NOT NULL,
 
     CONSTRAINT "Like_pkey" PRIMARY KEY ("id")
@@ -41,28 +42,29 @@ CREATE TABLE "public"."Like" (
 
 -- CreateTable
 CREATE TABLE "public"."ExerciseRecord" (
-    "id" INTEGER NOT NULL,
+    "id" SERIAL NOT NULL,
+    "groupId" INTEGER NOT NULL,
+    "participantId" INTEGER NOT NULL,
     "exerciseType" "public"."ExerciseType" NOT NULL DEFAULT 'running',
     "description" TEXT NOT NULL,
     "time" INTEGER NOT NULL DEFAULT 0,
     "distance" INTEGER NOT NULL DEFAULT 0,
-    "participantId" INTEGER NOT NULL,
 
     CONSTRAINT "ExerciseRecord_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "public"."ParticipantPhoto" (
-    "Id" INTEGER NOT NULL,
+    "id" SERIAL NOT NULL,
     "exerciseRecordId" INTEGER NOT NULL,
     "photoUrl" TEXT NOT NULL,
 
-    CONSTRAINT "ParticipantPhoto_pkey" PRIMARY KEY ("Id")
+    CONSTRAINT "ParticipantPhoto_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "public"."GroupPhoto" (
-    "id" INTEGER NOT NULL,
+    "id" SERIAL NOT NULL,
     "photoUrl" TEXT NOT NULL,
     "groupId" INTEGER NOT NULL,
 
@@ -71,7 +73,7 @@ CREATE TABLE "public"."GroupPhoto" (
 
 -- CreateTable
 CREATE TABLE "public"."GroupBadge" (
-    "id" INTEGER NOT NULL,
+    "id" SERIAL NOT NULL,
     "groupId" INTEGER NOT NULL,
     "participantsOver10" BOOLEAN NOT NULL DEFAULT false,
     "recordsOver100" BOOLEAN NOT NULL DEFAULT false,
@@ -82,7 +84,7 @@ CREATE TABLE "public"."GroupBadge" (
 
 -- CreateTable
 CREATE TABLE "public"."Tag" (
-    "id" INTEGER NOT NULL,
+    "id" SERIAL NOT NULL,
     "tagName" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -95,7 +97,7 @@ CREATE TABLE "public"."Tag" (
 CREATE UNIQUE INDEX "Group_groupName_key" ON "public"."Group"("groupName");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Group_discordWebHookURl_key" ON "public"."Group"("discordWebHookURl");
+CREATE UNIQUE INDEX "Group_discordWebhookUrl_key" ON "public"."Group"("discordWebhookUrl");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Group_discordInviteUrl_key" ON "public"."Group"("discordInviteUrl");

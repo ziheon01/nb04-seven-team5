@@ -6,7 +6,7 @@ class ExerciseRecordService {
     const { exerciseType, description, time, distance, participantPhoto, participantNickname, participantPassword } = recordData;
 
     try {
-        const participant = await prisma.participant.findUnique({ //participant 스키마의 '@@unique(name: "participantInfo", [nickname, password])'를 통해 한번에 검증
+        const participant = await prisma.participant.findFirst({ //participant 스키마의 '@@unique(name: "participantInfo", [nickname, password])'를 통해 한번에 검증
           where: {
                  nickname: participantNickname ,
                  password: participantPassword ,
@@ -20,13 +20,16 @@ class ExerciseRecordService {
                 description,
                 time,
                 distance,
-                participantPhoto,
+                participantPhoto: {
+                  create: participantPhoto.map(url => ({ photoUrl: url}))
+                },
                 participant: {
                     connect: { id: participant.id },
                 },
             },
             include: {
-              participant: true
+              participant: true,
+              participantPhoto: true,
             },
         });
 
