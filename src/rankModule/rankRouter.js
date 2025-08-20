@@ -25,12 +25,27 @@ function dateFilter(req, res, next) {
   } else {
     req.dateFilter = {};
   }
-  
+
+  next();
+}
+
+//Note: 페이지네이션 미들웨어
+function paginationAdjust(req, res, next) {
+  const page = parseInt(req.query.page, 10) || DEFAULT_PAGE;
+  const limit = parseInt(req.query.limit, 10) || DEFAULT_LIMIT;
+
+  req.pagination = {
+    skip: (page - 1) * limit,
+    take: limit,
+    page,
+    limit,
+  };
+
   next();
 }
 
 const router = express.Router();
 
-router.get('/groups/:groupId/rank', dateFilter, getRanks);
+router.get('/groups/:groupId/ranks', dateFilter, paginationAdjust, getRanks);
 
 export default router;
