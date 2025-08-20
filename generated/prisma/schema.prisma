@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Group {
+  id                Int           @id
+  groupName         String        @unique
+  description       String?
+  groupPhoto        GroupPhoto?
+  groupBadge        GroupBadge?
+  goalRep           Int           @default(0) //Record에서 나온 데이터를 participant에서 정리해서 받아오도록 추후 확인
+  discordWebHookURl String        @unique
+  discordInviteUrl  String        @unique
+  tag               Tag[]
+  ownerNickname     String        @unique
+  ownerPassword     String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  participant       Participant[]
+}
+
+model Participant {
+  id              Int              @id
+  group           Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId         Int
+  nickname        String           @unique
+  password        String
+  recordCount     Int              @default(0) //RecordId 데이터를 participantId랑 일치시킨 갯수를 파악해서 기입하도록
+  recordTime      Int              @default(0) //Record에서 time의 총합을 계산해서 저장할 수 있도록 확인
+  likeId          Like?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  exerciseRecords ExerciseRecord[]
+
+  @@unique(name: "participantInfo", [nickname, password])
+}
+
+model Like {
+  id            Int         @id
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participantId Int         @unique
+}
+
+model ExerciseRecord {
+  id               Int                @id
+  groupId          Int
+  participant      Participant        @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  exerciseType     ExerciseType       @default(running)
+  description      String
+  time             Int                @default(0) //프론트 엔드의 스톱워치 시스템을 확인
+  distance         Int                @default(0)
+  participantId    Int
+  participantPhoto ParticipantPhoto[]
+}
+
+model ParticipantPhoto {
+  id               Int            @id
+  exerciseRecordId Int
+  exerciseRecord   ExerciseRecord @relation(fields: [exerciseRecordId], references: [id], onDelete: Cascade)
+  photoUrl         String         @unique
+}
+
+model GroupPhoto {
+  id       Int    @id
+  photoUrl String
+  group    Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId  Int    @unique
+}
+
+model GroupBadge {
+  id                     Int     @id
+  group                  Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId                Int     @unique
+  participantsOver10     Boolean @default(false)
+  recordsOver100         Boolean @default(false)
+  recommandationsOver100 Boolean @default(false)
+}
+
+model Tag {
+  id        Int      @id
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  tagName   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  groupId   Int
+}
+
+enum ExerciseType {
+  running
+  cycling
+  swimming
+}
