@@ -1,7 +1,9 @@
 import express from 'express';
 import { getRanks } from '../rankModule/rankController.js';
 
-// 기간 필터 미들웨어
+const [MINUTE, ONE_DAY] = [60 * 1_000, 24 * 60 * MINUTE]
+
+//Note: 기간 필터 미들웨어
 function getMonth() {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -14,7 +16,7 @@ function dateFilter(req, res, next) {
   const now = new Date();
 
   if (duration === 'weekly') {
-    const weeklyFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const weeklyFilter = new Date(now.getTime() - 7 * ONE_DAY);
     req.dateFilter = { createdAt: { gte: weeklyFilter } };
   } else if (duration === 'monthly') {
     const { startOfMonth, startOfNextMonth } = getMonth();

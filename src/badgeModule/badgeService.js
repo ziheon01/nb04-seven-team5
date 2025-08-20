@@ -1,39 +1,59 @@
-import {PrismaClient} from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
-// 예시: GroupParticipant 모델 활용
-const hasParticipationBadge = (participant) => {
-  return participant.participationCount >= 10;
-}
+// 기준에 따른 Badge를 badgeTypes으로 정리
+const badgeTypes = {
+  participantsOver10: 'participantsOver10',
+  recordsOver100: 'recordsOver100',
+  recommandationsOver100: 'recommandationsOver100',
+};
 
-// 예시: ExerciseRecord 활용
-const hasExerciseBadge = (user) => {
-  return user.exerciseRecords.length >= 100;
-}
-
-// 예시: Like 또는 Group의 추천수 활용
-const hasRecommendationBadge = (userOrGroup) => {
-  return userOrGroup.recommendCount >= 10;
-}
-
-// 우선 각 기준들을 비교할 테이블 값을 상수로 정의하는 게 우선
-
-//전체 참가자 수
-const totalParticiapnt = await prisma.participant.count({
+// badgeTypes의 결과를 객체로 리턴받는 함수
+async function badgeTypesStatus(groupId) {
+  // count를 이용해 기준 대상 테이블 총합 집계
+  const totalParticipant = await prisma.participant.count({
     where: {
-        groupId
-    }, 
-});
-//전체 운동기록 수
-const totalExcerciseRecord = await prisma.exerciserecord.count({
-    where: {
-        grouId
+      groupId,
     },
-})
-//전체 추천 수
-const totlaLike = await prisma.like.count({
+  });
+
+  const totalExerciseRecord = await prisma.exerciseRecord.count({
     where: {
-        grouId,
+      groupId,
     },
-}); 
+  });
+
+  const totalLike = await prisma.like.count({
+    where: {
+      participant: {
+        groupId,
+      },
+    },
+  });
+
+  return {
+    [badgeTypes.participantsOver10]: totalParticipant >= 10,
+    [badgeTypes.recordsOver100]: totalExerciseRecord >= 100,
+    [badgeTypes.recommandationsOver100]: totalLike >= 100,
+  };
+}
+
+export async function updateBadgeStatus(groupId, badgeTypesStatus) {
+  // badgeTypes의 결과를 객체의 속성을 [key, value]에 순회하며 주입
+  for (const [badgeType, status] of Object.entries(badgeTypesStatus)) {
+    await prisma.groupBadge.upsert({
+      where: {
+        groupId,
+      },
+      update: {
+        [badgeType]: status,
+      },
+      create: {
+        groupId,
+        [badgeType]: status,
+      },
+    });
+  }
+}
+
