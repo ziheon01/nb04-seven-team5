@@ -1,3 +1,4 @@
+//TODO: 실제 경로 맞게 수정필요
 import * as rankService from '../services/rankService.js';
 
 /*

@@ -1,4 +1,5 @@
 import express from 'express';
+//TODO: 실제 경로 맞게 수정필요
 import { getRanks } from '../rankModule/rankController.js';
 
 const [MINUTE, ONE_DAY] = [60 * 1_000, 24 * 60 * MINUTE]
