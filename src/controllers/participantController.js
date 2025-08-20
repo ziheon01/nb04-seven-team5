@@ -54,6 +54,7 @@ class ParticipantController {
       }
       const updatedGroup = await this. participantService.leaveGroup( groupId, nickname, password );
       return res.status(204).send();
+      
     } catch(error){
       next(error)
     }
