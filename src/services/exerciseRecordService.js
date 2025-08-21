@@ -2,13 +2,13 @@ import { PrismaClient } from '../../generated/prisma/index.js'; // 올바른 Pri
 const prisma = new PrismaClient();
 class ExerciseRecordService {
   
-  getGroupWebhookUrl = async (groupId) => {
+  getGroupWebhookUrl = async (groupId) => { //group 테이블에서 discordWebhookUrl를 가져오기 위한 코드
     const group = await prisma.group.findUnique({
       where: { id: groupId },
       select: { discordWebhookUrl: true },
     });
 
-    if (!group) {
+    if (!group) { 
       throw new Error('Group not found');
     }
 
@@ -35,19 +35,19 @@ class ExerciseRecordService {
                 time,
                 distance,
                 participantPhoto: {
-                  create: participantPhoto.map(url => ({ photoUrl: url}))
+                  create: participantPhoto.map(url => ({ photoUrl: url})) //participantPhoto를 url형식으로 저장
                 },
                 participant: {
-                    connect: { id: participant.id },
+                    connect: { id: participant.id }, //위 조건에 맞는 participant의 id를 가져옴
                 },
             },
-            include: {
+            include: { //위의 participantId와 recordId에 맞는 participant, participantPhoto의 테이블 정보를 가져옴
               participant: true,
               participantPhoto: true,
             },
         });
 
-        return newRecord;
+        return newRecord; //위에서 수집한 정보들을 newRecord 상수에 저장
     } catch (error) {
       console.error('기록 생성 중 오류발생:', error);
       throw error;
@@ -59,11 +59,11 @@ class ExerciseRecordService {
     const skip = (page - 1) * limit;
     const take = limit;
 
-    const where = {
+    const where = { //groupId를 통해서 가져와야하는 데이터들을 위해 만든 상수
       groupId,
     };
 
-    if (search) { 
+    if (search) { //search 쿼리를 받아내여 participant를 지정하기 위한 함수
       where.participant = {
         nickname: {
           contains: search,
@@ -78,11 +78,11 @@ class ExerciseRecordService {
     } else if (orderBy === 'time') {
       orderByClause.time = order;
     } else if (orderBy === 'recordCount') {
-      orderByClause.recordCount = order; //기록횟수에 대해서는 아직 정리가 안되었지만 임시적으로 'recordCount'라 써둠
+      orderByClause.recordCount = order;
     }
 
     try {
-      const records = await prisma.exerciseRecord.findMany({
+      const records = await prisma.exerciseRecord.findMany({ //위에서 분류된 데이터들을 페이지네이션을 하기 위한 코드
         skip,
         take,
         where,
@@ -92,10 +92,10 @@ class ExerciseRecordService {
         },
       });
 
-      const recordIds = records.map(record => record.id);
+      const recordIds = records.map(record => record.id); //원하는 형태가 아닌 exerciseRecordId를 배열로 만들어주긴 위한 상수
 
-      const allPhotos = await prisma.participantPhoto.findMany({
-        where: {
+      const allPhotos = await prisma.participantPhoto.findMany({ //앞서 배열로 변환하여 구별이 가능해진 exerciseRecordId를 participantPhoto 테이블에서
+        where: {                                                 //분류하여 원하는 exerciseRecordId와 photoUrl를 꺼냄
           exerciseRecordId: { in: recordIds }
         },
         select: {
@@ -105,7 +105,7 @@ class ExerciseRecordService {
       });
 
       const datas = records.map((record) => {
-      const photosForRecord = allPhotos
+      const photosForRecord = allPhotos //api 명세서 조건에 맞게 다듬기 전에 위에서 분류한 데이터들을 필터와 배열화 시켜 정리
         .filter(photo => photo.exerciseRecordId === record.id)
         .map(photo => ({ photoUrl: photo.photoUrl }));
 
