@@ -1,4 +1,5 @@
 import ExerciseRecordService from '../services/exerciseRecordService.js';
+import axios from 'axios';
 
 class ExerciseRecordController {
   constructor() {
@@ -14,7 +15,31 @@ class ExerciseRecordController {
     return res.status(400).json({ path: "groupId", message: "groupId must be integer" });
     }
 
-    const newRecord = await this.exerciseRecordService.createRecord(parseInt(groupId), recordData); //service에서 받아온 데이터를 프론트엔드 형식에 맞게 변형
+    const newRecord = await this.exerciseRecordService.createRecord(parseInt(groupId), recordData); //service에서 받아온 데이터를 프론트엔드 형식에 맞게 변형\
+
+    const webhookURL = await this.exerciseRecordService. getGroupWebhookUrl(parseInt(groupId));
+
+    if (webhookURL) { 
+        await axios.post(webhookURL, {
+            embeds: [
+                {
+                    title: '신규 운동 기록',
+                    description: newRecord.description,
+                    color: 0x00FF00, // Green color
+                    fields: [
+                        { name: '운동 종류', value: newRecord.exerciseType},
+                        { name: '기록 시간', value: newRecord.time.toString(), inline: true },
+                        { name: '기록 거리', value: newRecord.distance.toString(), inline: true },
+                    ],
+                    image: newRecord.participantPhoto?.[0]?.photoUrl? {
+                      url: newRecord.participantPhoto[0].photoUrl
+                    } : undefined,
+                  },
+                ],
+            });
+            console.log('Discord Webhook 전송 완료');
+          }
+
     res.status(201).json({ 
         exerciseType: newRecord.exerciseType,
         description: newRecord.description,

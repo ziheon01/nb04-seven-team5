@@ -1,6 +1,20 @@
 import { PrismaClient } from '../../generated/prisma/index.js'; // 올바른 Prisma Client 임포트 경로
 const prisma = new PrismaClient();
 class ExerciseRecordService {
+  
+  getGroupWebhookUrl = async (groupId) => {
+    const group = await prisma.group.findUnique({
+      where: { id: groupId },
+      select: { discordWebhookUrl: true },
+    });
+
+    if (!group) {
+      throw new Error('Group not found');
+    }
+
+    return group.discordWebhookUrl;
+  };
+        
   createRecord = async (groupId, recordData) => {
 
     const { exerciseType, description, time, distance, participantPhoto, participantNickname, participantPassword } = recordData;
@@ -8,8 +22,8 @@ class ExerciseRecordService {
     try {
         const participant = await prisma.participant.findFirst({ //participant 스키마의 '@@unique(name: "participantInfo", [nickname, password])'를 통해 한번에 검증
           where: {
-                 nickname: participantNickname ,
-                 password: participantPassword ,
+                nickname: participantNickname ,
+                password: participantPassword ,
             },
         });
 
