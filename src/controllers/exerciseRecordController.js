@@ -17,7 +17,7 @@ class ExerciseRecordController {
 
     const newRecord = await this.exerciseRecordService.createRecord(parseInt(groupId), recordData); //service에서 받아온 데이터를 프론트엔드 형식에 맞게 변형\
 
-    const webhookURL = await this.exerciseRecordService. getGroupWebhookUrl(parseInt(groupId));
+    const webhookURL = await this.exerciseRecordService.getGroupWebhookUrl(parseInt(groupId));
 
     if (webhookURL) { 
         await axios.post(webhookURL, {
@@ -81,47 +81,6 @@ class ExerciseRecordController {
       data: datas,
       total,
     });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  getRecordDetail = async (req, res, next) => {
-    const { groupId, recordId } = req.params;
-
-    try {
-      if (isNaN(parseInt(groupId))) {  //groupId의 유효성 검사
-        return res.status(400).json({
-            path: 'groupId',
-            message: 'groupId must be integer', 
-        });
-      }
-      
-      if (isNaN(parseInt(recordId))) {  //recordId의 유효성 검사
-        return res.status(400).json({
-            path: 'recordId',
-            message: 'recordId must be integer', 
-        });
-      }
-
-      const record = await this.exerciseRecordService.getRecordDetail(groupId, recordId);
-
-      if (!record) {
-        return res.status(404).json({ message: 'Record not found' });
-      }
-
-      res.status(200).json({ //service에서 받아온 데이터를 프론트엔드 형식에 맞게 변형
-        id: record.id,
-        exerciseType: record.exerciseType,
-        description: record.description,
-        time: record.time,
-        distance: record.distance,
-        participantPhoto: record.participantPhoto ?? [],
-        participant: {
-            id: record.participant.id,
-            nickname: record.participant.nickname
-        }
-      });
     } catch (error) {
       next(error);
     }
