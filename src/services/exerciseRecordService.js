@@ -63,7 +63,7 @@ class ExerciseRecordService {
       groupId,
     };
 
-    if (search) { //
+    if (search) { 
       where.participant = {
         nickname: {
           contains: search,
@@ -92,46 +92,45 @@ class ExerciseRecordService {
         },
       });
 
-      const datas = records.map((record) => ({  // 분류처리가 된 데이터들를 프론트엔드 형식에 맞게 임시 변형
-          id: record.id,
-          exerciseType: record.exerciseType,
-          description: record.description,
-          time: record.time,
-          distance: record.distance,
-          participantPhoto: record.participantPhoto,
-          participant: {
-              id: record.participant.id,
-              nickname: record.participant.nickname,
-          },
-      }));
+      const recordIds = records.map(record => record.id);
 
-      const total = await prisma.exerciseRecord.count({ where }); // 데이터중 검색조건에 맞는 데이터들을 count를 사용해 계산
+      const allPhotos = await prisma.participantPhoto.findMany({
+        where: {
+          exerciseRecordId: { in: recordIds }
+        },
+        select: {
+          exerciseRecordId: true,
+          photoUrl: true,
+        },
+      });
+
+      const datas = records.map((record) => {
+      const photosForRecord = allPhotos
+        .filter(photo => photo.exerciseRecordId === record.id)
+        .map(photo => ({ photoUrl: photo.photoUrl }));
+
+        return {
+        id: record.id,
+        exerciseType: record.exerciseType,
+        description: record.description,
+        time: record.time,
+        distance: record.distance,
+        participantPhoto: photosForRecord,
+        participant: {
+          id: record.participant.id,
+          nickname: record.participant.nickname,
+        },
+      };
+    });
+
+    const total = await prisma.exerciseRecord.count({ where }); // 데이터중 검색조건에 맞는 데이터들을 count를 사용해 계산
         
       return { datas, total }
     } catch (error) {
       console.error('기록을 가져오는 중 오류발생:', error);
       throw error;
     }
-  }
-
-  getRecordDetail = async (groupId, recordId) => {
-    try {
-      const record = await prisma.exerciseRecord.findFirst({
-        where: {
-          id: recordId,
-          groupId: groupId,
-        },
-        include: {
-          participant: true,
-        },
-      });
-
-      return record;
-    } catch (error) {
-      console.error('단일기록 가져오는 중 오류발생:', error);
-      throw error;
-    }
-  }
+  };
 }
 
 export default ExerciseRecordService;
