@@ -1,5 +1,5 @@
-//TODO: 실제 경로 맞게 수정필요
-import { badgeTypesStatus, updateBadgeStatus } from '../services/badgeService.js'; 
+//TODO: 실제 경로 확인 필요
+import { badgeTypesStatus, updateBadgeStatus } from '..services/badgeService.js'; 
 
 export async function updateGroupBadges(req, res, next) {
   try {
