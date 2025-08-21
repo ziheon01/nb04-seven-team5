@@ -15,13 +15,13 @@ class ExerciseRecordController {
     return res.status(400).json({ path: "groupId", message: "groupId must be integer" });
     }
 
-    const newRecord = await this.exerciseRecordService.createRecord(parseInt(groupId), recordData); //service에서 받아온 데이터를 프론트엔드 형식에 맞게 변형\
+    const newRecord = await this.exerciseRecordService.createRecord(parseInt(groupId), recordData); //service에서 post할 데이터를 받아옴
 
-    const webhookURL = await this.exerciseRecordService.getGroupWebhookUrl(parseInt(groupId));
+    const webhookURL = await this.exerciseRecordService.getGroupWebhookUrl(parseInt(groupId)); //service에서 group에서 꺼내온 discordWebhookUrl을 받음
 
     if (webhookURL) { 
         await axios.post(webhookURL, {
-            embeds: [
+            embeds: [ //discordhook의 전송형식
                 {
                     title: '신규 운동 기록',
                     description: newRecord.description,
@@ -31,8 +31,8 @@ class ExerciseRecordController {
                         { name: '기록 시간', value: newRecord.time.toString(), inline: true },
                         { name: '기록 거리', value: newRecord.distance.toString(), inline: true },
                     ],
-                    image: newRecord.participantPhoto?.[0]?.photoUrl? {
-                      url: newRecord.participantPhoto[0].photoUrl
+                    image: newRecord.participantPhoto?.[0]?.photoUrl? { //participantPhoto가 배열인지 존재하는지 url형식으로 존재하는지
+                      url: newRecord.participantPhoto[0].photoUrl       //삼항 연산자를 사용하여 확인하고 없을경우 undefined로 출력
                     } : undefined,
                   },
                 ],
