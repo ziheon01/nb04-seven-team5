@@ -2,8 +2,8 @@ import { PrismaClient } from '@prisma/client';
    
 const prisma = new PrismaClient();
 
-export async function getRankingsByCount(groupId, dateFilter){
-    return prisma.participantId.findMany({
+export async function getRankingsByCount(groupId, dateFilter, skip = 0, take = 10){
+    return prisma.participant.findMany({
         select: {
             participantId: true,
             nickname: true,
@@ -13,16 +13,18 @@ export async function getRankingsByCount(groupId, dateFilter){
         where: {
             groupId,
             //기간 필터 미들웨어 추가
-            ...req.dateFilter
+            ...dateFilter
         },
         orderBy: {
             recordCount: 'desc'
-        }
+        },
+        skip,
+        take,
     })
 }
 
-export async function getRankingsByTime(groupId, dateFilter){
-    return prisma.participantId.findMany({
+export async function getRankingsByTime(groupId, dateFilter, skip = 0, take = 10){
+    return prisma.participant.findMany({
         select: {
             participantId: true,
             nickname: true,
@@ -32,11 +34,13 @@ export async function getRankingsByTime(groupId, dateFilter){
         where: {
             groupId,
             //기간 필터 미들웨어 추가
-            ...req.dateFilter
+            ...dateFilter
         },
         orderBy: {
-            recordCount: 'desc'
-        }
+            recordTime: 'desc'
+        },
+        skip,
+        take,
     })
 } 
 

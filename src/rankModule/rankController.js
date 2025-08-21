@@ -17,14 +17,13 @@ export async function getRanks(req, res, next) {
 
   try {
     let result;
+    const { skip, take } = req.pagination;
 
     if (ranking === COUNT) {
-      result = await rankService.getRankingsByCount(groupId, req.dateFilter);
+      result = await rankService.getRankingsByCount(groupId, req.dateFilter, skip, take);
       return res.json(result);
-    }
-
-    if (ranking === TIME) {
-      result = await rankService.getRankingsByTime(groupId, req.dateFilter);
+    } else if (ranking === TIME) {
+      result = await rankService.getRankingsByTime(groupId, req.dateFilter, skip, take);
       return res.json(result);
     }
 

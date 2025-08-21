@@ -3,6 +3,7 @@ import express from 'express';
 import { getRanks } from '../rankModule/rankController.js';
 
 const [MINUTE, ONE_DAY] = [60 * 1_000, 24 * 60 * MINUTE]
+const [DEFAULT_PAGE, DEFAULT_LIMIT] = [1, 10];
 
 //Note: 기간 필터 미들웨어
 function getMonth() {
@@ -30,7 +31,7 @@ function dateFilter(req, res, next) {
 }
 
 //Note: 페이지네이션 미들웨어
-function paginationAdjust(req, res, next) {
+function adjustPagination(req, res, next) {
   const page = parseInt(req.query.page, 10) || DEFAULT_PAGE;
   const limit = parseInt(req.query.limit, 10) || DEFAULT_LIMIT;
 
@@ -46,6 +47,6 @@ function paginationAdjust(req, res, next) {
 
 const router = express.Router();
 
-router.get('/groups/:groupId/ranks', dateFilter, paginationAdjust, getRanks);
+router.get('/groups/:groupId/ranks', dateFilter, adjustPagination, getRanks);
 
 export default router;
