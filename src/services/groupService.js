@@ -3,7 +3,16 @@ const prisma = new PrismaClient();
 
 class GroupService {
   createGroup = async (groupData) => {
-    const { name, description, photoUrl, goalRep, discordWebhookUrl, discordInviteUrl, tags, ownerNickname, ownerPassword } = groupData;
+    const { name,
+            description,
+            photoUrl,
+            goalRep,
+            discordWebhookUrl,
+            discordInviteUrl,
+            tags, // tags 배열을 받음
+            ownerNickname,
+            ownerPassword
+          } = groupData;
 
     try {
       const newGroup = await prisma.group.create({
@@ -16,8 +25,27 @@ class GroupService {
           discordInviteUrl,
           ownerNickname,
           ownerPassword,
-          // tags와 owner Participant는 다음 단계에서 처리
+          
+          // --- 핵심 수정 부분 ---
+          // 1. 중첩된 쓰기를 사용해 그룹 생성과 동시에 참여자(소유주) 생성
+          participant: {
+            create: [
+              {
+                nickname: ownerNickname,
+                password: ownerPassword,
+              },
+            ],
+          },
+          // 2. tags 배열을 순회하며 관련된 Tag 레코드들을 함께 생성
+          tag: {
+            create: tags.map(tagName => ({ tagName: tagName }))
+          }
         },
+        // 3. 응답에 방금 만든 참여자와 태그 정보도 포함시킴
+        include: {
+          participant: true,
+          tag: true,
+        }
       });
       return newGroup;
     } catch (error) {
@@ -38,7 +66,7 @@ class GroupService {
         mode: 'insensitive', // 대소문자 구분 없이 검색
       };
     }
-
+    // 모듈화: insensitive, else if switch 변경(선택)
     const orderByClause = {};
     if (orderBy === 'createdAt') {
       orderByClause.createdAt = order;
@@ -121,7 +149,7 @@ class GroupService {
       throw error;
     }
   }
-
+  // 
   async deleteGroup(groupId, ownerPassword) {
     try {
         const group = await prisma.group.findUnique({
