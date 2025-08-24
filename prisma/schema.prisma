@@ -56,17 +56,17 @@ model Like {
 model ExerciseRecord {
   id                  Int                @id @default(autoincrement())
   groupId             Int
-  participantId       Int
   participant         Participant        @relation(fields: [participantId], references: [id], onDelete: Cascade)
   exerciseType        ExerciseType       @default(running)
   description         String
   time                Int                @default(0) //프론트 엔드의 스톱워치 시스템을 확인
   distance            Int                @default(0)
+  participantId       Int
   participantPhoto    ParticipantPhoto[]
 }
 
 model ParticipantPhoto {
-  id               Int            @id @default(autoincrement())
+  id               Int            @id 
   exerciseRecordId Int
   exerciseRecord   ExerciseRecord @relation(fields: [exerciseRecordId], references: [id], onDelete: Cascade)
   photoUrl         String         @unique
