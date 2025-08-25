@@ -22,6 +22,7 @@ model Group {
   groupPhoto        GroupPhoto?
   groupBadge        GroupBadge?
   goalRep           Int           @default(0) //Record에서 나온 데이터를 participant에서 정리해서 받아오도록 추후 확인
+  likeCount         Int           @default(0) //그룹 추천순 정렬을 위해 추가
   discordWebhookUrl String        @unique
   discordInviteUrl  String        @unique
   tag               Tag[]

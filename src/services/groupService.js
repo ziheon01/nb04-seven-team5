@@ -66,18 +66,18 @@ class GroupService {
         mode: 'insensitive', // 대소문자 구분 없이 검색
       };
     }
-    // 모듈화: insensitive, else if switch 변경(선택)
+
     const orderByClause = {};
     if (orderBy === 'createdAt') {
       orderByClause.createdAt = order;
-    } else if (orderBy === 'likeCount') {
-      // TODO: likeCount 정렬 로직 구현 (Like 모델 관계 필요)
-      // 현재는 임시로 createdAt으로 대체
-      orderByClause.createdAt = order;
     } else if (orderBy === 'participantCount') {
-      // TODO: participantCount 정렬 로직 구현 (Participant 모델 관계 필요)
-      // 현재는 임시로 createdAt으로 대체
-      orderByClause.createdAt = order;
+      // 'participant' 관계의 개수(_count)를 기준으로 정렬
+      orderByClause.participant = {
+        _count: order,
+      };
+    } else if (orderBy === 'likeCount') {
+      // likeCount 필드를 기준으로 정렬하도록 수정
+      orderByClause.likeCount = order;
     }
 
     try {
@@ -86,17 +86,25 @@ class GroupService {
         take,
         where,
         orderBy: orderByClause,
-        // 필요한 관계 데이터 포함 (예: owner, participants, tags)
+        // 각 그룹의 참여자 수와, 태그 목록을 함께 가져옴
         include: {
-          // owner: true, // owner는 Participant 모델에 연결되어야 함
-          // participants: true,
-          // tag: true,
+          _count: {
+            select: { participant: true },
+          },
+          tag: true,
         },
       });
 
+      // 프론트엔드에서 사용하기 편하도록 데이터 구조를 가공
+      const formattedGroups = groups.map(group => ({
+        ...group,
+        participantCount: group._count.participant, // 참여자 수를 participantCount 필드로 추가
+        _count: undefined, // 기존 _count 필드는 제거
+      }));
+
       const total = await prisma.group.count({ where });
 
-      return { groups, total };
+      return { groups: formattedGroups, total };
     } catch (error) {
       console.error('그룹을 가져오는 중 오류발생:', error);
       throw error;
