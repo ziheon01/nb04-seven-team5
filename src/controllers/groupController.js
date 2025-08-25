@@ -6,25 +6,23 @@ class GroupController {
   }
 
   createGroup = async (req, res, next) => {
-    const groupData = req.body; 
-    
+    // 텍스트 필드는 req.body에서, 파일 정보는 req.file에서 가져옵니다.
+    const groupDataFromText = req.body;
+    // 파일이 업로드 되었다면 그 경로를, 아니라면 null을 photoUrl로 사용합니다.
+    const photoUrl = req.file ? req.file.path : null;
+
     try {
-      // 필수 필드 유효성 검사
-      if (!groupData.name || !groupData.description || !groupData.photoUrl || groupData.goalRep === undefined || !groupData.discordWebhookUrl || !groupData.discordInviteUrl || !groupData.ownerNickname || !groupData.ownerPassword) {
+      // groupData 객체를 서비스에 넘겨주기 전에, photoUrl을 포함하여 완전한 객체로 만듭니다.
+      const groupData = {
+        ...groupDataFromText,
+        goalRep: parseInt(groupDataFromText.goalRep, 10), // form-data로 받은 숫자는 문자열일 수 있으므로 변환
+        tags: Array.isArray(groupDataFromText.tags) ? groupDataFromText.tags : [groupDataFromText.tags], // 태그가 하나만 올 경우를 대비
+        photoUrl: photoUrl
+      };
+
+      // 필수 필드 유효성 검사 (photoUrl은 이제 필수가 아님)
+      if (!groupData.name || !groupData.description || groupData.goalRep === undefined || !groupData.discordWebhookUrl || !groupData.discordInviteUrl || !groupData.ownerNickname || !groupData.ownerPassword) {
         return res.status(400).json({ message: 'All fields are required.' });
-      }
-
-      // 타입 유효성 검사
-      if (typeof groupData.name !== 'string' || typeof groupData.description !== 'string' || typeof groupData.photoUrl !== 'string' || typeof groupData.discordWebhookUrl !== 'string' || typeof groupData.discordInviteUrl !== 'string' || typeof groupData.ownerNickname !== 'string' || typeof groupData.ownerPassword !== 'string') {
-        return res.status(400).json({ message: 'Invalid data type for string fields.' });
-      }
-
-      if (typeof groupData.goalRep !== 'number' || !Number.isInteger(groupData.goalRep)) {
-        return res.status(400).json({ path: 'goalRep', message: 'goalRep must be an integer' });
-      }
-
-      if (!Array.isArray(groupData.tags) || !groupData.tags.every(tag => typeof tag === 'string')) {
-        return res.status(400).json({ path: 'tags', message: 'tags must be an array of strings.' });
       }
 
       const newGroup = await this.groupService.createGroup(groupData);
@@ -159,6 +157,56 @@ class GroupController {
         return res.status(403).json({ message: error.message }); // 403 Forbidden
       }
       next(error);
+    }
+  }
+
+  // 그룹 추천 API 핸들러 추가
+  likeGroup = async (req, res, next) => {
+    const { groupId } = req.params;
+    const { participantId } = req.body; // 누가 추천했는지 (요청 Body에서 받음)
+
+    try {
+        // 유효성 검사
+        if (isNaN(parseInt(groupId))) {
+            return res.status(400).json({ message: 'Group ID must be a number.' });
+        }
+        if (isNaN(parseInt(participantId))) {
+            return res.status(400).json({ message: 'Participant ID must be a number.' });
+        }
+
+        const updatedGroup = await this.groupService.likeGroup(parseInt(groupId), parseInt(participantId));
+        res.status(200).json(updatedGroup); // 또는 201 Created
+    } catch (error) {
+        // 이미 추천한 경우 (409 Conflict) 또는 다른 에러 처리
+        if (error.message === 'Already liked.') {
+            return res.status(409).json({ message: error.message });
+        }
+        next(error);
+    }
+  }
+
+  // 그룹 추천 취소 API 핸들러 추가
+  unlikeGroup = async (req, res, next) => {
+    const { groupId } = req.params;
+    const { participantId } = req.body; // 누가 추천 취소했는지 (요청 Body에서 받음)
+
+    try {
+        // 유효성 검사 (likeGroup과 동일)
+        if (isNaN(parseInt(groupId))) {
+            return res.status(400).json({ message: 'Group ID must be a number.' });
+        }
+        if (isNaN(parseInt(participantId))) {
+            return res.status(400).json({ message: 'Participant ID must be a number.' });
+        }
+
+        const updatedGroup = await this.groupService.unlikeGroup(parseInt(groupId), parseInt(participantId));
+        res.status(200).json(updatedGroup); // 또는 204 No Content
+    } catch (error) {
+        // 추천 기록이 없는 경우 (404 Not Found) 또는 다른 에러 처리
+        if (error.message === 'Like not found.') {
+            return res.status(404).json({ message: error.message });
+        }
+        next(error);
     }
   }
 }
