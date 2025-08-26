@@ -18,12 +18,7 @@ class GroupController {
         goalRep: parseInt(groupDataFromText.goalRep, 10), // form-data로 받은 숫자는 문자열일 수 있으므로 변환
         tags: Array.isArray(groupDataFromText.tags) ? groupDataFromText.tags : [groupDataFromText.tags], // 태그가 하나만 올 경우를 대비
         photoUrl: photoUrl
-      };
-
-      // 필수 필드 유효성 검사 (photoUrl은 이제 필수가 아님)
-      if (!groupData.name || !groupData.description || groupData.goalRep === undefined || !groupData.discordWebhookUrl || !groupData.discordInviteUrl || !groupData.ownerNickname || !groupData.ownerPassword) {
-        return res.status(400).json({ message: 'All fields are required.' });
-      }
+      };      
 
       const newGroup = await this.groupService.createGroup(groupData);
       res.status(201).json(newGroup);
