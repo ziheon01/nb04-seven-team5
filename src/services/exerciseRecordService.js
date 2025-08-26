@@ -31,15 +31,20 @@ class ExerciseRecordService {
       throw new Error("참가자를 찾을 수 없습니다.");
     }
 
+    const parsedTime = parseInt(time);
+    const parsedDistance = parseInt(distance);
+
       const newRecord = await prisma.exerciseRecord.create({ 
             data:{
                 groupId,
                 exerciseType,
                 description,
-                time,
-                distance,
+                time: parsedTime,
+                distance: parsedDistance,
                 participantPhoto: {
-                  create: participantPhoto.map(url => ({ photoUrl: url})) //participantPhoto를 url형식으로 저장
+                  create: participantPhoto.map(url => ({
+                  photoUrl: url
+                }))
                 },
                 participant: {
                     connect: { id: participant.id }, //위 조건에 맞는 participant의 id를 가져옴
@@ -58,7 +63,7 @@ class ExerciseRecordService {
               increment: 1,
             },
             recordTime: {
-              increment: time,
+              increment: parsedTime,
             },
           },
         });
@@ -93,8 +98,6 @@ class ExerciseRecordService {
       orderByClause.createdAt = order;
     } else if (orderBy === 'time') {
       orderByClause.time = order;
-    } else if (orderBy === 'recordCount') {
-      orderByClause.recordCount = order;
     }
 
     try {
