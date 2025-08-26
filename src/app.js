@@ -2,6 +2,8 @@ import express from 'express';
 import groupRouter from "./routers/groupRouter.js"; // groupRouter 임포트 *경로주의*
 import participantRouter from "./routers/participantRouter.js"; // participantRouter 임포트
 import exerciseRecordRouter from "./routers/exerciseRecordRouter.js"; // exerciseRecordRouter 임포트
+import rankRouter from "./routers/rankRouter.js"; // rankRouter 임포트
+import badgeRouter from "./routers/badgeRouter.js" // badgeRouter 임포트
 import  * as dotenv from 'dotenv';
 
 const app = express();
@@ -17,6 +19,8 @@ app.get('/', (req, res) => {
 app.use('/groups', groupRouter);
 app.use('/groups', participantRouter);
 app.use('/groups', exerciseRecordRouter); // 운동 기록 라우터 연결
+app.use('/groups', rankRouter);
+app.use('/groups', badgeRouter);
 
 // 전역 에러 핸들러
 app.use((err, req, res, next) => {

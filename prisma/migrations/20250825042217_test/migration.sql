@@ -55,7 +55,7 @@ CREATE TABLE "public"."ExerciseRecord" (
 
 -- CreateTable
 CREATE TABLE "public"."ParticipantPhoto" (
-    "id" INTEGER NOT NULL,
+    "id" SERIAL NOT NULL,
     "exerciseRecordId" INTEGER NOT NULL,
     "photoUrl" TEXT NOT NULL,
 
