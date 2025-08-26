@@ -2,6 +2,7 @@ import express from "express";
 import GroupController from '../controllers/groupController.js';
 import upload from '../middlewares/upload.js'; // upload 미들웨어 임포트
 import * as groupValidator from '../middlewares/validation/groupValidator.js'
+import * as participantValidtor from '../middlewares/validation/participantValidator.js'
 
 const router = express.Router();
 const groupController = new GroupController();
@@ -25,12 +26,12 @@ router.delete('/:groupId',
 // 그룹 추천 API 추가
 router.post('/:groupId/like',
     groupValidator.validateGroupIdParam,
-    groupValidator.validateParticipantIdBody,
+    participantValidtor.validateParticipantIdBody,
     groupController.likeGroup);
 // 그룹 추천 취소 API 추가
 router.delete('/:groupId/like',
     groupValidator.validateGroupIdParam,
-    groupValidator.validateParticipantIdBody,
+    participantValidtor.validateParticipantIdBody,
     groupController.unlikeGroup);
 
 export default router;
