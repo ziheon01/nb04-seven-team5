@@ -51,11 +51,6 @@ class GroupController {
     const { groupId } = req.params;
 
     try {
-      // groupId 유효성 검사: 숫자인지
-      if (isNaN(parseInt(groupId))) {
-        return res.status(400).json({ message: 'Group ID must be a number.' });
-      }
-
       const group = await this.groupService.getGroupDetail(parseInt(groupId));
 
       if (!group) {

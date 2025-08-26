@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// 그룹 생성 스키마
+// 그룹 생성검증 스키마
 export const groupCreateSchema = z.object({
     name: z.string()
         .min(1, "name은 필수 입력값입니다.")
@@ -26,6 +26,9 @@ export const groupCreateSchema = z.object({
     })
         .int("goalRep은 정수여야 합니다.")
         .nonnegative("goalRep은 0 이상이어야 합니다."),
+    tags: z.array(z.string())
+        .max(10, "태그는 최대 10개까지 입력할 수 있습니다.")
+        .optional(),
 });
 
 // 그룹 생성 유효성 미들웨어
@@ -41,7 +44,7 @@ export const validateGroupCreate = (req, res, next) => {
     next();
 };
 
-// 그룹 조회 스키마
+// 그룹 조회검증 스키마 > 타입 유효성 default쓸 지 확인 필요
 export const groupQuerySchema = z.object({
     //Note: 검색 쿼리가 옵셔널함을 표시
     search: z.string().optional(),
@@ -80,3 +83,41 @@ export const validateGroupQuery = (req, res, next) => {
     next();
 };
 
+// 그룹 ID검증 스키마
+export const groupIdParamSchema = z.object({
+    groupId: z.preprocess(
+        (val) => Number(val),
+        z.number({
+            required_error: 'Group ID is required.',
+            invalid_type_error: 'Group ID must be a number.',
+        })
+            .int('Group ID must be an integer.')
+            .positive('Group ID must be a positive number.')
+    )
+});
+
+// 그룹 ID 유효성 검증 미들웨어
+export const validateGroupIdParam = (req, res, next) => {
+    const result = groupIdParamSchema.safeParse(req.params);
+
+    if (!result.success) {
+        const errors = result.error.errors.map(err => ({
+            path: err.path.join('.'),
+            message: err.message,
+        }));
+        return res.status(400).json({ errors });
+    }
+    next();
+};
+
+// 그룹 업데이트 검증 스키마
+export const groupUpdateSchema = groupCreateSchema
+  .partial()  // 모든 필드를 optional로 만듦
+  .extend({
+    ownerPassword: z.string()
+      .min(1, "ownerPassword는 필수 입력값입니다.")
+      .max(20, "ownerPassword는 20자 이내여야 합니다."),
+    tags: z.array(z.string())
+      .max(10, "태그는 최대 10개까지 입력할 수 있습니다.")
+      .optional(),
+  });
