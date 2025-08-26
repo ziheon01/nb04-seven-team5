@@ -1,6 +1,6 @@
 import express from "express";
 import GroupController from '../controllers/groupController.js';
-import upload from '../middleware/upload.js'; // upload 미들웨어 임포트
+import upload from '../middlewares/upload.js'; // upload 미들웨어 임포트
 
 const router = express.Router();
 const groupController = new GroupController();

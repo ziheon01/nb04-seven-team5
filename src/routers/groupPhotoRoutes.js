@@ -1,6 +1,6 @@
 import express from "express";
 import { uploadGroupPhoto } from "../controllers/groupPhotoController.js";
-import upload from "../middleware/upload.js";
+import upload from "../middlewares/upload.js";
 
 const router = express.Router();
 

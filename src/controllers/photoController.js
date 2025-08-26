@@ -19,7 +19,7 @@ export const uploadParticipantPhotos = async (req, res) => {
         const photo = await prisma.participantPhoto.create({
           data: {
             exerciseRecordId: Number(recordId), //  어떤 운동 기록에 속해있는지 저장
-            photoUrl: path,                 //  서버에 저장된 사진 경로 저장
+            photoUrl: Path,                 //  서버에 저장된 사진 경로 저장
           }
         });
         return photo.photoUrl; // 저장한 경로 반환하기
