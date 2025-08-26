@@ -64,35 +64,11 @@ class GroupController {
   }
 
   updateGroup = async (req, res, next) => {
-    const { groupId } = req.params;
-    const updateData = req.body;
-    const { ownerPassword } = updateData; // 비밀번호 인증을 위해 ownerPassword 추출
-
     try {
-      // groupId 유효성 검사
-      if (isNaN(parseInt(groupId))) {
-        return res.status(400).json({ message: 'Group ID must be a number.' });
-      }
-
-      // ownerPassword 필수 검사
-      if (!ownerPassword) {
-        return res.status(400).json({ message: 'Owner password is required for update.' });
-      }
-
-      // 업데이트할 필드 유효성 검사 (선택적 필드이므로, 존재하는 경우에만 타입 검사)
-      if (updateData.name !== undefined && typeof updateData.name !== 'string') return res.status(400).json({ message: 'Invalid type for name.' });
-      if (updateData.description !== undefined && typeof updateData.description !== 'string') return res.status(400).json({ message: 'Invalid type for description.' });
-      if (updateData.photoUrl !== undefined && typeof updateData.photoUrl !== 'string') return res.status(400).json({ message: 'Invalid type for photoUrl.' });
-      if (updateData.goalRep !== undefined && (typeof updateData.goalRep !== 'number' || !Number.isInteger(updateData.goalRep))) return res.status(400).json({ message: 'Invalid type for goalRep.' });
-      if (updateData.discordWebhookUrl !== undefined && typeof updateData.discordWebhookUrl !== 'string') return res.status(400).json({ message: 'Invalid type for discordWebhookUrl.' });
-      if (updateData.discordInviteUrl !== undefined && typeof updateData.discordInviteUrl !== 'string') return res.status(400).json({ message: 'Invalid type for discordInviteUrl.' });
-      if (updateData.tags !== undefined && (!Array.isArray(updateData.tags) || !updateData.tags.every(tag => typeof tag === 'string'))) return res.status(400).json({ message: 'Invalid type for tags.' });
-      if (updateData.ownerNickname !== undefined && typeof updateData.ownerNickname !== 'string') return res.status(400).json({ message: 'Invalid type for ownerNickname.' });
-      // ownerPassword는 인증용이므로 업데이트 데이터에서 제외
-      const dataToUpdate = { ...updateData };
-      delete dataToUpdate.ownerPassword;
-
-      const updatedGroup = await this.groupService.updateGroup(parseInt(groupId), dataToUpdate, ownerPassword);
+      const { groupId } = req.params;
+      const updateData = req.body;
+     
+      const updatedGroup = await this.groupService.updateGroup(groupId, updateData, updateData.ownerPassword);
 
       res.status(200).json(updatedGroup);
     } catch (error) {

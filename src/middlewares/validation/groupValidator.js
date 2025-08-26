@@ -112,12 +112,25 @@ export const validateGroupIdParam = (req, res, next) => {
 
 // 그룹 업데이트 검증 스키마
 export const groupUpdateSchema = groupCreateSchema
-  .partial()  // 모든 필드를 optional로 만듦
-  .extend({
-    ownerPassword: z.string()
-      .min(1, "ownerPassword는 필수 입력값입니다.")
-      .max(20, "ownerPassword는 20자 이내여야 합니다."),
-    tags: z.array(z.string())
-      .max(10, "태그는 최대 10개까지 입력할 수 있습니다.")
-      .optional(),
-  });
+    .partial()  // 모든 필드를 optional로 만듦
+    .extend({
+        ownerPassword: z.string()
+            .min(1, "ownerPassword는 필수 입력값입니다.")
+            .max(20, "ownerPassword는 20자 이내여야 합니다."),
+        tags: z.array(z.string())
+            .max(10, "태그는 최대 10개까지 입력할 수 있습니다.")
+            .optional(),
+    });
+
+// 그룹 업데이트 유효성 미들웨어
+export const validateGroupUpdate = (req, res, next) => {
+    const result = groupUpdateSchema.safeParse(req.body);
+    if (!result.success) {
+        const errors = result.error.errors.map(err => ({
+            path: err.path.join('.'),
+            message: err.message,
+        }));
+        return res.status(400).json({ errors });
+    }
+    next();
+};
