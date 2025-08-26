@@ -18,9 +18,9 @@ class ParticipantService {
       }
     });
     if(existingParticipant){
-      throw new Error("Nickname is already used in this group")
+      throw new Error("Nickname already exists in this group")
     }
-    console.log(groupId, nickname, password);
+    //Note: 이 부분 이유가 있나요? console.log(groupId, nickname, password);
     const newParticipant = await prisma.participant.create({
       data: {
         groupId,
@@ -61,7 +61,7 @@ class ParticipantService {
       where: {
         groupId,
         nickname,
-        password
+        password,        
         },
       });
 
