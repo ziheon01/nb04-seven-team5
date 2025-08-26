@@ -121,19 +121,11 @@ class GroupController {
 
   // 그룹 추천 취소 API 핸들러 추가
   unlikeGroup = async (req, res, next) => {
-    const { groupId } = req.params;
-    const { participantId } = req.body; // 누가 추천 취소했는지 (요청 Body에서 받음)
-
     try {
-      // 유효성 검사 (likeGroup과 동일)
-      if (isNaN(parseInt(groupId))) {
-        return res.status(400).json({ message: 'Group ID must be a number.' });
-      }
-      if (isNaN(parseInt(participantId))) {
-        return res.status(400).json({ message: 'Participant ID must be a number.' });
-      }
+      const { groupId } = req.params;
+      const { participantId } = req.body; // 누가 추천 취소했는지 (요청 Body에서 받음)
 
-      const updatedGroup = await this.groupService.unlikeGroup(parseInt(groupId), parseInt(participantId));
+      const updatedGroup = await this.groupService.unlikeGroup(groupId, participantId);
       res.status(200).json(updatedGroup); // 또는 204 No Content
     } catch (error) {
       // 추천 기록이 없는 경우 (404 Not Found) 또는 다른 에러 처리
