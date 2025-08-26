@@ -159,19 +159,18 @@ class GroupService {
     }
   }
   // 
-  async deleteGroup(groupId, ownerPassword) {
+  deleteGroup = async (groupId, ownerPassword) => {
     try {
       const group = await prisma.group.findUnique({
         where: { id: groupId },
       });
 
       if (!group) {
-        throw new Error("그룹이 존재 X");
+        throw new Error("Group not found.");
       }
-
-      //비밀번호 인증(현재 평문 비교 - 보안 취약)
+    
       if (group.ownerPassword !== ownerPassword) {
-        throw new Error("그룹장 비밀번호 틀림");
+        throw new Error("Invalid owner password.");
       }
       await prisma.group.delete({
         where: { id: groupId },

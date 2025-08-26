@@ -12,7 +12,7 @@ router.get('/', groupValidator.validateGroupQuery, groupController.getGroups);
 
 router.get('/:groupId', groupValidator.validateGroupIdParam, groupController.getGroupDetail);
 router.put('/:groupId', groupValidator.validateGroupIdParam, groupValidator.validateGroupUpdate, groupController.updateGroup);
-router.delete('/:groupId', groupController.deleteGroup);
+router.delete('/:groupId', groupValidator.groupIdParamSchema, groupValidator.ownerPasswordSchema, groupController.deleteGroup);
 
 // 그룹 추천 API 추가
 router.post('/:groupId/like', groupController.likeGroup);

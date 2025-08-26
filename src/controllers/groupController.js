@@ -67,7 +67,7 @@ class GroupController {
     try {
       const { groupId } = req.params;
       const updateData = req.body;
-     
+
       const updatedGroup = await this.groupService.updateGroup(groupId, updateData, updateData.ownerPassword);
 
       res.status(200).json(updatedGroup);
@@ -83,21 +83,11 @@ class GroupController {
   }
 
   deleteGroup = async (req, res, next) => {
-    const { groupId } = req.params;
-    const { ownerPassword } = req.body; // 비밀번호 인증을 위해 ownerPassword 추출
-
     try {
-      // groupId 유효성 검사
-      if (isNaN(parseInt(groupId))) {
-        return res.status(400).json({ message: '그룹 아이디가 있어야 합니다.' });
-      }
+      const { groupId } = req.params;
+      const { ownerPassword } = req.body; // 비밀번호 인증을 위해 ownerPassword 추출
 
-      // ownerPassword 필수 검사
-      if (!ownerPassword) {
-        return res.status(400).json({ message: '그룹장 비밀번호가 필요합니다.' });
-      }
-
-      await this.groupService.deleteGroup(parseInt(groupId), ownerPassword);
+      await this.groupService.deleteGroup(groupId, ownerPassword);
 
       res.status(204).send(); // 204 No Content: 성공적으로 처리되었지만 응답 본문이 없음
     } catch (error) {
