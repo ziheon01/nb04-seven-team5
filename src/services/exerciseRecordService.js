@@ -27,6 +27,10 @@ class ExerciseRecordService {
             },
         });
 
+    if (!participant) {
+      throw new Error("참가자를 찾을 수 없습니다.");
+    }
+
       const newRecord = await prisma.exerciseRecord.create({ 
             data:{
                 groupId,
@@ -45,6 +49,18 @@ class ExerciseRecordService {
               participant: true,
               participantPhoto: true,
             },
+        });
+
+        await prisma.participant.update({
+          where: { id: participant.id },
+          data: {
+            recordCount: {
+              increment: 1,
+            },
+            recordTime: {
+              increment: time,
+            },
+          },
         });
 
         return newRecord; //위에서 수집한 정보들을 newRecord 상수에 저장
