@@ -7,17 +7,13 @@ class ExerciseRecordController {
   }
 
   createRecord = async (req, res, next) => {
+    try{
     const { groupId } = req.params;
     const recordData = req.body;
-    
-    try {
-      if (isNaN(parseInt(groupId))) { //groupId의 유효성 검사
-    return res.status(400).json({ path: "groupId", message: "groupId must be integer" });
-    }
+       
+    const newRecord = await this.exerciseRecordService.createRecord(groupId, recordData); //service에서 post할 데이터를 받아옴
 
-    const newRecord = await this.exerciseRecordService.createRecord(parseInt(groupId), recordData); //service에서 post할 데이터를 받아옴
-
-    const webhookURL = await this.exerciseRecordService.getGroupWebhookUrl(parseInt(groupId)); //service에서 group에서 꺼내온 discordWebhookUrl을 받음
+    const webhookURL = await this.exerciseRecordService.getGroupWebhookUrl(groupId); //service에서 group에서 꺼내온 discordWebhookUrl을 받음
 
       if (webhookURL) {
         try {
