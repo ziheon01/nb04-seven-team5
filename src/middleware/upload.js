@@ -1,17 +1,14 @@
 //  multer 설정 파일 업로드
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 
 //  uploads 폴더 경로 만들기 (없으면 만들어주는)
 const uploadDir = path.join(process.cwd(), "uploads");
 
-/*  만약 uploads  폴더 없을 때 새로 만들어주는 거 (에러 방지) 넣을까요...?
-import fs from "fs";
-
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
-*/
 
 //  multer 저장 방식 
 const storage = multer.diskStorage({
