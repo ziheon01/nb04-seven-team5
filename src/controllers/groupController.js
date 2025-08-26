@@ -103,19 +103,12 @@ class GroupController {
 
   // 그룹 추천 API 핸들러 추가
   likeGroup = async (req, res, next) => {
-    const { groupId } = req.params;
-    const { participantId } = req.body; // 누가 추천했는지 (요청 Body에서 받음)
-
     try {
-      // 유효성 검사
-      if (isNaN(parseInt(groupId))) {
-        return res.status(400).json({ message: 'Group ID must be a number.' });
-      }
-      if (isNaN(parseInt(participantId))) {
-        return res.status(400).json({ message: 'Participant ID must be a number.' });
-      }
+      const { groupId } = req.params;
+      const { participantId } = req.body; // 누가 추천했는지 (요청 Body에서 받음)
 
-      const updatedGroup = await this.groupService.likeGroup(parseInt(groupId), parseInt(participantId));
+      const updatedGroup = await this.groupService.likeGroup(groupId, participantId);
+
       res.status(200).json(updatedGroup); // 또는 201 Created
     } catch (error) {
       // 이미 추천한 경우 (409 Conflict) 또는 다른 에러 처리

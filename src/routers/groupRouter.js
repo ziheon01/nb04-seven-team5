@@ -10,12 +10,23 @@ const groupController = new GroupController();
 router.post('/', upload.single('groupPhoto'), groupValidator.validateGroupCreate, groupController.createGroup);
 router.get('/', groupValidator.validateGroupQuery, groupController.getGroups);
 
-router.get('/:groupId', groupValidator.validateGroupIdParam, groupController.getGroupDetail);
-router.put('/:groupId', groupValidator.validateGroupIdParam, groupValidator.validateGroupUpdate, groupController.updateGroup);
-router.delete('/:groupId', groupValidator.groupIdParamSchema, groupValidator.ownerPasswordSchema, groupController.deleteGroup);
+router.get('/:groupId', 
+    groupValidator.validateGroupIdParam, 
+    groupController.getGroupDetail);
+router.put('/:groupId', 
+    groupValidator.validateGroupIdParam, 
+    groupValidator.validateGroupUpdate, 
+    groupController.updateGroup);
+router.delete('/:groupId', 
+    groupValidator.groupIdParamSchema, 
+    groupValidator.ownerPasswordSchema, 
+    groupController.deleteGroup);
 
 // 그룹 추천 API 추가
-router.post('/:groupId/like', groupController.likeGroup);
+router.post('/:groupId/like', 
+    groupValidator.validateGroupIdParam, 
+    groupValidator.validateParticipantIdBody, 
+    groupController.likeGroup);
 // 그룹 추천 취소 API 추가
 router.delete('/:groupId/like', groupController.unlikeGroup);
 

@@ -137,14 +137,40 @@ export const validateGroupUpdate = (req, res, next) => {
 
 // 그룹 오너 비밀번호 검증 스키마
 export const ownerPasswordSchema = z.object({
-  ownerPassword: z.string()
-    .min(1, "ownerPassword는 필수 입력값입니다.")
-    .max(20, "ownerPassword는 20자 이내여야 합니다."),
+    ownerPassword: z.string()
+        .min(1, "ownerPassword는 필수 입력값입니다.")
+        .max(20, "ownerPassword는 20자 이내여야 합니다."),
 });
 
 // 그룹 삭제 유효성 미들웨어
 export const validateGroupDeleteBody = (req, res, next) => {
-  const result = ownerPasswordSchema.safeParse(req.body);
+    const result = ownerPasswordSchema.safeParse(req.body);
+    if (!result.success) {
+        const errors = result.error.errors.map(err => ({
+            path: err.path.join('.'),
+            message: err.message,
+        }));
+        return res.status(400).json({ errors });
+    }
+    next();
+};
+
+// 참가자 ID 유효성 검증 스키마
+export const participantIdBodySchema = z.object({
+    participantId: z.preprocess(
+        val => Number(val),
+        z.number({
+            required_error: 'Group ID is required.',
+            invalid_type_error: 'Group ID must be a number.',
+        })
+            .int('Participant ID must be an integer.')
+            .positive('Participant ID must be a positive number.')
+    ),
+});
+
+// 참가자 ID 유효성 검증 미들웨어
+export const validateParticipantIdBody = (req, res, next) => {
+  const result = participantIdBodySchema.safeParse(req.body);
   if (!result.success) {
     const errors = result.error.errors.map(err => ({
       path: err.path.join('.'),
