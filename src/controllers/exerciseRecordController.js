@@ -47,18 +47,19 @@ class ExerciseRecordController {
           // 실패하더라도 무시하고 계속 진행
         }
       }
-
-    res.status(201).json({ 
+      const createdRecord = { 
         exerciseType: newRecord.exerciseType,
         description: newRecord.description,
         time: newRecord.time,
         distance: newRecord.distance,
         participantPhoto: newRecord.participantPhoto ?? [],
-        participant: {
-            id: newRecord.participant.id,
-            nickname: newRecord.participant.nickname
+        participants: {
+            id: newRecord.participants.id,
+            nickname: newRecord.participants.nickname
         }
-    });
+    }
+
+    res.status(201).json(createdRecord);
     } catch (error) {
       next(error);
     }

@@ -6,7 +6,7 @@ const router = express.Router();
 
 //  그룹 대표사진 업로드 API
 router.post(
-  "/:groupId/photo",
+  "/:groupId/images",
   upload.single("photo"),   //  photo로 이름 싱글파일 받기
   (req, res, next) => {
     if (!req.file) {

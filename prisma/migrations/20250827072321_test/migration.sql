@@ -20,7 +20,7 @@ CREATE TABLE "public"."Group" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Participant" (
+CREATE TABLE "public"."Participants" (
     "id" SERIAL NOT NULL,
     "groupId" INTEGER NOT NULL,
     "nickname" TEXT NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE "public"."Participant" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Participant_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Participants_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -109,10 +109,10 @@ CREATE UNIQUE INDEX "Group_discordInviteUrl_key" ON "public"."Group"("discordInv
 CREATE UNIQUE INDEX "Group_ownerNickname_key" ON "public"."Group"("ownerNickname");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Participant_nickname_key" ON "public"."Participant"("nickname");
+CREATE UNIQUE INDEX "Participants_nickname_key" ON "public"."Participants"("nickname");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Participant_nickname_password_key" ON "public"."Participant"("nickname", "password");
+CREATE UNIQUE INDEX "Participants_nickname_password_key" ON "public"."Participants"("nickname", "password");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Like_groupId_participantId_key" ON "public"."Like"("groupId", "participantId");
@@ -127,16 +127,16 @@ CREATE UNIQUE INDEX "GroupPhoto_groupId_key" ON "public"."GroupPhoto"("groupId")
 CREATE UNIQUE INDEX "GroupBadge_groupId_key" ON "public"."GroupBadge"("groupId");
 
 -- AddForeignKey
-ALTER TABLE "public"."Participant" ADD CONSTRAINT "Participant_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "public"."Group"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."Participants" ADD CONSTRAINT "Participants_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "public"."Group"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Like" ADD CONSTRAINT "Like_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "public"."Group"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Like" ADD CONSTRAINT "Like_participantId_fkey" FOREIGN KEY ("participantId") REFERENCES "public"."Participant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."Like" ADD CONSTRAINT "Like_participantId_fkey" FOREIGN KEY ("participantId") REFERENCES "public"."Participants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."ExerciseRecord" ADD CONSTRAINT "ExerciseRecord_participantId_fkey" FOREIGN KEY ("participantId") REFERENCES "public"."Participant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."ExerciseRecord" ADD CONSTRAINT "ExerciseRecord_participantId_fkey" FOREIGN KEY ("participantId") REFERENCES "public"."Participants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."ParticipantPhoto" ADD CONSTRAINT "ParticipantPhoto_exerciseRecordId_fkey" FOREIGN KEY ("exerciseRecordId") REFERENCES "public"."ExerciseRecord"("id") ON DELETE CASCADE ON UPDATE CASCADE;

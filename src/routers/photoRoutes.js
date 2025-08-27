@@ -6,7 +6,7 @@ const router = express.Router();
 
 //  사진 여러장 업로드 API 처리 (파일 최대 3장까지 업로드 허용)
 router.post(
-  "/:recordId/photos",
+  "/:recordId/images",
   upload.array("photos", 3),    //  여러 파일 처리(최대 3개)
   (req, res, next) => {
     //  파일 없으면 400 에러 응답

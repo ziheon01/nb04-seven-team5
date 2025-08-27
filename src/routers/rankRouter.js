@@ -7,7 +7,7 @@ const router = express.Router();
 const rankController = new RankController();
 
 router.get(
-  '/:groupId/ranks',
+  '/:groupId/rank',
   dateFilter,
   adjustPagination,
   rankController.getRanks

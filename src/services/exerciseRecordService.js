@@ -20,14 +20,14 @@ class ExerciseRecordService {
     const { exerciseType, description, time, distance, participantPhoto, participantNickname, participantPassword } = recordData;
 
     try {
-        const participant = await prisma.participant.findFirst({ //participant 스키마의 '@@unique(name: "participantInfo", [nickname, password])'를 통해 한번에 검증
+        const participants = await prisma.participants.findFirst({ //participants 스키마의 '@@unique(name: "participantInfo", [nickname, password])'를 통해 한번에 검증
           where: {
                 nickname: participantNickname ,
                 password: participantPassword ,
             },
         });
 
-    if (!participant) {
+    if (!participants) {
       throw new Error("참가자를 찾을 수 없습니다.");
     }
 
@@ -46,18 +46,18 @@ class ExerciseRecordService {
                   photoUrl: url
                 }))
                 },
-                participant: {
-                    connect: { id: participant.id }, //위 조건에 맞는 participant의 id를 가져옴
+                participants: {
+                    connect: { id: participants.id }, //위 조건에 맞는 participants의 id를 가져옴
                 },
             },
-            include: { //위의 participantId와 recordId에 맞는 participant, participantPhoto의 테이블 정보를 가져옴
-              participant: true,
+            include: { //위의 participantId와 recordId에 맞는 participants, participantPhoto의 테이블 정보를 가져옴
+              participants: true,
               participantPhoto: true,
             },
         });
 
-        await prisma.participant.update({
-          where: { id: participant.id },
+        await prisma.participants.update({
+          where: { id: participants.id },
           data: {
             recordCount: {
               increment: 1,
@@ -85,7 +85,7 @@ class ExerciseRecordService {
     };
 
     if (search) { //search 쿼리를 받아내여 participant를 지정하기 위한 함수
-      where.participant = {
+      where.participants = {
         nickname: {
           contains: search,
           mode: 'insensitive', //대소문자 구별 없이 검색 가능
@@ -107,7 +107,7 @@ class ExerciseRecordService {
         where,
         orderBy: orderByClause,
         include: {
-          participant: true,
+          participants: true,
         },
       });
 
@@ -135,9 +135,9 @@ class ExerciseRecordService {
         time: record.time,
         distance: record.distance,
         participantPhoto: photosForRecord,
-        participant: {
-          id: record.participant.id,
-          nickname: record.participant.nickname,
+        participants: {
+          id: record.participants.id,
+          nickname: record.participants.nickname,
         },
       };
     });

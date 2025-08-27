@@ -18,17 +18,17 @@ class RankController {
     try {
       const { skip, take } = req.pagination;
       const filter = req.dateFilter;
-      let result;
+      let ranks;
 
       if (ranking === COUNT) {
-        result = await this.rankService.getRankingsByCount(groupId, filter, skip, take);
+        ranks = await this.rankService.getRankingsByCount(groupId, filter, skip, take);
       } else if (ranking === TIME) {
-        result = await this.rankService.getRankingsByTime(groupId, filter, skip, take);
+        ranks = await this.rankService.getRankingsByTime(groupId, filter, skip, take);
       } else {
         return res.status(400).json({ error: "ranking 쿼리 파라미터는 'count' 또는 'time'이어야 합니다." });
       }
 
-      return res.status(200).json(result);
+      return res.status(200).json(ranks);
     } catch (error) {
       next(error);
     }

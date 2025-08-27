@@ -1,6 +1,38 @@
 import { PrismaClient } from '../../generated/prisma/index.js';
 const prisma = new PrismaClient();
 
+function toGroupDto(group) {
+  return {
+    id: group.id,
+    groupName: group.groupName,
+    description: group.description,
+    photoUrl: group.photoUrl,
+    goalRep: group.goalRep,
+    discordWebhookUrl: group.discordWebhookUrl,
+    discordInviteUrl: group.discordInviteUrl,
+    likeCount: group.likeCount,
+    createdAt: group.createdAt,
+
+    // 참여자 수
+    participantCount: group._count
+      ? group._count.participants
+      : group.participants?.length || 0,
+
+    // 프론트가 기대하는 tags 배열
+    tags: group.tag.map((t) => t.tagName),
+
+    // 참여자 정보
+    participants: group.participants.map((p) => ({
+      id: p.id,
+      nickname: p.nickname,
+    })),
+
+    owner: {
+      nickname: group.ownerNickname,
+    },
+  };
+}
+
 class GroupService {
   createGroup = async (groupData) => {
     const { name,
@@ -28,26 +60,22 @@ class GroupService {
           
           // --- 핵심 수정 부분 ---
           // 1. 중첩된 쓰기를 사용해 그룹 생성과 동시에 참여자(소유주) 생성
-          participant: {
-            create: [
-              {
-                nickname: ownerNickname,
-                password: ownerPassword,
-              },
-            ],
+          participants: {
+            create: [{ nickname: ownerNickname, password: ownerPassword }],
           },
-          // 2. tags 배열을 순회하며 관련된 Tag 레코드들을 함께 생성
+
           tag: {
-            create: tags.map(tagName => ({ tagName: tagName }))
-          }
+            create: tags.map((tagName) => ({ tagName })),
+          },
         },
-        // 3. 응답에 방금 만든 참여자와 태그 정보도 포함시킴
         include: {
-          participant: true,
+          participants: true,
           tag: true,
-        }
+          _count: { select: { participants: true } },
+        },
       });
-      return newGroup;
+
+      return toGroupDto(newGroup);
     } catch (error) {
       console.error('그룹 생성 중 오류발생:', error);
       throw error; // 컨트롤러로 에러 전달
@@ -71,8 +99,8 @@ class GroupService {
     if (orderBy === 'createdAt') {
       orderByClause.createdAt = order;
     } else if (orderBy === 'participantCount') {
-      // 'participant' 관계의 개수(_count)를 기준으로 정렬
-      orderByClause.participant = {
+      // 'participants' 관계의 개수(_count)를 기준으로 정렬
+      orderByClause.participants = {
         _count: order,
       };
     } else if (orderBy === 'likeCount') {
@@ -88,19 +116,16 @@ class GroupService {
         orderBy: orderByClause,
         // 각 그룹의 참여자 수와, 태그 목록을 함께 가져옴
         include: {
+          participants: true,
           _count: {
-            select: { participant: true },
+            select: { participants: true },
           },
           tag: true,
         },
       });
 
       // 프론트엔드에서 사용하기 편하도록 데이터 구조를 가공
-      const formattedGroups = groups.map(group => ({
-        ...group,
-        participantCount: group._count.participant, // 참여자 수를 participantCount 필드로 추가
-        _count: undefined, // 기존 _count 필드는 제거
-      }));
+      const formattedGroups = groups.map(toGroupDto);
 
       const total = await prisma.group.count({ where });
 
@@ -118,11 +143,13 @@ class GroupService {
           id: groupId,
         },
         include: {
-          participant: true,
+          participants: true,
           tag: true,
+          _count: { select: { participants: true } },
         },
       });
-      return group;
+
+      return toGroupDto(group);
     } catch (error) {
       console.error('그룹을 가져오는 중 오류발생:', error);
       throw error;
@@ -149,7 +176,7 @@ class GroupService {
         data: dataToUpdate,
       });
 
-      return updatedGroup;
+      return toGroupDto(updatedGroup);
     } catch (error) {
       console.error('그룹 업데이트 중 오류 발생:', error);
       throw error;
@@ -217,7 +244,7 @@ class GroupService {
 
         // 3. 업데이트된 그룹 정보 반환 (컨트롤러에서 사용)
         // 필요하다면, 여기서 updatedGroup을 더 상세하게 include 할 수 있습니다.
-        return updatedGroup;
+        return toGroupDto(updatedGroup);
 
     } catch (error) {
         console.error('그룹 추천 중 오류 발생:', error);
@@ -263,7 +290,7 @@ class GroupService {
         ]);
 
         // 3. 업데이트된 그룹 정보 반환
-        return updatedGroup;
+        return toGroupDto(updatedGroup);
 
     } catch (error) {
         console.error('그룹 추천 취소 중 오류 발생:', error);
