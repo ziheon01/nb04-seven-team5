@@ -1,4 +1,7 @@
-import { PrismaClient } from `../../generated/prisma`;
+import { PrismaClient } from `../generated/prisma`;
+import { ERROR } from "../const/errorMessage.js";
+import { HTTP_STATUS } from "../const/http_status.js";
+
 const prisma = new PrismaClient();
 
 //  그룹 대표사진 업로드 처리 함수
@@ -8,7 +11,7 @@ export const uploadGroupPhoto = async (req, res) => {
 
   //  파일이 없으면 400 오류
   if (!filePath) {
-    return res.status(400).json({ error: "사진 파일이 없습니다." });
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: ERROR.NOT_FOUND(filePath) });
   }
 
   try {
@@ -20,9 +23,9 @@ export const uploadGroupPhoto = async (req, res) => {
     });
 
     //  완료되면 새 사진경로를 클라이언트에 응답
-    res.status(200).json({ photoUrl: groupPhoto.photoUrl });
+    res.status(HTTP_STATUS.OK).json({ photoUrl: groupPhoto.photoUrl });
   } catch (err) {
     //  에러 발생 시 메시지 포함 500 응답 오류
-    res.status(500).json({ error: "대표사진 업로드 실패", detail: err.message });
+    res.status(HTTP_STATUS.SERVER_ERROR).json({ error: ERROR.CREATION_FAILED(groupPhoto), detail: err.message });
   }
 };

@@ -1,4 +1,6 @@
 import { PrismaClient } from '../../generated/prisma/index.js'; // 올바른 Prisma Client 임포트 경로
+import { ERROR } from '../const/errorMessage.js';
+
 const prisma = new PrismaClient();
 
 class ParticipantService {
@@ -8,7 +10,7 @@ class ParticipantService {
       where: { id: groupId },
     });
     if(!existingGroup){
-      throw new Error('Group not found')
+      throw new Error(ERROR.NOT_FOUND(groupId));
     }
 
     const existingParticipant = await prisma.participant.findFirst({
@@ -18,7 +20,7 @@ class ParticipantService {
       }
     });
     if(existingParticipant){
-      throw new Error("Nickname is already used in this group")
+      throw new Error(ERROR.ALREADY_USED_NICKNAME);
     }
     console.log(groupId, nickname, password);
     const newParticipant = await prisma.participant.create({
@@ -53,7 +55,7 @@ class ParticipantService {
       where: { id: groupId }
     })
     if(!existingGroup){
-      throw new Error('Group not found');
+      throw new Error(ERROR.NOT_FOUND(groupId));
     }
       
       // 해당 그룹에 속해 있으면서  일치하는 닉네임,비밀번호이 있는지 확인 
@@ -66,7 +68,7 @@ class ParticipantService {
       });
 
     if(!existingParticipant){
-      throw new Error ('Participant not found');
+      throw new Error (ERROR.NOT_FOUND(participant));
     }
 
     const deleteParticipant = await prisma.participant.delete({

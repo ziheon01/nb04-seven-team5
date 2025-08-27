@@ -1,4 +1,8 @@
 import { PrismaClient } from '../../generated/prisma/index.js';
+import { pagination } from '../utils/pagination.js';
+import { GroupService_orderByClause } from '../utils/orderByClause.js'
+import { ERROR } from '../const/errorMessage.js';
+
 const prisma = new PrismaClient();
 
 class GroupService {
@@ -49,15 +53,14 @@ class GroupService {
       });
       return newGroup;
     } catch (error) {
-      console.error('그룹 생성 중 오류발생:', error);
+      console.error(ERROR.CREATION_FAILED(group), error);
       throw error; // 컨트롤러로 에러 전달
     }
   }
 
   getGroups = async (options) => {
     const { page, limit, order, orderBy, search } = options;
-    const skip = (page - 1) * limit;
-    const take = limit;
+    const { skip, take } = pagination(page, limit)
 
     const where = {};
     if (search) {
@@ -66,19 +69,7 @@ class GroupService {
         mode: 'insensitive', // 대소문자 구분 없이 검색
       };
     }
-
-    const orderByClause = {};
-    if (orderBy === 'createdAt') {
-      orderByClause.createdAt = order;
-    } else if (orderBy === 'participantCount') {
-      // 'participant' 관계의 개수(_count)를 기준으로 정렬
-      orderByClause.participant = {
-        _count: order,
-      };
-    } else if (orderBy === 'likeCount') {
-      // likeCount 필드를 기준으로 정렬하도록 수정
-      orderByClause.likeCount = order;
-    }
+    const orderByClause = GroupService_orderByClause(orderBy,order)
 
     try {
       const groups = await prisma.group.findMany({
@@ -106,7 +97,7 @@ class GroupService {
 
       return { groups: formattedGroups, total };
     } catch (error) {
-      console.error('그룹을 가져오는 중 오류발생:', error);
+      console.error(ERROR.FETCH_FAILED(group), error);
       throw error;
     }
   }
@@ -126,7 +117,7 @@ class GroupService {
       });
       return group;
     } catch (error) {
-      console.error('그룹을 가져오는 중 오류발생:', error);
+      console.error(ERROR.FETCH_FAILED(group), error);
       throw error;
     }
   }
@@ -138,12 +129,12 @@ class GroupService {
       });
 
       if (!group) {
-        throw new Error('그룹이 없습니다');
+        throw new Error(ERROR.NOT_FOUND(groupId));
       }
 
       // 비밀번호 인증 (현재 평문 비교 - 보안 취약)
       if (group.ownerPassword !== ownerPassword) {
-        throw new Error('비밀번호가 틀립니다.');
+        throw new Error(ERROR.WRONG_PASSWORD);
       }
 
       const updatedGroup = await prisma.group.update({
@@ -165,19 +156,19 @@ class GroupService {
         });
 
         if(!group) {
-            throw new Error("그룹이 존재 X");
+            throw new Error(ERROR.NOT_FOUND(groupId));
         }
 
         //비밀번호 인증(현재 평문 비교 - 보안 취약)
         if (group.ownerPassword !== ownerPassword) {
-            throw new Error("그룹장 비밀번호 틀림");
+            throw new Error(ERROR.OWNER_WRONG_PASSWORD);
         }
         await prisma.group.delete({
             where: {id : groupId},
         });
         return;
     } catch(error) {
-        console.error(" 삭제 중 에러 발생: ", error);
+        console.error(ERROR.DELETION_FAILED(group), error);
         throw error;
     }
   }
@@ -196,7 +187,7 @@ class GroupService {
         });
 
         if (existingLike) {
-            throw new Error('Already liked.'); // 이미 추천한 경우 에러 발생
+            throw new Error(ERROR.ALREADY_LIKED); // 이미 추천한 경우 에러 발생
         }
 
         // 2. 트랜잭션 시작: Like 기록 생성 및 Group likeCount 증가
@@ -222,7 +213,8 @@ class GroupService {
         return updatedGroup;
 
     } catch (error) {
-        console.error('그룹 추천 중 오류 발생:', error);
+        console.error(ERROR.CREATION_FAILED(Like), error);
+
         throw error;
     }
   }
@@ -268,7 +260,7 @@ class GroupService {
         return updatedGroup;
 
     } catch (error) {
-        console.error('그룹 추천 취소 중 오류 발생:', error);
+        console.error(ERROR.DELETION_FAILED(like), error);
         throw error;
     }
   }

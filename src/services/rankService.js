@@ -1,4 +1,5 @@
 import { PrismaClient } from '../../generated/prisma/index.js'; // 올바른 Prisma Client 임포트 경로
+
 const prisma = new PrismaClient();
 
 class RankService {

@@ -1,4 +1,7 @@
 import RankService from '../services/rankService.js';
+import { ERROR } from "../const/errorMessage.js";
+import { HTTP_STATUS } from "../const/http_status.js";
+import { pagination } from '../utils/pagination.js';
 
 const [COUNT, TIME] = ['count', 'time'];
 
@@ -12,11 +15,11 @@ class RankController {
     const ranking = req.query.ranking?.toLowerCase();
 
     if (!groupId || isNaN(groupId)) {
-      return res.status(400).json({ path: 'groupId', message: 'groupId must be an integer' });
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ path: 'groupId', message: ERROR.MUST_BE_INT(groupId) });
     }
 
     try {
-      const { skip, take } = req.pagination;
+      const { skip, take } = pagination(page, limit)
       const filter = req.dateFilter;
       let result;
 
@@ -25,10 +28,10 @@ class RankController {
       } else if (ranking === TIME) {
         result = await this.rankService.getRankingsByTime(groupId, filter, skip, take);
       } else {
-        return res.status(400).json({ error: "ranking 쿼리 파라미터는 'count' 또는 'time'이어야 합니다." });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: "ranking 쿼리 파라미터는 'count' 또는 'time'이어야 합니다." });
       }
 
-      return res.status(200).json(result);
+      return res.status(HTTP_STATUS.OK).json(result);
     } catch (error) {
       next(error);
     }

@@ -1,4 +1,6 @@
+import { HTTP_STATUS } from '../const/http_status.js';
 import ParticipantService from '../services/participantService.js';
+import { checking } from '../utils/group_nickname_password_check.js';
 
 class ParticipantController {
   constructor() {
@@ -6,59 +8,30 @@ class ParticipantController {
   }
 
   joinGroup = async (req, res, next) => {
+  try{
     const { nickname, password } = req.body;
     const groupId = parseInt(req.params.groupId,10); 
-    try{
-      // req.body에 필요한 필드가 다 들어왔는지 확인
-      if(!nickname || !password){
-        return res.status(400).json({ 
-          path: ["nickname", "password"],
-          message: "All fields are required"});
-      }
-      if(isNaN(groupId)){
-        return res.status(400).json({   
-          path: "groupId",
-          message: "Invalid groupId"});
-      }
-      // 타입이 유효한지 확인
-      if(typeof nickname !== 'string' || typeof password !== 'string' || typeof groupId !== "number"){
-        return res.status(400).json({ message: "Invalid field types"});
-      }
-      const updatedGroup = await this.participantService.joinGroup( groupId, nickname, password);
-      return res.status(201).json({ updatedGroup });  
+    const { checkedNickname, checkedPassword, checkedGroupId} = checking(nickname, password, groupId)
+    
+    const updatedGroup = await this.participantService.joinGroup( checkedGroupId, checkedNickname, checkedPassword, checkedGroupId);
+      return res.status(HTTP_STATUS.CREATED).json({ updatedGroup });  
     }catch(error){
       next(error)
     }
   }
 
   leaveGroup = async (req, res, next) => {
-    const { nickname, password} = req.body;
-    const groupId = parseInt(req.params.groupId);
     try{
-      // 닉네임과 비밀번호가 유효한지 확인
-      if(!nickname || !password){
-        return res.status(400).json({
-          path: ["nickname", "password"],
-          message: "All fields are required"});
+      const { nickname, password } = req.body;
+      const groupId = parseInt(req.params.groupId,10); 
+      const { checkedNickname, checkedPassword, checkedGroupId} = checkingParticipant(nickname, password, groupId)
+    
+      const updatedGroup = await this.participantService.joinGroup( checkedGroupId, checkedNickname, checkedPassword, checkedGroupId);
+        return res.status(HTTP_STATUS.CREATED).json({ updatedGroup });  
+      }catch(error){
+        next(error)
       }
-      
-      // 그룹 아이디가 유효한지 확인
-      if(isNaN(groupId)){
-        return res.status(400).json({
-          path: "groupId",
-          message: "Invalid groupId"});
-      }
-      // 닉네임과 비밀번호가 유효한지 확인
-      if(typeof nickname !== 'string' || typeof password !== 'string'){
-        return res.status(400).json({ message: "Invalid field types"});
-      }
-      const updatedGroup = await this. participantService.leaveGroup( groupId, nickname, password );
-      return res.status(204).send();
-      
-    } catch(error){
-      next(error)
     }
   }
-}
 
 export default ParticipantController;

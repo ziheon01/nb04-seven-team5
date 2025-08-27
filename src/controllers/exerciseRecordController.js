@@ -1,5 +1,7 @@
 import ExerciseRecordService from '../services/exerciseRecordService.js';
 import axios from 'axios';
+import { HTTP_STATUS } from '../const/http_status.js';
+import { ERROR } from '../const/errorMessage.js';
 
 class ExerciseRecordController {
   constructor() {
@@ -15,12 +17,11 @@ class ExerciseRecordController {
     
     try {
       if (isNaN(parseInt(groupId))) { //groupId의 유효성 검사
-    return res.status(400).json({ path: "groupId", message: "groupId must be integer" });
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({ path: "groupId", message:ERROR.MUST_BE_INT(groupId) });
     }
-
-    const newRecord = await this.exerciseRecordService.createRecord(parseInt(groupId), recordData); //service에서 post할 데이터를 받아옴
-
-    const webhookURL = await this.exerciseRecordService.getGroupWebhookUrl(parseInt(groupId)); //service에서 group에서 꺼내온 discordWebhookUrl을 받음
+    //service에서 post할 데이터를 받아옴
+    const newRecord = await this.exerciseRecordService.createRecord(parseInt(groupId), recordData); 
+    const webhookURL = await this.exerciseRecordService.getGroupWebhookUrl(parseInt(groupId)); 
 
       if (webhookURL) {
         try {
@@ -43,12 +44,13 @@ class ExerciseRecordController {
           });
           console.log('Discord Webhook 전송 완료');
         } catch (webhookError) {
-          console.warn('Discord Webhook 전송 실패:', webhookError.message);
           // 실패하더라도 무시하고 계속 진행
+          console.warn('Discord Webhook 전송 실패:', webhookError.message);
+          
         }
       }
 
-    res.status(201).json({ 
+    res.status(HTTP_STATUS.CREATED).json({ 
         exerciseType: newRecord.exerciseType,
         description: newRecord.description,
         time: newRecord.time,
@@ -70,22 +72,22 @@ class ExerciseRecordController {
 
     try {
       if (isNaN(parseInt(groupId))) { //groupId의 유효성 검사
-    return res.status(400).json({
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
         path: "groupId",
-        message: "groupId must be integer",
+        message: MUST_BE_INT(groupId),
     });
     }
 
     const options = { //페이지네이션을 위한 옵션
-      page: parseInt(page),
-      limit: parseInt(limit),
+      page: +page,
+      limit: +limit,
       order: order.toLowerCase(),
       orderBy,
       search,
     };
 
     const { datas, total } = await this.exerciseRecordService.getRecords(parseInt(groupId), options);
-    res.status(200).json({ 
+    res.status(HTTP_STATUS.OK).json({ 
       data: datas,
       total,
     });
