@@ -7,9 +7,9 @@ class BadgeController {
 
   updateGroupBadges = async (req, res, next) => {
     try {
-      const groupId = Number(req.params.groupId);
+      const { groupId } = req.params;
 
-      if (!groupId || isNaN(groupId)) {
+      if (!groupId) {
         return res.status(400).json({ error: 'Invalid or missing groupId parameter' });
       }
 
