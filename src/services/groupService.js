@@ -118,10 +118,8 @@ class GroupService {
           id: groupId,
         },
         include: {
-          // 필요한 관계 데이터 포함 (예: owner, participants, tags)
-          // owner: true,
-          // participants: true,
-          // tag: true,
+          participant: true,
+          tag: true,
         },
       });
       return group;
