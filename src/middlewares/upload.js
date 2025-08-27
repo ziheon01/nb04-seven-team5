@@ -24,7 +24,9 @@ const storage = multer.diskStorage({
 });
 
 //  설정 포함 multer 미들웨어 객체 생성
-const upload = multer({ storage });
-
+const upload = multer({
+  storage,
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB 제한 
+});
 // 내보내서 다른 파일에서 import 할 수 있도록 export
 export default upload;

@@ -20,11 +20,6 @@ class GroupController {
         photoUrl: photoUrl
       };
 
-      // 필수 필드 유효성 검사 (photoUrl은 이제 필수가 아님)
-      if (!groupData.name || !groupData.description || groupData.goalRep === undefined || !groupData.discordWebhookUrl || !groupData.discordInviteUrl || !groupData.ownerNickname || !groupData.ownerPassword) {
-        return res.status(400).json({ message: 'All fields are required.' });
-      }
-
       const newGroup = await this.groupService.createGroup(groupData);
       res.status(201).json(newGroup);
     } catch (error) {
@@ -33,29 +28,14 @@ class GroupController {
   }
 
   getGroups = async (req, res, next) => {
-    const { page = 1, limit = 10, order = 'desc', orderBy = 'createdAt', search } = req.query;
-
+    //Note: 유효성에서 이미 기본 값 확인
     try {
-      // 유효성 검사: page, limit은 숫자인지
-      if (isNaN(parseInt(page)) || isNaN(parseInt(limit))) {
-        return res.status(400).json({ message: 'Page and limit must be numbers.' });
-      }
-
-      // 유효성 검사: order는 'asc' 또는 'desc'인지
-      if (!['asc', 'desc'].includes(order.toLowerCase())) {
-        return res.status(400).json({ path: 'order', message: 'Order must be \'asc\' or \'desc\'.' });
-      }
-
-      // 유효성 검사: orderBy는 유효한 값인지
-      const validOrderBy = ['likeCount', 'participantCount', 'createdAt']; // likeCount, participantCount는 아직 구현 안됨
-      if (!validOrderBy.includes(orderBy)) {
-        return res.status(400).json({ path: 'orderBy', message: `The orderBy parameter must be one of the following values: [${validOrderBy.map(v => `'${v}'`).join(', ')}]` });
-      }
+      const { page, limit, order, orderBy, search } = req.query;
 
       const options = {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        order: order.toLowerCase(),
+        page,
+        limit,
+        order,
         orderBy,
         search,
       };
@@ -71,11 +51,6 @@ class GroupController {
     const { groupId } = req.params;
 
     try {
-      // groupId 유효성 검사: 숫자인지
-      if (isNaN(parseInt(groupId))) {
-        return res.status(400).json({ message: 'Group ID must be a number.' });
-      }
-
       const group = await this.groupService.getGroupDetail(parseInt(groupId));
 
       if (!group) {
@@ -89,35 +64,11 @@ class GroupController {
   }
 
   updateGroup = async (req, res, next) => {
-    const { groupId } = req.params;
-    const updateData = req.body;
-    const { ownerPassword } = updateData; // 비밀번호 인증을 위해 ownerPassword 추출
-
     try {
-      // groupId 유효성 검사
-      if (isNaN(parseInt(groupId))) {
-        return res.status(400).json({ message: 'Group ID must be a number.' });
-      }
+      const { groupId } = req.params;
+      const updateData = req.body;
 
-      // ownerPassword 필수 검사
-      if (!ownerPassword) {
-        return res.status(400).json({ message: 'Owner password is required for update.' });
-      }
-
-      // 업데이트할 필드 유효성 검사 (선택적 필드이므로, 존재하는 경우에만 타입 검사)
-      if (updateData.name !== undefined && typeof updateData.name !== 'string') return res.status(400).json({ message: 'Invalid type for name.' });
-      if (updateData.description !== undefined && typeof updateData.description !== 'string') return res.status(400).json({ message: 'Invalid type for description.' });
-      if (updateData.photoUrl !== undefined && typeof updateData.photoUrl !== 'string') return res.status(400).json({ message: 'Invalid type for photoUrl.' });
-      if (updateData.goalRep !== undefined && (typeof updateData.goalRep !== 'number' || !Number.isInteger(updateData.goalRep))) return res.status(400).json({ message: 'Invalid type for goalRep.' });
-      if (updateData.discordWebhookUrl !== undefined && typeof updateData.discordWebhookUrl !== 'string') return res.status(400).json({ message: 'Invalid type for discordWebhookUrl.' });
-      if (updateData.discordInviteUrl !== undefined && typeof updateData.discordInviteUrl !== 'string') return res.status(400).json({ message: 'Invalid type for discordInviteUrl.' });
-      if (updateData.tags !== undefined && (!Array.isArray(updateData.tags) || !updateData.tags.every(tag => typeof tag === 'string'))) return res.status(400).json({ message: 'Invalid type for tags.' });
-      if (updateData.ownerNickname !== undefined && typeof updateData.ownerNickname !== 'string') return res.status(400).json({ message: 'Invalid type for ownerNickname.' });
-      // ownerPassword는 인증용이므로 업데이트 데이터에서 제외
-      const dataToUpdate = { ...updateData };
-      delete dataToUpdate.ownerPassword;
-
-      const updatedGroup = await this.groupService.updateGroup(parseInt(groupId), dataToUpdate, ownerPassword);
+      const updatedGroup = await this.groupService.updateGroup(groupId, updateData, updateData.ownerPassword);
 
       res.status(200).json(updatedGroup);
     } catch (error) {
@@ -132,21 +83,11 @@ class GroupController {
   }
 
   deleteGroup = async (req, res, next) => {
-    const { groupId } = req.params;
-    const { ownerPassword } = req.body; // 비밀번호 인증을 위해 ownerPassword 추출
-
     try {
-      // groupId 유효성 검사
-      if (isNaN(parseInt(groupId))) {
-        return res.status(400).json({ message: '그룹 아이디가 있어야 합니다.' });
-      }
+      const { groupId } = req.params;
+      const { ownerPassword } = req.body; // 비밀번호 인증을 위해 ownerPassword 추출
 
-      // ownerPassword 필수 검사
-      if (!ownerPassword) {
-        return res.status(400).json({ message: '그룹장 비밀번호가 필요합니다.' });
-      }
-
-      await this.groupService.deleteGroup(parseInt(groupId), ownerPassword);
+      await this.groupService.deleteGroup(groupId, ownerPassword);
 
       res.status(204).send(); // 204 No Content: 성공적으로 처리되었지만 응답 본문이 없음
     } catch (error) {
@@ -162,51 +103,36 @@ class GroupController {
 
   // 그룹 추천 API 핸들러 추가
   likeGroup = async (req, res, next) => {
-    const { groupId } = req.params;
-    const { participantId } = req.body; // 누가 추천했는지 (요청 Body에서 받음)
-
     try {
-        // 유효성 검사
-        if (isNaN(parseInt(groupId))) {
-            return res.status(400).json({ message: 'Group ID must be a number.' });
-        }
-        if (isNaN(parseInt(participantId))) {
-            return res.status(400).json({ message: 'Participant ID must be a number.' });
-        }
+      const { groupId } = req.params;
+      const { participantId } = req.body; // 누가 추천했는지 (요청 Body에서 받음)
 
-        const updatedGroup = await this.groupService.likeGroup(parseInt(groupId), parseInt(participantId));
-        res.status(200).json(updatedGroup); // 또는 201 Created
+      const updatedGroup = await this.groupService.likeGroup(groupId, participantId);
+
+      res.status(200).json(updatedGroup); // 또는 201 Created
     } catch (error) {
-        // 이미 추천한 경우 (409 Conflict) 또는 다른 에러 처리
-        if (error.message === 'Already liked.') {
-            return res.status(409).json({ message: error.message });
-        }
-        next(error);
+      // 이미 추천한 경우 (409 Conflict) 또는 다른 에러 처리
+      if (error.message === 'Already liked.') {
+        return res.status(409).json({ message: error.message });
+      }
+      next(error);
     }
   }
 
   // 그룹 추천 취소 API 핸들러 추가
   unlikeGroup = async (req, res, next) => {
-    const { groupId } = req.params;
-    const { participantId } = req.body; // 누가 추천 취소했는지 (요청 Body에서 받음)
-
     try {
-        // 유효성 검사 (likeGroup과 동일)
-        if (isNaN(parseInt(groupId))) {
-            return res.status(400).json({ message: 'Group ID must be a number.' });
-        }
-        if (isNaN(parseInt(participantId))) {
-            return res.status(400).json({ message: 'Participant ID must be a number.' });
-        }
+      const { groupId } = req.params;
+      const { participantId } = req.body; // 누가 추천 취소했는지 (요청 Body에서 받음)
 
-        const updatedGroup = await this.groupService.unlikeGroup(parseInt(groupId), parseInt(participantId));
-        res.status(200).json(updatedGroup); // 또는 204 No Content
+      const updatedGroup = await this.groupService.unlikeGroup(groupId, participantId);
+      res.status(200).json(updatedGroup); // 또는 204 No Content
     } catch (error) {
-        // 추천 기록이 없는 경우 (404 Not Found) 또는 다른 에러 처리
-        if (error.message === 'Like not found.') {
-            return res.status(404).json({ message: error.message });
-        }
-        next(error);
+      // 추천 기록이 없는 경우 (404 Not Found) 또는 다른 에러 처리
+      if (error.message === 'Like not found.') {
+        return res.status(404).json({ message: error.message });
+      }
+      next(error);
     }
   }
 }

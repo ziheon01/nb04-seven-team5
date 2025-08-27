@@ -7,20 +7,13 @@ class ExerciseRecordController {
   }
 
   createRecord = async (req, res, next) => {
-    const { groupId } = req.params;
-    const recordData = req.body;
-    const uploadedFiles = req.files;
-    const photoUrls = uploadedFiles.map(file => `/uploads/${file.filename}`);
-    recordData.participantPhoto = photoUrls;
-    
     try {
-      if (isNaN(parseInt(groupId))) { //groupId의 유효성 검사
-    return res.status(400).json({ path: "groupId", message: "groupId must be integer" });
-    }
+      const { groupId } = req.params;
+      const recordData = req.body;
 
-    const newRecord = await this.exerciseRecordService.createRecord(parseInt(groupId), recordData); //service에서 post할 데이터를 받아옴
+      const newRecord = await this.exerciseRecordService.createRecord(groupId, recordData); //service에서 post할 데이터를 받아옴
 
-    const webhookURL = await this.exerciseRecordService.getGroupWebhookUrl(parseInt(groupId)); //service에서 group에서 꺼내온 discordWebhookUrl을 받음
+      const webhookURL = await this.exerciseRecordService.getGroupWebhookUrl(groupId); //service에서 group에서 꺼내온 discordWebhookUrl을 받음
 
       if (webhookURL) {
         try {
@@ -48,47 +41,32 @@ class ExerciseRecordController {
         }
       }
 
-    res.status(201).json({ 
+      res.status(201).json({
         exerciseType: newRecord.exerciseType,
         description: newRecord.description,
         time: newRecord.time,
         distance: newRecord.distance,
         participantPhoto: newRecord.participantPhoto ?? [],
         participant: {
-            id: newRecord.participant.id,
-            nickname: newRecord.participant.nickname
+          id: newRecord.participant.id,
+          nickname: newRecord.participant.nickname
         }
-    });
+      });
     } catch (error) {
       next(error);
     }
   }
 
   getRecords = async (req, res, next) => {
-    const { groupId } = req.params;
-    const { page = 1, limit = 10, order = 'desc', orderBy = 'createdAt', search } = req.query;
-
     try {
-      if (isNaN(parseInt(groupId))) { //groupId의 유효성 검사
-    return res.status(400).json({
-        path: "groupId",
-        message: "groupId must be integer",
-    });
-    }
+      const { groupId } = req.params;
+      const options = req.query;
 
-    const options = { //페이지네이션을 위한 옵션
-      page: parseInt(page),
-      limit: parseInt(limit),
-      order: order.toLowerCase(),
-      orderBy,
-      search,
-    };
-
-    const { datas, total } = await this.exerciseRecordService.getRecords(parseInt(groupId), options);
-    res.status(200).json({ 
-      data: datas,
-      total,
-    });
+      const { datas, total } = await this.exerciseRecordService.getRecords(groupId, options);
+      res.status(200).json({
+        data: datas,
+        total,
+      });
     } catch (error) {
       next(error);
     }

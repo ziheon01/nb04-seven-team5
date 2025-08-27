@@ -1,18 +1,19 @@
 import { PrismaClient } from '../../generated/prisma/index.js';
+import BadgeService from './badgeService.js'; //Note: 뱃지 상태 자동 갱신을 위해 추가
 const prisma = new PrismaClient();
 
 class GroupService {
   createGroup = async (groupData) => {
     const { name,
-            description,
-            photoUrl,
-            goalRep,
-            discordWebhookUrl,
-            discordInviteUrl,
-            tags, // tags 배열을 받음
-            ownerNickname,
-            ownerPassword
-          } = groupData;
+      description,
+      photoUrl,
+      goalRep,
+      discordWebhookUrl,
+      discordInviteUrl,
+      tags, // tags 배열을 받음
+      ownerNickname,
+      ownerPassword
+    } = groupData;
 
     try {
       const newGroup = await prisma.group.create({
@@ -25,7 +26,7 @@ class GroupService {
           discordInviteUrl,
           ownerNickname,
           ownerPassword,
-          
+
           // --- 핵심 수정 부분 ---
           // 1. 중첩된 쓰기를 사용해 그룹 생성과 동시에 참여자(소유주) 생성
           participant: {
@@ -129,24 +130,25 @@ class GroupService {
     }
   }
 
-  async updateGroup(groupId, dataToUpdate, ownerPassword) {
+  updateGroup = async (groupId, updateData, ownerPassword) => {
     try {
       const group = await prisma.group.findUnique({
         where: { id: groupId },
       });
 
       if (!group) {
-        throw new Error('그룹이 없습니다');
+        //Note: 컨트롤러 기준으로 수정
+        throw new Error('Group not found');
       }
 
-      // 비밀번호 인증 (현재 평문 비교 - 보안 취약)
+      //Note: 컨트롤러 기준으로 수정
       if (group.ownerPassword !== ownerPassword) {
-        throw new Error('비밀번호가 틀립니다.');
+        throw new Error('Invalid owner password.');
       }
 
       const updatedGroup = await prisma.group.update({
         where: { id: groupId },
-        data: dataToUpdate,
+        data: updateData,
       });
 
       return updatedGroup;
@@ -156,118 +158,123 @@ class GroupService {
     }
   }
   // 
-  async deleteGroup(groupId, ownerPassword) {
+  deleteGroup = async (groupId, ownerPassword) => {
     try {
-        const group = await prisma.group.findUnique({
-            where: { id: groupId },
-        });
+      const group = await prisma.group.findUnique({
+        where: { id: groupId },
+      });
 
-        if(!group) {
-            throw new Error("그룹이 존재 X");
-        }
+      if (!group) {
+        throw new Error("Group not found.");
+      }
 
-        //비밀번호 인증(현재 평문 비교 - 보안 취약)
-        if (group.ownerPassword !== ownerPassword) {
-            throw new Error("그룹장 비밀번호 틀림");
-        }
-        await prisma.group.delete({
-            where: {id : groupId},
-        });
-        return;
-    } catch(error) {
-        console.error(" 삭제 중 에러 발생: ", error);
-        throw error;
+      if (group.ownerPassword !== ownerPassword) {
+        throw new Error("Invalid owner password.");
+      }
+      await prisma.group.delete({
+        where: { id: groupId },
+      });
+      return;
+    } catch (error) {
+      console.error(" 삭제 중 에러 발생: ", error);
+      throw error;
     }
   }
 
   // 그룹 추천 로직 추가
   likeGroup = async (groupId, participantId) => {
     try {
-        // 1. 이미 추천했는지 확인 (unique 제약조건 활용)
-        const existingLike = await prisma.like.findUnique({
-            where: {
-                groupId_participantId: { // schema.prisma에 정의된 복합 유니크 키
-                    groupId: groupId,
-                    participantId: participantId,
-                },
+      // 1. 이미 추천했는지 확인 (unique 제약조건 활용)
+      const existingLike = await prisma.like.findUnique({
+        where: {
+          groupId_participantId: { // schema.prisma에 정의된 복합 유니크 키
+            groupId: groupId,
+            participantId: participantId,
+          },
+        },
+      });
+
+      if (existingLike) {
+        throw new Error('Already liked.'); // 이미 추천한 경우 에러 발생
+      }
+
+      // 2. 트랜잭션 시작: Like 기록 생성 및 Group likeCount 증가
+      const [newLike, updatedGroup] = await prisma.$transaction([
+        prisma.like.create({
+          data: {
+            groupId: groupId,
+            participantId: participantId,
+          },
+        }),
+        prisma.group.update({
+          where: { id: groupId },
+          data: {
+            likeCount: {
+              increment: 1,
             },
-        });
+          },
+        }),
+      ]);
 
-        if (existingLike) {
-            throw new Error('Already liked.'); // 이미 추천한 경우 에러 발생
-        }
+      // 추천 후 뱃지 자동 갱신
+      await this.badgeService.autoUpdateBadges(groupId);
 
-        // 2. 트랜잭션 시작: Like 기록 생성 및 Group likeCount 증가
-        const [newLike, updatedGroup] = await prisma.$transaction([
-            prisma.like.create({
-                data: {
-                    groupId: groupId,
-                    participantId: participantId,
-                },
-            }),
-            prisma.group.update({
-                where: { id: groupId },
-                data: {
-                    likeCount: {
-                        increment: 1,
-                    },
-                },
-            }),
-        ]);
-
-        // 3. 업데이트된 그룹 정보 반환 (컨트롤러에서 사용)
-        // 필요하다면, 여기서 updatedGroup을 더 상세하게 include 할 수 있습니다.
-        return updatedGroup;
+      // 3. 업데이트된 그룹 정보 반환 (컨트롤러에서 사용)
+      // 필요하다면, 여기서 updatedGroup을 더 상세하게 include 할 수 있습니다.
+      return updatedGroup;
 
     } catch (error) {
-        console.error('그룹 추천 중 오류 발생:', error);
-        throw error;
+      console.error('그룹 추천 중 오류 발생:', error);
+      throw error;
     }
   }
 
   // 그룹 추천 취소 로직 추가
   unlikeGroup = async (groupId, participantId) => {
     try {
-        // 1. 추천 기록이 존재하는지 확인
-        const existingLike = await prisma.like.findUnique({
-            where: {
-                groupId_participantId: { // schema.prisma에 정의된 복합 유니크 키
-                    groupId: groupId,
-                    participantId: participantId,
-                },
+      // 1. 추천 기록이 존재하는지 확인
+      const existingLike = await prisma.like.findUnique({
+        where: {
+          groupId_participantId: { // schema.prisma에 정의된 복합 유니크 키
+            groupId: groupId,
+            participantId: participantId,
+          },
+        },
+      });
+
+      if (!existingLike) {
+        throw new Error('Like not found.'); // 추천 기록이 없는 경우 에러 발생
+      }
+
+      // 2. 트랜잭션 시작: Like 기록 삭제 및 Group likeCount 감소
+      const [deletedLike, updatedGroup] = await prisma.$transaction([
+        prisma.like.delete({
+          where: {
+            groupId_participantId: { // schema.prisma에 정의된 복합 유니크 키
+              groupId: groupId,
+              participantId: participantId,
             },
-        });
+          },
+        }),
+        prisma.group.update({
+          where: { id: groupId },
+          data: {
+            likeCount: {
+              decrement: 1,
+            },
+          },
+        }),
+      ]);
 
-        if (!existingLike) {
-            throw new Error('Like not found.'); // 추천 기록이 없는 경우 에러 발생
-        }
+      // 추천 취소 후 뱃지 자동 갱신
+      await this.badgeService.autoUpdateBadges(groupId);
 
-        // 2. 트랜잭션 시작: Like 기록 삭제 및 Group likeCount 감소
-        const [deletedLike, updatedGroup] = await prisma.$transaction([
-            prisma.like.delete({
-                where: {
-                    groupId_participantId: { // schema.prisma에 정의된 복합 유니크 키
-                        groupId: groupId,
-                        participantId: participantId,
-                    },
-                },
-            }),
-            prisma.group.update({
-                where: { id: groupId },
-                data: {
-                    likeCount: {
-                        decrement: 1,
-                    },
-                },
-            }),
-        ]);
-
-        // 3. 업데이트된 그룹 정보 반환
-        return updatedGroup;
+      // 3. 업데이트된 그룹 정보 반환
+      return updatedGroup;
 
     } catch (error) {
-        console.error('그룹 추천 취소 중 오류 발생:', error);
-        throw error;
+      console.error('그룹 추천 취소 중 오류 발생:', error);
+      throw error;
     }
   }
 }

@@ -8,16 +8,17 @@ class RankController {
   }
 
   getRanks = async (req, res, next) => {
-    const groupId = Number(req.params.groupId);
-    const ranking = req.query.ranking?.toLowerCase();
-
-    if (!groupId || isNaN(groupId)) {
-      return res.status(400).json({ path: 'groupId', message: 'groupId must be an integer' });
-    }
-
     try {
+      const { groupId } = req.params
+      //ranking을 조건에 맞게 query로 받음 
+      const ranking = req.query.ranking === 'recordTime' ? TIME : COUNT;
       const { skip, take } = req.pagination;
       const filter = req.dateFilter;
+
+      if (!groupId) {
+        return res.status(400).json({ path: 'groupId', message: 'groupId must be an integer' });
+      }
+
       let result;
 
       if (ranking === COUNT) {
