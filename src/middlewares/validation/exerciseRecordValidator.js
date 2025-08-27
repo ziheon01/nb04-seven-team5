@@ -46,7 +46,7 @@ export const exerciseRecordQuerySchema = z.object({
       .min(1, "page는 1 이상이어야 합니다.")
       .default(1),
   ),
-  orderBy: z.enum(["recordCount", "time", "createdAt"]).default("createdAt"),
+  orderBy: z.enum(["time", "createdAt"]).default("createdAt"),
   order: z.enum(["asc", "desc"]).default("desc"),
 });
 

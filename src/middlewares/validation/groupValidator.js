@@ -116,10 +116,7 @@ export const groupUpdateSchema = groupCreateSchema
     .extend({
         ownerPassword: z.string()
             .min(1, "ownerPassword는 필수 입력값입니다.")
-            .max(20, "ownerPassword는 20자 이내여야 합니다."),
-        tags: z.array(z.string())
-            .max(10, "태그는 최대 10개까지 입력할 수 있습니다.")
-            .optional(),
+            .max(20, "ownerPassword는 20자 이내여야 합니다."),        
     });
 
 // 그룹 업데이트 유효성 미들웨어
