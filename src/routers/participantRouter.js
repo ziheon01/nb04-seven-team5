@@ -1,5 +1,5 @@
 import express from 'express';
-import ParticipantController from '../controllers/participantController.js';
+import { ParticipantController } from '../controllers/participantController.js';
 import * as participantValidtor from '../middlewares/validation/participantValidator.js'
 
 const router = express.Router();

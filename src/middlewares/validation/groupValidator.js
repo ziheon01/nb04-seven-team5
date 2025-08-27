@@ -20,15 +20,25 @@ export const groupCreateSchema = z.object({
     ownerPassword: z.string()
         .min(1, "ownerPassword는 필수 입력값입니다.")
         .max(20, "ownerPassword는 20자 이내여야 합니다."),
-    goalRep: z.number({
-        required_error: "goalRep은 필수 입력값입니다.",
-        invalid_type_error: "goalRep은 숫자여야 합니다.",
-    })
-        .int("goalRep은 정수여야 합니다.")
-        .nonnegative("goalRep은 0 이상이어야 합니다."),
-    tags: z.array(z.string())
-        .max(10, "태그는 최대 10개까지 입력할 수 있습니다.")
-        .optional(),
+    goalRep: z.preprocess(
+        (val) => Number(val), // Convert to number
+        z.number({
+            required_error: "goalRep은 필수 입력값입니다.",
+            invalid_type_error: "goalRep은 숫자여야 합니다.",
+        })
+            .int("goalRep은 정수여야 합니다.")
+            .nonnegative("goalRep은 0 이상이어야 합니다.")
+    ),
+    tags: z.preprocess(
+        (val) => {
+            if (val === undefined || val === null) return []; // Treat undefined/null as empty array
+            if (Array.isArray(val)) return val; // Already an array
+            if (typeof val === 'string') return [val]; // Single string to array
+            return val; // Let Zod handle other types
+        },
+        z.array(z.string())
+            .max(10, "태그는 최대 10개까지 입력할 수 있습니다.")
+    ).optional(), // Keep optional for overall schema, but preprocess handles initial undefined/null
 });
 
 // 그룹 생성 유효성 미들웨어
@@ -151,4 +161,3 @@ export const validateGroupDeleteBody = (req, res, next) => {
     }
     next();
 };
-

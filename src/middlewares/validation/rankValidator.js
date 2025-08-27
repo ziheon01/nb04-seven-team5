@@ -1,15 +1,18 @@
 import { z } from "zod";
 import { groupIdParamSchema, validateGroupIdParam } from './groupValidator.js';
-import { participantIdSchema, participantNicknameSchema } from './participantValidator.js';
 
 export { validateGroupIdParam };
 
 // 랭크 조회 쿼리 스키마
 export const rankQuerySchema = z.object({
-  participantId: participantIdSchema,
-  participantNickname: participantNicknameSchema,
-  orderBy: z.enum(["recordTime", "recordCount"]).default("recordCount"),
-  order: z.enum(["asc", "desc"]).default("desc"),
+  orderBy: z.preprocess(
+    (val) => String(val), // Ensure it's a string
+    z.enum(["recordTime", "recordCount"]).default("recordCount")
+  ),
+  order: z.preprocess(
+    (val) => String(val).toLowerCase(), // Ensure it's a string and lowercase
+    z.enum(["asc", "desc"]).default("desc")
+  ),
 });
 
 // 랭크 조회 쿼리 검증 미들웨어
@@ -22,6 +25,6 @@ export const validateRankQuery = (req, res, next) => {
     }));
     return res.status(400).json({ errors });
   }
-  req.query = { ...req.query, ...result.data };
+  req.query = { ...req.query, ...result.data }; // Update req.query with validated data
   next();
 };

@@ -30,7 +30,11 @@ class GroupController {
   getGroups = async (req, res, next) => {
     //Note: 유효성에서 이미 기본 값 확인
     try {
-      const { page, limit, order, orderBy, search } = req.query;
+      // Ensure page and limit are numbers, as they come from req.query (strings)
+      // The validation middleware should handle this, but adding explicit conversion as a safeguard.
+      const page = parseInt(req.query.page, 10) || 1;
+      const limit = parseInt(req.query.limit, 10) || 10;
+      const { order, orderBy, search } = req.query;
 
       const options = {
         page,
@@ -105,7 +109,8 @@ class GroupController {
   likeGroup = async (req, res, next) => {
     try {
       const { groupId } = req.params;
-      const { participantId } = req.body; // 누가 추천했는지 (요청 Body에서 받음)
+      console.log('req.body in likeGroup:', req.body); // Add this line
+      const { participantId } = req.body; // This is line 112
 
       const updatedGroup = await this.groupService.likeGroup(groupId, participantId);
 

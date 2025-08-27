@@ -59,8 +59,12 @@ class ExerciseRecordController {
 
   getRecords = async (req, res, next) => {
     try {
-      const { groupId } = req.params;
-      const options = req.query;
+      const groupId = parseInt(req.params.groupId, 10); // Explicitly convert groupId to number
+      const options = {
+        ...req.query,
+        limit: parseInt(req.query.limit, 10) || 10, // Explicitly convert limit to number
+        page: parseInt(req.query.page, 10) || 1, // Explicitly convert page to number
+      };
 
       const { datas, total } = await this.exerciseRecordService.getRecords(groupId, options);
       res.status(200).json({

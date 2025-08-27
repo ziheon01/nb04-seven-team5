@@ -101,6 +101,11 @@ class GroupService {
         ...group,
         participantCount: group._count.participant, // 참여자 수를 participantCount 필드로 추가
         _count: undefined, // 기존 _count 필드는 제거
+        owner: {
+          nickname: group.ownerNickname,
+        },
+        participants: Array(group._count.participant).fill({}),
+        tags: group.tag.map(t => t.tagName), // Map Tag objects to an array of tagNames
       }));
 
       const total = await prisma.group.count({ where });
@@ -121,8 +126,31 @@ class GroupService {
         include: {
           participant: true,
           tag: true,
+          groupBadge: true, // Include the groupBadge relation instead of badges
         },
       });
+
+      // Map 'participant' (singular) from Prisma to 'participants' (plural) for frontend
+      if (group) {
+        group.participants = group.participant;
+        delete group.participant; // Remove the singular 'participant' field
+        group.tags = group.tag.map(t => t.tagName); // Map Tag objects to an array of tagNames
+        delete group.tag; // Remove the singular 'tag' field
+        group.owner = { // Construct the owner object for the frontend
+          nickname: group.ownerNickname,
+        };
+        // Map Badge objects to an array of badge names (BadgeType)
+        // Use groupBadge to construct the badges array
+        if (group.groupBadge) {
+          const badgesArray = [];
+          if (group.groupBadge.participantsOver10) badgesArray.push('PARTICIPATION_10');
+          if (group.groupBadge.recordsOver100) badgesArray.push('RECORD_100');
+          if (group.groupBadge.recommandationsOver100) badgesArray.push('LIKE_100');
+          group.badges = badgesArray;
+        } else {
+          group.badges = []; // No badges if groupBadge is null
+        }
+      }
       return group;
     } catch (error) {
       console.error('그룹을 가져오는 중 오류발생:', error);
