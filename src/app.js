@@ -5,11 +5,13 @@ import exerciseRecordRouter from "./routers/exerciseRecordRouter.js"; // exercis
 import rankRouter from "./routers/rankRouter.js"; // rankRouter 임포트
 import badgeRouter from "./routers/badgeRouter.js" // badgeRouter 임포트
 import  * as dotenv from 'dotenv';
+import cors from 'cors';
 
 const app = express();
 const port = 3000;
 dotenv.config();
 
+app.use(cors()); // CORS 미들웨어 추가
 app.use(express.json()); // json 요청 본문을 파싱하기 위한 미들웨어
 app.use(express.urlencoded({ extended: true }));
 

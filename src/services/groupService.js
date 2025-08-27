@@ -104,6 +104,24 @@ class GroupService {
     }
   }
 
+  getGroupDetail = async (groupId) => {
+    try {
+      const group = await prisma.group.findUnique({
+        where: {
+          id: groupId,
+        },
+        include: {
+          participant: true,
+          tag: true,
+        },
+      });
+      return group;
+    } catch (error) {
+      console.error('그룹을 가져오는 중 오류발생:', error);
+      throw error;
+    }
+  }
+
   async updateGroup(groupId, dataToUpdate, ownerPassword) {
     try {
       await checkGroupAndOwner(groupId,ownerPassword);
