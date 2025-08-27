@@ -1,6 +1,11 @@
 import { PrismaClient } from '../../generated/prisma/index.js'; // 올바른 Prisma Client 임포트 경로
+import BadgeService from './badgeService.js'; //Note: 뱃지 상태 갱신을 위해 추가
+
 const prisma = new PrismaClient();
 class ExerciseRecordService {
+  constructor() {
+    this.badgeService = new BadgeService(); // BadgeService 인스턴스 생성
+  }
 
   getGroupWebhookUrl = async (groupId) => { //group 테이블에서 discordWebhookUrl를 가져오기 위한 코드
     const group = await prisma.group.findUnique({
@@ -62,6 +67,9 @@ class ExerciseRecordService {
         },
       },
     });
+
+    // 운동 기록 추가 후 뱃지 자동 갱신
+    await this.badgeService.autoUpdateBadges(groupId);
 
     return newRecord; //위에서 수집한 정보들을 newRecord 상수에 저장
   }
