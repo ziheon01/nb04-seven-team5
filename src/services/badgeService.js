@@ -34,6 +34,27 @@ class BadgeService {
       });
     }
   }
+
+  // 뱃지 상태를 자동 갱신(유틸 메서드)
+  autoUpdateBadges = async (groupId) => {
+    try {
+      // 1. 현재 뱃지 상태 계산
+      const badgeStatuses = await this.computeBadgeStatuses(groupId);
+
+      // 2. DB에 상태 업데이트
+      await this.updateBadgeStatus(groupId, badgeStatuses);
+
+      return badgeStatuses;
+      // 메인 기능을 방해 하면 안되는 유틸 메서드기 때문에 자체적으로 try ~catch를 가짐
+    } catch (error) {
+      console.error(`뱃지 자동 갱신 실패: 그룹 ${groupId}`, error);
+      // 뱃지 갱신 실패가 메인 기능을 방해하지 않도록 에러를 던지지 않음
+      return null;
+    }
+  }
 }
+
+
+
 
 export default BadgeService;
