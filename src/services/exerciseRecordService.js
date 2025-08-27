@@ -2,7 +2,7 @@ import { PrismaClient } from '../../generated/prisma/index.js';
 import { ERROR } from '../const/errorMessage.js';
 import { pagination } from '../utils/pagination.js';
 import { ExerciseRecord_orderByClause } from '../utils/orderByClause.js'
-import { record } from 'superstruct';
+// import { record } from 'superstruct';
 
 const prisma = new PrismaClient();
 

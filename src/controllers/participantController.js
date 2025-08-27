@@ -11,7 +11,7 @@ class ParticipantController {
   try{
     const { nickname, password } = req.body;
     const groupId = parseInt(req.params.groupId,10); 
-    const { checkedNickname, checkedPassword, checkedGroupId} = checking(nickname, password, groupId)
+    const validatedData = checking(nickname, password, groupId)
     
     const updatedGroup = await this.participantService.joinGroup( checkedGroupId, checkedNickname, checkedPassword, checkedGroupId);
       return res.status(HTTP_STATUS.CREATED).json({ updatedGroup });  
@@ -24,7 +24,7 @@ class ParticipantController {
     try{
       const { nickname, password } = req.body;
       const groupId = parseInt(req.params.groupId,10); 
-      const { checkedNickname, checkedPassword, checkedGroupId} = checkingParticipant(nickname, password, groupId)
+      const validatedData = checking(nickname, password, groupId)
     
       const updatedGroup = await this.participantService.joinGroup( checkedGroupId, checkedNickname, checkedPassword, checkedGroupId);
         return res.status(HTTP_STATUS.CREATED).json({ updatedGroup });  

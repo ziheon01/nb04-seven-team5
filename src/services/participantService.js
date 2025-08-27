@@ -7,7 +7,10 @@ class ParticipantService {
   joinGroup = async (groupId, nickname, password) => {
 
     const existingGroup = await prisma.group.findUnique({
-      where: { id: groupId },
+      where: { 
+        id: groupId,
+        nickname, 
+      },
     });
     if(!existingGroup){
       throw new Error(ERROR.NOT_FOUND(groupId));

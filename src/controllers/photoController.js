@@ -11,7 +11,7 @@ export const uploadParticipantPhotos = async (req, res) => {
   //  파일 경로 배열 없거나 비었을 때 클라이언트에 에러 응답
   if (!filePaths || filePaths.length === 0) {
     //  사진이 하나도 없으면 에러 창 띄우기
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({ ERROR.NOT_FOUND(filePaths) });
+    return res.status(HTTP_STATUS.BAD_REQUEST).json(ERROR.NOT_FOUND(filePaths))
   }
 
   try {
@@ -32,6 +32,6 @@ export const uploadParticipantPhotos = async (req, res) => {
     res.status(HTTP_STATUS.OK).json({ urls });
   } catch (err) {
     //  DB 저장 중 에러 발생하면 500상태 반환 후 에러 응답 창 띄우기
-    res.status(HTTP_STATUS.SERVER_ERROR).json({ error: "운동기록 사진 업로드 실패", detail: err.message });
+    res.status(HTTP_STATUS.SERVER_ERROR).json({error: ERROR.SERVER_ERROR, detail: err.message });
   }
-};
+}

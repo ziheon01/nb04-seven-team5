@@ -10,3 +10,12 @@ export const EXERCISE_RECORD_SORT_FILED = {
   RECORD_COUNT : 'recordCount'
 }
 
+export function options(page, limit, order, orderBy, search){
+  return {
+    page: parseInt(page),
+    limit: parseInt(limit),
+    order: order.toLowerCase(),
+    orderBy,
+    search
+  }
+}

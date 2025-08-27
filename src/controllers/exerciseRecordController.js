@@ -2,6 +2,8 @@ import ExerciseRecordService from '../services/exerciseRecordService.js';
 import axios from 'axios';
 import { HTTP_STATUS } from '../const/http_status.js';
 import { ERROR } from '../const/errorMessage.js';
+import { options } from '../const/orderBy.js';
+import { checkGroupId } from '../utils/validation.js';
 
 class ExerciseRecordController {
   constructor() {
@@ -16,9 +18,7 @@ class ExerciseRecordController {
     recordData.participantPhoto = photoUrls;
     
     try {
-      if (isNaN(parseInt(groupId))) { //groupId의 유효성 검사
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({ path: "groupId", message:ERROR.MUST_BE_INT(groupId) });
-    }
+      checkGroupId(groupId);
     //service에서 post할 데이터를 받아옴
     const newRecord = await this.exerciseRecordService.createRecord(parseInt(groupId), recordData); 
     const webhookURL = await this.exerciseRecordService.getGroupWebhookUrl(parseInt(groupId)); 
@@ -71,22 +71,9 @@ class ExerciseRecordController {
     const { page = 1, limit = 10, order = 'desc', orderBy = 'createdAt', search } = req.query;
 
     try {
-      if (isNaN(parseInt(groupId))) { //groupId의 유효성 검사
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        path: "groupId",
-        message: MUST_BE_INT(groupId),
-    });
-    }
+     checkGroupId(groupId)
 
-    const options = { //페이지네이션을 위한 옵션
-      page: +page,
-      limit: +limit,
-      order: order.toLowerCase(),
-      orderBy,
-      search,
-    };
-
-    const { datas, total } = await this.exerciseRecordService.getRecords(parseInt(groupId), options);
+    const { datas, total } = await this.exerciseRecordService.getRecords(parseInt(groupId), options(page,limit,order,orderBy,search));
     res.status(HTTP_STATUS.OK).json({ 
       data: datas,
       total,

@@ -1,7 +1,7 @@
 import { 
   EXERCISE_RECORD_SORT_FILED,
   GROUP_SORT_FILED
- } from "../const/orderByClause.js";
+ } from "../const/orderBy.js";
 
 export function GroupService_orderByClause(orderBy, order){
   const orderByClause = {}

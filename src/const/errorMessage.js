@@ -14,3 +14,5 @@ export const ERROR = {
   DELETION_FAILED: (fieldName) => `${fieldName}을 취소하는데 실패했습니다.`,
 
 }
+
+// GroupController. 47-55, 오류 메세지 확인 필요 못하겠음. 

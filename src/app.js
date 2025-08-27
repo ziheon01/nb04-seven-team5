@@ -11,6 +11,7 @@ const port = 3000;
 dotenv.config();
 
 app.use(express.json()); // json 요청 본문을 파싱하기 위한 미들웨어
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
