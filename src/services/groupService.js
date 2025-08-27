@@ -1,4 +1,5 @@
 import { PrismaClient } from '../../generated/prisma/index.js';
+import BadgeService from './badgeService.js'; //Note: 뱃지 상태 자동 갱신을 위해 추가
 const prisma = new PrismaClient();
 
 class GroupService {
@@ -168,7 +169,7 @@ class GroupService {
       if (!group) {
         throw new Error("Group not found.");
       }
-    
+
       if (group.ownerPassword !== ownerPassword) {
         throw new Error("Invalid owner password.");
       }
@@ -217,6 +218,9 @@ class GroupService {
         }),
       ]);
 
+      // 추천 후 뱃지 자동 갱신
+      await this.badgeService.autoUpdateBadges(groupId);
+
       // 3. 업데이트된 그룹 정보 반환 (컨트롤러에서 사용)
       // 필요하다면, 여기서 updatedGroup을 더 상세하게 include 할 수 있습니다.
       return updatedGroup;
@@ -263,6 +267,9 @@ class GroupService {
           },
         }),
       ]);
+
+      // 추천 취소 후 뱃지 자동 갱신
+      await this.badgeService.autoUpdateBadges(groupId);
 
       // 3. 업데이트된 그룹 정보 반환
       return updatedGroup;
