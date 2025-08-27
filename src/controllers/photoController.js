@@ -11,7 +11,7 @@ export const uploadParticipantPhotos = async (req, res) => {
   //  파일 경로 배열 없거나 비었을 때 클라이언트에 에러 응답
   if (!filePaths || filePaths.length === 0) {
     //  사진이 하나도 없으면 에러 창 띄우기
-    return res.status(HTTP_STATUS.BAD_REQUEST).json(ERROR.NOT_FOUND(filePaths))
+    return res.status(HTTP_STATUS.BAD_REQUEST).json(ERROR.NOT_FOUND('filePaths'))
   }
 
   try {

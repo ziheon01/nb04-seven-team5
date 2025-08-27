@@ -12,7 +12,11 @@ export const ERROR = {
   MUST_BE_INT: (fieldName) => `${fieldName}은 정수여야 합니다.`,
   FETCH_FAILED: (fieldName) => `${fieldName}을 가져오는데 실패했습니다.`,
   DELETION_FAILED: (fieldName) => `${fieldName}을 취소하는데 실패했습니다.`,
+  UPDATE_FAILED: (fieldName) => `${fieldName}을 수정하는데 실패했습니다.`,
 
 }
 
-// GroupController. 47-55, 오류 메세지 확인 필요 못하겠음. 
+// GroupController.js 47-55, 오류 메세지..
+// rankCOntroller.js  32
+
+//페이지네이션 관련.. 

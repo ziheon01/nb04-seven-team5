@@ -16,8 +16,10 @@ export function checkOwnerPassword(ownerPassword){
 }
 
 export function checkParticipantId(participantId){
-  if (isNaN(parseInt(participantId))){
-    throw new Error (ERROR.MUST_BE_INT(participantId));
+  const parsedParticipantId = parseInt(participantId,10);
+  if (isNaN(parsedParticipantId)){
+    throw new Error (ERROR.MUST_BE_INT('participantId'));
   }
-  return participantId
+  return parsedParticipantId
 }
+

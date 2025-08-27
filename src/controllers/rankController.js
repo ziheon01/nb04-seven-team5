@@ -15,7 +15,7 @@ class RankController {
     const ranking = req.query.ranking?.toLowerCase();
 
     if (!groupId || isNaN(groupId)) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ path: 'groupId', message: ERROR.MUST_BE_INT(groupId) });
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ path: 'groupId', message: ERROR.MUST_BE_INT('groupId') });
     }
 
     try {

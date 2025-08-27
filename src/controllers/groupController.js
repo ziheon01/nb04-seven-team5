@@ -42,7 +42,7 @@ class GroupController {
     try {
       // 유효성 검사: page, limit은 숫자인지
       if (isNaN(parseInt(page)) || isNaN(parseInt(limit))) {
-        return res.status(400).json({ message: 'Page and limit must be numbers.' });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: ERROR.MUST_BE_INT('page','limit')});
       }
 
       // 유효성 검사: order는 'asc' 또는 'desc'인지
@@ -73,7 +73,7 @@ class GroupController {
       const group = await this.groupService.getGroupDetail(parseInt(groupId));
 
       if (!group) {
-        return res.status(HTTP_STATUS.NOT_FOUND).json({ message:ERROR.NOT_FOUND(groupId) });
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ message:ERROR.NOT_FOUND('groupId') });
       }
 
       res.status(HTTP_STATUS.OK).json(group);
@@ -85,44 +85,44 @@ class GroupController {
   updateGroup = async (req, res, next) => {
     const { groupId } = req.params;
     const updateData = req.body;
-    const { ownerPassword } = updateData; // 비밀번호 인증을 위해 ownerPassword 추출
+    const { ownerPassword, ...dataToUpdate } = req.body;
 
     try {
       // groupId 유효성 검사
       // checkGroupId(groupId)
       if (isNaN(parseInt(groupId))) {
-        return res.status(400).json({ message: 'Group ID must be a number.' });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: ERROR.MUST_BE_INT('groupId') });
       }
       // 
 
       // ownerPassword 필수 검사
       // checkOwnerPassword(ownerPassword); 
       if (!ownerPassword) {
-        return res.status(400).json({ message: 'Owner password is required for update.' });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: ERROR.OWNER_WRONG_PASSWORD });
       }
 
       // 업데이트할 필드 유효성 검사 (선택적 필드이므로, 존재하는 경우에만 타입 검사)
-      if (updateData.name !== undefined && typeof updateData.name !== 'string') return res.status(400).json({ message: 'Invalid type for name.' });
-      if (updateData.description !== undefined && typeof updateData.description !== 'string') return res.status(400).json({ message: 'Invalid type for description.' });
-      if (updateData.photoUrl !== undefined && typeof updateData.photoUrl !== 'string') return res.status(400).json({ message: 'Invalid type for photoUrl.' });
-      if (updateData.goalRep !== undefined && (typeof updateData.goalRep !== 'number' || !Number.isInteger(updateData.goalRep))) return res.status(400).json({ message: 'Invalid type for goalRep.' });
-      if (updateData.discordWebhookUrl !== undefined && typeof updateData.discordWebhookUrl !== 'string') return res.status(400).json({ message: 'Invalid type for discordWebhookUrl.' });
-      if (updateData.discordInviteUrl !== undefined && typeof updateData.discordInviteUrl !== 'string') return res.status(400).json({ message: 'Invalid type for discordInviteUrl.' });
-      if (updateData.tags !== undefined && (!Array.isArray(updateData.tags) || !updateData.tags.every(tag => typeof tag === 'string'))) return res.status(400).json({ message: 'Invalid type for tags.' });
-      if (updateData.ownerNickname !== undefined && typeof updateData.ownerNickname !== 'string') return res.status(400).json({ message: 'Invalid type for ownerNickname.' });
+      if (updateData.groupName !== undefined && typeof updateData.groupName !== 'string') return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: ERROR.INVALID_TYPE('groupName')});
+      if (updateData.description !== undefined && typeof updateData.description !== 'string') return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: ERROR.INVALID_TYPE('description')});
+      if (updateData.photoUrl !== undefined && typeof updateData.photoUrl !== 'string') return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: ERROR.INVALID_TYPE('photoUrl')});
+      if (updateData.goalRep !== undefined && (typeof updateData.goalRep !== 'number' || !Number.isInteger(updateData.goalRep))) return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: ERROR.INVALID_TYPE('goalRep') });
+      if (updateData.discordWebhookUrl !== undefined && typeof updateData.discordWebhookUrl !== 'string') return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: ERROR.INVALID_TYPE('discordWebhookUrl')});
+      if (updateData.discordInviteUrl !== undefined && typeof updateData.discordInviteUrl !== 'string') return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: ERROR.INVALID_TYPE('discordInviteUrl')});
+      if (updateData.tag !== undefined && (!Array.isArray(updateData.tag) || !updateData.tag.every(tag => typeof tag === 'string'))) return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: ERROR.INVALID_TYPE('tag')});
+      if (updateData.ownerNickname !== undefined && typeof updateData.ownerNickname !== 'string') return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: ERROR.INVALID_TYPE('ownerNickname')});
       // ownerPassword는 인증용이므로 업데이트 데이터에서 제외
       const dataToUpdate = { ...updateData };
       delete dataToUpdate.ownerPassword;
 
       const updatedGroup = await this.groupService.updateGroup(parseInt(groupId), dataToUpdate, ownerPassword);
 
-      res.status(200).json(updatedGroup);
+      res.status(HTTP_STATUS.OK).json(updatedGroup);
     } catch (error) {
-      if (error.message === 'Group not found.') {
-        return res.status(404).json({ message: error.message });
+      if (error.message === ERROR.NOT_FOUND('group')) {
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ message: error.message });
       }
-      if (error.message === 'Invalid owner password.') {
-        return res.status(403).json({ message: error.message }); // 403 Forbidden
+      if (error.message === ERROR.OWNER_WRONG_PASSWORD) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json({ message: error.message }); // 403 Forbidden
       }
       next(error);
     }
@@ -155,15 +155,15 @@ class GroupController {
 
   // 그룹 추천 API 핸들러 추가
   likeGroup = async (req, res, next) => {
-    const { groupId } = req.params;
+    const groupId = parseInt(req.params.groupId);
     const { participantId } = req.body; // 누가 추천했는지 (요청 Body에서 받음)
 
     try {
         // 유효성 검사
-        checkGroupId(groupId)
-        checkParticipantId(participantId)
+        const parsedGroupId = checkGroupId(groupId);
+        const parsedParticipantId = checkParticipantId(participantId);
 
-        const updatedGroup = await this.groupService.likeGroup(parseInt(groupId), parseInt(participantId));
+        const updatedGroup = await this.groupService.likeGroup(parsedGroupId, parsedParticipantId);
         res.status(HTTP_STATUS.OK).json(updatedGroup); // 또는 201 Created
     } catch (error) {
         // 이미 추천한 경우 (409 Conflict) 또는 다른 에러 처리
@@ -181,14 +181,14 @@ class GroupController {
 
     try {
         // 유효성 검사 (likeGroup과 동일)
-        checkGroupId(groupId)
-        checkParticipantId(participantId)
+        const parsedGroupId = checkGroupId(groupId);
+        const parsedParticipantId = checkParticipantId(participantId);
 
-        const updatedGroup = await this.groupService.unlikeGroup(parseInt(groupId), parseInt(participantId));
+        const updatedGroup = await this.groupService.unlikeGroup(parsedGroupId, parsedParticipantId);
         res.status(HTTP_STATUS.OK).json(updatedGroup); // 또는 204 No Content
     } catch (error) {
         // 추천 기록이 없는 경우 (404 Not Found) 또는 다른 에러 처리
-        if (error.message === ERROR.NOT_FOUND(Like)) {
+        if (error.message === ERROR.NOT_FOUND('like')) {
             return res.status(HTTP_STATUS.NOT_FOUND).json({ message: error.message });
         }
         next(error);

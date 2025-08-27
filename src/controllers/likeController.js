@@ -15,10 +15,10 @@ export const addLike = async (req, res) => {
   } catch (error) {
     //  이미 추천 해서 중복 추천일 때 에러
     if (error.code === "P2002") {
-      res.status(HTTP_STATUS.CONFLICT).json({ ERROR.ALREADY_LIKED });
+      res.status(HTTP_STATUS.CONFLICT).json(ERROR.ALREADY_LIKED);
     } else {
       //  외의 오류일 경우 에러
-      res.status(HTTP_STATUS.SERVER_ERROR).json({ ERROR.SERVER_ERROR });
+      res.status(HTTP_STATUS.SERVER_ERROR).json(ERROR.SERVER_ERROR);
     }
   }
 };
@@ -34,6 +34,6 @@ export const removeLike = async (req, res) => {
     res.status(HTTP_STATUS.OK).json({ message: "추천 취소" });
   } catch (error) {
     //  외의 오류일 경우 에러
-    res.status(HTTP_STATUS.SERVER_ERROR).json({ ERROR.SERVER_ERROR });
+    res.status(HTTP_STATUS.SERVER_ERROR).json(ERROR.SERVER_ERROR);
   }
 };

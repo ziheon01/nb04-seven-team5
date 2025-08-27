@@ -2,7 +2,6 @@ import { PrismaClient } from '../../generated/prisma/index.js';
 import { ERROR } from '../const/errorMessage.js';
 import { pagination } from '../utils/pagination.js';
 import { ExerciseRecord_orderByClause } from '../utils/orderByClause.js'
-// import { record } from 'superstruct';
 
 const prisma = new PrismaClient();
 
@@ -33,7 +32,7 @@ class ExerciseRecordService {
         });
 
     if (!participant) {
-      throw new Error("참가자를 찾을 수 없습니다.");
+      throw new Error(ERROR.NOT_FOUND('participant'));
     }
 
     const parsedTime = parseInt(time);
@@ -63,7 +62,7 @@ class ExerciseRecordService {
 
         return newRecord; //위에서 수집한 정보들을 newRecord 상수에 저장
     } catch (error) {
-      console.error('기록 생성 중 오류발생:', error);
+      console.error(ERROR.CREATION_FAILED('record'), error);
       throw error;
     }
   }

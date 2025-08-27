@@ -12,7 +12,7 @@ class ParticipantService {
       },
     });
     if(!existingGroup){
-      throw new Error(ERROR.NOT_FOUND(groupId));
+      throw new Error(ERROR.NOT_FOUND('groupId'));
     }
 
     const existingParticipant = await prisma.participant.findFirst({
@@ -57,7 +57,7 @@ class ParticipantService {
       where: { id: groupId }
     })
     if(!existingGroup){
-      throw new Error(ERROR.NOT_FOUND(groupId));
+      throw new Error(ERROR.NOT_FOUND('groupId'));
     }
       
       // 해당 그룹에 속해 있으면서  일치하는 닉네임,비밀번호이 있는지 확인 
@@ -70,7 +70,7 @@ class ParticipantService {
       });
 
     if(!existingParticipant){
-      throw new Error (ERROR.NOT_FOUND(participant));
+      throw new Error (ERROR.NOT_FOUND('participant'));
     }
 
     const deleteParticipant = await prisma.participant.delete({

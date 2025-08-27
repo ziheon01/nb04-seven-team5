@@ -12,7 +12,7 @@ class BadgeController {
       const groupId = Number(req.params.groupId);
 
       if (!groupId || isNaN(groupId)) {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: ERROR.MUST_BE_INT(groupId) });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: ERROR.MUST_BE_INT('groupId') });
       }
 
       // 1. 배지 상태 계산
