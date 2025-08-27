@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { groupIdParamSchema, validateGroupIdParam } from './groupValidator.js';
+import { HTTP } from "../../const/http.js";
 
 export { validateGroupIdParam };
 
@@ -22,7 +23,7 @@ export const validateExerciseRecord = (req, res, next) => {
       path: err.path.join("."),
       message: err.message,
     }));
-    return res.status(400).json({ errors });
+    return res.status(HTTP.BAD_REQUEST).json({ errors });
   }
   next();
 };

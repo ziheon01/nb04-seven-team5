@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { groupIdParamSchema, validateGroupIdParam } from './groupValidator.js';
-import { participantIdSchema, participantNicknameSchema } from './participantValidator.js';
+import { validateParticipantIdBody, participantBodySchema} from './participantValidator.js';
+import { HTTP } from "../../const/http.js";
 
 export { validateGroupIdParam };
 
 // 랭크 조회 쿼리 스키마
 export const rankQuerySchema = z.object({
-  participantId: participantIdSchema,
-  participantNickname: participantNicknameSchema,
+  participantId: validateParticipantIdBody,
+  participantNickname: participantBodySchema.nickname,
   orderBy: z.enum(["recordTime", "recordCount"]).default("recordCount"),
   order: z.enum(["asc", "desc"]).default("desc"),
 });
@@ -20,7 +21,7 @@ export const validateRankQuery = (req, res, next) => {
       path: err.path.join("."),
       message: err.message,
     }));
-    return res.status(400).json({ errors });
+    return res.status(HTTP.BAD_REQUEST).json({ errors });
   }
   req.query = { ...req.query, ...result.data };
   next();

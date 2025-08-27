@@ -17,10 +17,14 @@ class BadgeService {
       where: { participant: { groupId } },
     });
 
+    const totalParticipantBadgeStandard = 10;
+    const totalExerciseRecordBadgeStandard = 100;
+    const totalLikeStandard = 100;
+
     return {
-      [badgeTypes.participantsOver10]: totalParticipant >= 10,
-      [badgeTypes.recordsOver100]: totalExerciseRecord >= 100,
-      [badgeTypes.recommandationsOver100]: totalLike >= 100,
+      [badgeTypes.participantsOver10]: totalParticipant >= totalParticipantBadgeStandard,
+      [badgeTypes.recordsOver100]: totalExerciseRecord >= totalExerciseRecordBadgeStandard,
+      [badgeTypes.recommandationsOver100]: totalLike >= totalLikeStandard,
     };
   }
 

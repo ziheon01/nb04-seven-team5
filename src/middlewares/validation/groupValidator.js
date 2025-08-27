@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { HTTP } from '../../const/http.js';
+import { ERROR } from '../../const/error.js';
 
 // 그룹 생성검증 스키마
 export const groupCreateSchema = z.object({
@@ -39,7 +41,7 @@ export const validateGroupCreate = (req, res, next) => {
             path: err.path.join('.'),
             message: err.message,
         }));
-        return res.status(400).json({ errors });
+        return res.status(HTTP.BAD_REQUEST).json({ errors });
     }
     next();
 };
@@ -78,7 +80,7 @@ export const validateGroupQuery = (req, res, next) => {
             path: err.path.join('.'),
             message: err.message,
         }));
-        return res.status(400).json({ errors });
+        return res.status(ERROR.BAD_REQUEST).json({ errors });
     }
     next();
 };
@@ -105,7 +107,7 @@ export const validateGroupIdParam = (req, res, next) => {
             path: err.path.join('.'),
             message: err.message,
         }));
-        return res.status(400).json({ errors });
+        return res.status(HTTP.BAD_REQUEST).json({ errors });
     }
     next();
 };
@@ -127,7 +129,7 @@ export const validateGroupUpdate = (req, res, next) => {
             path: err.path.join('.'),
             message: err.message,
         }));
-        return res.status(400).json({ errors });
+        return res.status(HTTP.BAD_REQUEST).json({ errors });
     }
     next();
 };
@@ -147,7 +149,7 @@ export const validateGroupDeleteBody = (req, res, next) => {
             path: err.path.join('.'),
             message: err.message,
         }));
-        return res.status(400).json({ errors });
+        return res.status(HTTP.BAD_REQUEST).json({ errors });
     }
     next();
 };

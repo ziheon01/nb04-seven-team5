@@ -1,3 +1,5 @@
+import { ERROR } from '../const/error.js';
+import { HTTP } from '../const/http.js';
 import GroupService from '../services/groupService.js';
 
 class GroupController {
@@ -21,7 +23,7 @@ class GroupController {
       };
 
       const newGroup = await this.groupService.createGroup(groupData);
-      res.status(201).json(newGroup);
+      res.status(HTTP.CREATED).json(newGroup);
     } catch (error) {
       next(error); // Global Error Handler로 전달
     }
@@ -41,7 +43,7 @@ class GroupController {
       };
 
       const { groups, total } = await this.groupService.getGroups(options);
-      res.status(200).json({ data: groups, total });
+      res.status(HTTP.OK).json({ data: groups, total });
     } catch (error) {
       next(error);
     }
@@ -54,10 +56,10 @@ class GroupController {
       const group = await this.groupService.getGroupDetail(parseInt(groupId));
 
       if (!group) {
-        return res.status(404).json({ message: 'Group not found.' });
+        return res.status(HTTP.NOT_FOUND).json({ message: ERROR.NOT_FOUND('group') });
       }
 
-      res.status(200).json(group);
+      res.status(HTTP.OK).json(group);
     } catch (error) {
       next(error);
     }
@@ -70,13 +72,13 @@ class GroupController {
 
       const updatedGroup = await this.groupService.updateGroup(groupId, updateData, updateData.ownerPassword);
 
-      res.status(200).json(updatedGroup);
+      res.status(HTTP.OK).json(updatedGroup);
     } catch (error) {
-      if (error.message === 'Group not found.') {
-        return res.status(404).json({ message: error.message });
+      if (error.message === ERROR.NOT_FOUND('group')) {
+        return res.status(HTTP.NOT_FOUND).json({ message: error.message });
       }
-      if (error.message === 'Invalid owner password.') {
-        return res.status(403).json({ message: error.message }); // 403 Forbidden
+      if (error.message === ERROR.OWNER_WRONG_PASSWORD) {
+        return res.status(HTTP.FORBIDDEN).json({ message: error.message }); // 403 Forbidden
       }
       next(error);
     }
@@ -89,13 +91,13 @@ class GroupController {
 
       await this.groupService.deleteGroup(groupId, ownerPassword);
 
-      res.status(204).send(); // 204 No Content: 성공적으로 처리되었지만 응답 본문이 없음
+      res.status(HTTP.NOT_CONTENT).send(); // 204 No Content: 성공적으로 처리되었지만 응답 본문이 없음
     } catch (error) {
-      if (error.message === 'Group not found.') {
-        return res.status(404).json({ message: error.message });
+      if (error.message === ERROR.NOT_FOUND('group')) {
+        return res.status(HTTP.NOT_FOUND).json({ message: error.message });
       }
-      if (error.message === 'Invalid owner password.') {
-        return res.status(403).json({ message: error.message }); // 403 Forbidden
+      if (error.message === ERROR.OWNER_WRONG_PASSWORD) {
+        return res.status(HTTP.FORBIDDEN).json({ message: error.message }); // 403 Forbidden
       }
       next(error);
     }
@@ -109,11 +111,11 @@ class GroupController {
 
       const updatedGroup = await this.groupService.likeGroup(groupId, participantId);
 
-      res.status(200).json(updatedGroup); // 또는 201 Created
+      res.status(HTTP.OK).json(updatedGroup); // 또는 201 Created
     } catch (error) {
       // 이미 추천한 경우 (409 Conflict) 또는 다른 에러 처리
-      if (error.message === 'Already liked.') {
-        return res.status(409).json({ message: error.message });
+      if (error.message === ERROR.ALREADY_LIKED) {
+        return res.status(HTTP.CONFLICT).json({ message: error.message });
       }
       next(error);
     }
@@ -126,11 +128,11 @@ class GroupController {
       const { participantId } = req.body; // 누가 추천 취소했는지 (요청 Body에서 받음)
 
       const updatedGroup = await this.groupService.unlikeGroup(groupId, participantId);
-      res.status(200).json(updatedGroup); // 또는 204 No Content
+      res.status(HTTP.OK).json(updatedGroup); // 또는 204 No Content
     } catch (error) {
       // 추천 기록이 없는 경우 (404 Not Found) 또는 다른 에러 처리
-      if (error.message === 'Like not found.') {
-        return res.status(404).json({ message: error.message });
+      if (error.message === ERROR.NOT_FOUND('like')) {
+        return res.status(HTTP.NOT_FOUND).json({ message: error.message });
       }
       next(error);
     }

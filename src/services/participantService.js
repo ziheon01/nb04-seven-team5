@@ -1,4 +1,5 @@
 import { PrismaClient } from '../../generated/prisma/index.js'; // 올바른 Prisma Client 임포트 경로
+import { ERROR } from '../const/error.js';
 import BadgeService from './badgeService.js'; //Note: 뱃지 갱신을 위해 추가
 
 const prisma = new PrismaClient();
@@ -15,7 +16,7 @@ class ParticipantService {
       where: { id: groupId },
     });
     if (!existingGroup) {
-      throw new Error('Group not found')
+      throw new Error(ERROR.NOT_FOUND('group'))
     }
 
     const existingParticipant = await prisma.participant.findFirst({

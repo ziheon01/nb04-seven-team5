@@ -1,3 +1,4 @@
+import { HTTP } from '../const/http.js';
 import ExerciseRecordService from '../services/exerciseRecordService.js';
 import axios from 'axios';
 
@@ -41,7 +42,7 @@ class ExerciseRecordController {
         }
       }
 
-      res.status(201).json({
+      res.status(HTTP.CREATED).json({
         exerciseType: newRecord.exerciseType,
         description: newRecord.description,
         time: newRecord.time,
@@ -63,7 +64,7 @@ class ExerciseRecordController {
       const options = req.query;
 
       const { datas, total } = await this.exerciseRecordService.getRecords(groupId, options);
-      res.status(200).json({
+      res.status(HTTP.OK).json({
         data: datas,
         total,
       });

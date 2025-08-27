@@ -1,3 +1,5 @@
+import { ERROR } from '../const/error.js';
+import { HTTP } from '../const/http.js';
 import BadgeService from '../services/badgeService.js';
 
 class BadgeController {
@@ -10,7 +12,7 @@ class BadgeController {
       const { groupId } = req.params;
 
       if (!groupId) {
-        return res.status(400).json({ error: 'Invalid or missing groupId parameter' });
+        return res.status(HTTP.BAD_REQUEST).json(ERROR.INVALID_INPUT);
       }
 
       // 1. 배지 상태 계산
@@ -20,7 +22,7 @@ class BadgeController {
       await this.badgeService.updateBadgeStatus(groupId, badgeStatuses);
 
       // 3. 성공 응답
-      res.status(200).json({
+      res.status(HTTP.OK).json({
         message: 'Badge status updated successfully',
         badges: badgeStatuses,
       });

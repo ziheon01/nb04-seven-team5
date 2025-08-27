@@ -1,4 +1,5 @@
 import { PrismaClient } from '../../generated/prisma/index.js';
+import { ERROR } from '../const/error.js';
 import BadgeService from './badgeService.js'; //Note: 뱃지 상태 자동 갱신을 위해 추가
 const prisma = new PrismaClient();
 
@@ -125,7 +126,7 @@ class GroupService {
       });
       return group;
     } catch (error) {
-      console.error('그룹을 가져오는 중 오류발생:', error);
+      console.error(ERROR.FETCH_FAILED('group'), error);
       throw error;
     }
   }
@@ -138,12 +139,12 @@ class GroupService {
 
       if (!group) {
         //Note: 컨트롤러 기준으로 수정
-        throw new Error('Group not found');
+        throw new Error(ERROR.NOT_FOUND('group'));
       }
 
       //Note: 컨트롤러 기준으로 수정
       if (group.ownerPassword !== ownerPassword) {
-        throw new Error('Invalid owner password.');
+        throw new Error(ERROR.OWNER_WRONG_PASSWORD);
       }
 
       const updatedGroup = await prisma.group.update({
@@ -153,7 +154,7 @@ class GroupService {
 
       return updatedGroup;
     } catch (error) {
-      console.error('그룹 업데이트 중 오류 발생:', error);
+      console.error(ERROR.UPDATE_FAILED('group'), error);
       throw error;
     }
   }
@@ -165,18 +166,18 @@ class GroupService {
       });
 
       if (!group) {
-        throw new Error("Group not found.");
+        throw new Error(ERROR.NOT_FOUND('group'));
       }
 
       if (group.ownerPassword !== ownerPassword) {
-        throw new Error("Invalid owner password.");
+        throw new Error(ERROR.OWNER_WRONG_PASSWORD);
       }
       await prisma.group.delete({
         where: { id: groupId },
       });
       return;
     } catch (error) {
-      console.error(" 삭제 중 에러 발생: ", error);
+      console.error(ERROR.SERVER_ERROR, error);
       throw error;
     }
   }
@@ -195,7 +196,7 @@ class GroupService {
       });
 
       if (existingLike) {
-        throw new Error('Already liked.'); // 이미 추천한 경우 에러 발생
+        throw new Error(ERROR.ALREADY_LIKED); // 이미 추천한 경우 에러 발생
       }
 
       // 2. 트랜잭션 시작: Like 기록 생성 및 Group likeCount 증가
@@ -224,7 +225,7 @@ class GroupService {
       return updatedGroup;
 
     } catch (error) {
-      console.error('그룹 추천 중 오류 발생:', error);
+      console.error(ERROR.SERVER_ERROR, error);
       throw error;
     }
   }
@@ -243,7 +244,7 @@ class GroupService {
       });
 
       if (!existingLike) {
-        throw new Error('Like not found.'); // 추천 기록이 없는 경우 에러 발생
+        throw new Error(ERROR.NOT_FOUND('like')); // 추천 기록이 없는 경우 에러 발생
       }
 
       // 2. 트랜잭션 시작: Like 기록 삭제 및 Group likeCount 감소
@@ -273,7 +274,7 @@ class GroupService {
       return updatedGroup;
 
     } catch (error) {
-      console.error('그룹 추천 취소 중 오류 발생:', error);
+      console.error(ERROR.SERVER_ERROR, error);
       throw error;
     }
   }
