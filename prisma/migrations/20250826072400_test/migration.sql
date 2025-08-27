@@ -8,6 +8,7 @@ CREATE TABLE "public"."Group" (
     "description" TEXT,
     "photoUrl" TEXT,
     "goalRep" INTEGER NOT NULL DEFAULT 0,
+    "likeCount" INTEGER NOT NULL DEFAULT 0,
     "discordWebhookUrl" TEXT NOT NULL,
     "discordInviteUrl" TEXT NOT NULL,
     "ownerNickname" TEXT NOT NULL,
@@ -35,6 +36,7 @@ CREATE TABLE "public"."Participant" (
 -- CreateTable
 CREATE TABLE "public"."Like" (
     "id" SERIAL NOT NULL,
+    "groupId" INTEGER NOT NULL,
     "participantId" INTEGER NOT NULL,
 
     CONSTRAINT "Like_pkey" PRIMARY KEY ("id")
@@ -49,6 +51,7 @@ CREATE TABLE "public"."ExerciseRecord" (
     "time" INTEGER NOT NULL DEFAULT 0,
     "distance" INTEGER NOT NULL DEFAULT 0,
     "participantId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "ExerciseRecord_pkey" PRIMARY KEY ("id")
 );
@@ -112,7 +115,7 @@ CREATE UNIQUE INDEX "Participant_nickname_key" ON "public"."Participant"("nickna
 CREATE UNIQUE INDEX "Participant_nickname_password_key" ON "public"."Participant"("nickname", "password");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Like_participantId_key" ON "public"."Like"("participantId");
+CREATE UNIQUE INDEX "Like_groupId_participantId_key" ON "public"."Like"("groupId", "participantId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ParticipantPhoto_photoUrl_key" ON "public"."ParticipantPhoto"("photoUrl");
@@ -125,6 +128,9 @@ CREATE UNIQUE INDEX "GroupBadge_groupId_key" ON "public"."GroupBadge"("groupId")
 
 -- AddForeignKey
 ALTER TABLE "public"."Participant" ADD CONSTRAINT "Participant_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "public"."Group"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."Like" ADD CONSTRAINT "Like_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "public"."Group"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Like" ADD CONSTRAINT "Like_participantId_fkey" FOREIGN KEY ("participantId") REFERENCES "public"."Participant"("id") ON DELETE CASCADE ON UPDATE CASCADE;

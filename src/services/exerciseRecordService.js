@@ -90,8 +90,6 @@ class ExerciseRecordService {
       orderByClause.createdAt = order;
     } else if (orderBy === 'time') {
       orderByClause.time = order;
-    } else if (orderBy === 'recordCount') {
-      orderByClause.recordCount = order;
     }
 
 
