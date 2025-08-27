@@ -9,7 +9,6 @@ class ParticipantService {
     const existingGroup = await prisma.group.findUnique({
       where: { 
         id: groupId,
-        nickname, 
       },
     });
     if(!existingGroup){

@@ -13,7 +13,11 @@ class ParticipantController {
     const groupId = parseInt(req.params.groupId,10); 
     const validatedData = checking(nickname, password, groupId)
     
-    const updatedGroup = await this.participantService.joinGroup( checkedGroupId, checkedNickname, checkedPassword, checkedGroupId);
+    const updatedGroup = await this.participantService.joinGroup( 
+      validatedData.groupId, 
+      validatedData.nickname, 
+      validatedData.password
+    );
       return res.status(HTTP_STATUS.CREATED).json({ updatedGroup });  
     }catch(error){
       next(error)
@@ -26,7 +30,10 @@ class ParticipantController {
       const groupId = parseInt(req.params.groupId,10); 
       const validatedData = checking(nickname, password, groupId)
     
-      const updatedGroup = await this.participantService.joinGroup( checkedGroupId, checkedNickname, checkedPassword, checkedGroupId);
+      const updatedGroup = await this.participantService.joinGroup(      
+        validatedData.groupId, 
+        validatedData.nickname, 
+        validatedData.password);
         return res.status(HTTP_STATUS.CREATED).json({ updatedGroup });  
       }catch(error){
         next(error)

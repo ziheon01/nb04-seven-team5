@@ -19,6 +19,7 @@ class RankController {
     }
 
     try {
+      const { page = 1, limit = 1 } = req.query;
       const { skip, take } = pagination(page, limit)
       const filter = req.dateFilter;
       let result;

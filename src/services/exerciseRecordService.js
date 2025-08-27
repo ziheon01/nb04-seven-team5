@@ -85,14 +85,7 @@ class ExerciseRecordService {
       };
     }
 
-    const orderByClause = {};
-    if (orderBy === 'createdAt') {
-      orderByClause.createdAt = order;
-    } else if (orderBy === 'time') {
-      orderByClause.time = order;
-    } else if (orderBy === 'recordCount') {
-      orderByClause.recordCount = order;
-    }
+    const orderByClause = ExerciseRecord_orderByClause(orderBy,order)
 
     try { 
       const records = await prisma.exerciseRecord.findMany({ //위에서 분류된 데이터들을 페이지네이션을 하기 위한 코드
@@ -124,7 +117,7 @@ class ExerciseRecordService {
         description: record.description,
         time: record.time,
         distance: record.distance,
-        participantPhoto: record.participantPhoto.map(photo => ({ photoUrl: photo.photoUrl})),
+        participantPhoto: (record.participantPhoto ?? []).map(photo => ({ photoUrl: photo.photoUrl})),
         participant: {
           id: record.participant.id,
           nickname: record.participant.nickname,
@@ -135,7 +128,7 @@ class ExerciseRecordService {
       const total = await prisma.exerciseRecord.count({ where }); // 데이터중 검색조건에 맞는 데이터들을 count를 사용해 계산        
       return { datas, total };
     } catch (error) {
-      console.error(ERROR.FETCH_FAILED(record), error);
+      console.error(ERROR.FETCH_FAILED('record'), error);
       throw error;
     }
   };

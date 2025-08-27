@@ -13,7 +13,7 @@ class ExerciseRecordController {
   createRecord = async (req, res, next) => {
     const { groupId } = req.params;
     const recordData = req.body;
-    const uploadedFiles = req.files;
+    const uploadedFiles = req.files || [];
     const photoUrls = uploadedFiles.map(file => `/uploads/${file.filename}`);
     recordData.participantPhoto = photoUrls;
     
