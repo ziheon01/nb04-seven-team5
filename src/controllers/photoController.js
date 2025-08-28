@@ -33,3 +33,6 @@ export const uploadParticipantPhotos = async (req, res) => {
     res.status(500).json({ error: "운동기록 사진 업로드 실패", detail: err.message });
   }
 };
+
+
+export default ParticipantController;

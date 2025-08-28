@@ -23,9 +23,11 @@ export const validateExerciseRecord = (req, res, next) => {
       message: err.message,
     }));
     return res.status(400).json({ errors });
-  }
-  next();
-};
+  } else {
+    req.body = result.data
+    next();
+  };
+}
 
 // 운동 기록 조회 검증 스키마
 export const exerciseRecordQuerySchema = z.object({
@@ -59,6 +61,8 @@ export const validateExerciseRecordQuery = (req, res, next) => {
       message: err.message,
     }));
     return res.status(400).json({ errors });
-  }
-  next();
+  } else {
+    req.query = result.data
+    next();
+  };
 };
