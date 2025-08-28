@@ -60,6 +60,7 @@ class ExerciseRecordController {
   getRecords = async (req, res, next) => {
     try {
       const { groupId } = req.params;
+      // validator 통과 못하는 상황에 대해 방어
       const options = req.validatedQuery || req.query;
 
       const { datas, total } = await this.exerciseRecordService.getRecords(groupId, options);

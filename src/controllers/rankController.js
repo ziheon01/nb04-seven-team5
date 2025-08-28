@@ -11,7 +11,7 @@ class RankController {
     try {
       const { groupId } = req.params
       //ranking을 조건에 맞게 query로 받음 
-      const ranking = req.query.ranking === 'recordTime' ? TIME : COUNT;
+      const ranking = (req.validatedQuery || req.query).ranking === 'recordTime' ? TIME : COUNT;
       const { skip, take } = req.pagination;
       const filter = req.dateFilter;
 

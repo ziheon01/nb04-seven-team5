@@ -30,7 +30,7 @@ class GroupController {
   getGroups = async (req, res, next) => {
     //Note: 유효성에서 이미 기본 값 확인
     try {
-      const { page, limit, order, orderBy, search } = req.query;
+      const { page, limit, order, orderBy, search } = req.validatedQuery || req.query;
 
       const options = {
         page,
