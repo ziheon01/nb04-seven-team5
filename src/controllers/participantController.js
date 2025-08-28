@@ -9,8 +9,8 @@ export class ParticipantController {
 
   joinGroup = async (req, res, next) => {
     try {
-      const { nickname, password } = req.body;
-      const groupId = req.params.groupId;
+      const { nickname, password } = req.parsedBody;
+      const { groupId } = req.parsedParams;
 
       const updatedGroup = await this.participantService.joinGroup(groupId, nickname, password);
       return res.status(HTTP.OK).json({ updatedGroup });
@@ -28,8 +28,8 @@ export class ParticipantController {
 
   leaveGroup = async (req, res, next) => {
     try {
-      const { nickname, password } = req.body;
-      const groupId = req.params.groupId;
+      const { nickname, password } = req.parsedBody;
+      const { groupId } = req.parsedParams;
 
       //Note: 탈퇴시 전달할 body가 없기 때문에 변수 할당 코드 삭제
       await this.participantService.leaveGroup(groupId, nickname, password);

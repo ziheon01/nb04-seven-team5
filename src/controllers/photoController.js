@@ -35,3 +35,5 @@ export const uploadParticipantPhotos = async (req, res) => {
     res.status(HTTP.SERVER_ERROR).json({ error: ERROR.CREATION_FAILED('uploadparticipantphotos'), detail: err.message });
   }
 };
+
+export default ParticipantController;

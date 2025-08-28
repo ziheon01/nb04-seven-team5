@@ -51,7 +51,7 @@ class GroupService {
       });
       return newGroup;
     } catch (error) {
-      console.error('그룹 생성 중 오류발생:', error);
+      console.error(ERROR.CREATION_FAILED('group'), error);
       throw error; // 컨트롤러로 에러 전달
     }
   }
@@ -108,7 +108,7 @@ class GroupService {
 
       return { groups: formattedGroups, total };
     } catch (error) {
-      console.error('그룹을 가져오는 중 오류발생:', error);
+      console.error(ERROR.FETCH_FAILED('group'), error);
       throw error;
     }
   }

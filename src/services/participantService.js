@@ -26,7 +26,7 @@ class ParticipantService {
       }
     });
     if (existingParticipant) {
-      throw new Error("Nickname already exists in this group")
+      throw new Error(ERROR.ALREADY_USED_NICKNAME)
     }
     //Note: 이 부분 이유가 있나요? console.log(groupId, nickname, password);
     const newParticipant = await prisma.participant.create({
@@ -64,7 +64,7 @@ class ParticipantService {
       where: { id: groupId }
     })
     if (!existingGroup) {
-      throw new Error('Group not found');
+      throw new Error(ERROR.NOT_FOUND('group'));
     }
 
     // 해당 그룹에 속해 있으면서  일치하는 닉네임,비밀번호이 있는지 확인 
@@ -77,7 +77,7 @@ class ParticipantService {
     });
 
     if (!existingParticipant) {
-      throw new Error('Participant not found');
+      throw new Error(ERROR.NOT_FOUND('participant'));
     }
 
     const deleteParticipant = await prisma.participant.delete({

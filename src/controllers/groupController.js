@@ -67,8 +67,8 @@ class GroupController {
 
   updateGroup = async (req, res, next) => {
     try {
-      const { groupId } = req.params;
-      const updateData = req.body;
+      const { groupId } = req.parsedParams;
+      const updateData = req.parsedBody;
 
       const updatedGroup = await this.groupService.updateGroup(groupId, updateData, updateData.ownerPassword);
 
@@ -86,8 +86,8 @@ class GroupController {
 
   deleteGroup = async (req, res, next) => {
     try {
-      const { groupId } = req.params;
-      const { ownerPassword } = req.body; // 비밀번호 인증을 위해 ownerPassword 추출
+      const { groupId } = req.parsedParams;
+      const { ownerPassword } = req.parsedBody; // 비밀번호 인증을 위해 ownerPassword 추출
 
       await this.groupService.deleteGroup(groupId, ownerPassword);
 
@@ -106,8 +106,8 @@ class GroupController {
   // 그룹 추천 API 핸들러 추가
   likeGroup = async (req, res, next) => {
     try {
-      const { groupId } = req.params;
-      const { participantId } = req.body; // 누가 추천했는지 (요청 Body에서 받음)
+      const { groupId } = req.parsedParams;
+      const { participantId } = req.parsedBody; // 누가 추천했는지 (요청 Body에서 받음)
 
       const updatedGroup = await this.groupService.likeGroup(groupId, participantId);
 
@@ -124,8 +124,8 @@ class GroupController {
   // 그룹 추천 취소 API 핸들러 추가
   unlikeGroup = async (req, res, next) => {
     try {
-      const { groupId } = req.params;
-      const { participantId } = req.body; // 누가 추천 취소했는지 (요청 Body에서 받음)
+      const { groupId } = req.parsedParams;
+      const { participantId } = req.parsedBody; // 누가 추천 취소했는지 (요청 Body에서 받음)
 
       const updatedGroup = await this.groupService.unlikeGroup(groupId, participantId);
       res.status(HTTP.OK).json(updatedGroup); // 또는 204 No Content

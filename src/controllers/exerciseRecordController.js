@@ -9,7 +9,7 @@ class ExerciseRecordController {
 
   createRecord = async (req, res, next) => {
     try {
-      const { groupId } = req.params;
+      const groupId = parseInt(req.params.groupId, 10);
       const recordData = req.body;
 
       const newRecord = await this.exerciseRecordService.createRecord(groupId, recordData); //service에서 post할 데이터를 받아옴
@@ -60,8 +60,8 @@ class ExerciseRecordController {
 
   getRecords = async (req, res, next) => {
     try {
-      const { groupId } = req.params;
-      const options = req.query;
+      const { groupId } = req.parsedParams;
+      const options = req.parsedQuery;
 
       const { datas, total } = await this.exerciseRecordService.getRecords(groupId, options);
       res.status(HTTP.OK).json({
