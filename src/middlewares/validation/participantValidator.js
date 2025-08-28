@@ -25,8 +25,10 @@ export const validateParticipantIdBody = (req, res, next) => {
             message: err.message,
         }));
         return res.status(400).json({ errors });
-    }
-    next();
+    } else {
+        req.body = result.data
+        next();
+    };
 };
 
 // 참가자 가입/탈퇴 body (nickname, password) 스키마
@@ -44,6 +46,8 @@ export const validateParticipantBody = (req, res, next) => {
             message: err.message,
         }));
         return res.status(400).json({ errors });
-    }
-    next();
+    } else {
+        req.body = result.data
+        next();
+    };
 };
