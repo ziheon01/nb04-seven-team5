@@ -103,7 +103,7 @@ export const groupIdParamSchema = z.object({
 
 // 그룹 ID 유효성 검증 미들웨어
 export const validateGroupIdParam = (req, res, next) => {
-    const result.data = groupIdParamSchema.safeParse(req.params);
+    const result = groupIdParamSchema.safeParse(req.params);
 
     if (!result.success) {
         const errors = result.error.errors.map(err => ({
