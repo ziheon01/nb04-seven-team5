@@ -25,7 +25,7 @@ class RankService {
   getRankingsByTime = async (groupId, dateFilter, skip = 0, take = 10) => {
     return prisma.participant.findMany({
       select: {
-        participantId: true,
+        id: true,
         nickname: true,
         recordTime: true,
         recordCount: true,
