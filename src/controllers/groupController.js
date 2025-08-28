@@ -6,19 +6,13 @@ class GroupController {
   }
 
   createGroup = async (req, res, next) => {
-    // 텍스트 필드는 req.body에서, 파일 정보는 req.file에서 가져옵니다.
-    const groupDataFromText = req.body;
-    // 파일이 업로드 되었다면 그 경로를, 아니라면 null을 photoUrl로 사용합니다.
-    const photoUrl = req.file ? req.file.path : null;
+    const groupData = req.body; // req.body는 이제 groupValidator에서 photoUrl을 포함합니다.
 
     try {
-      // groupData 객체를 서비스에 넘겨주기 전에, photoUrl을 포함하여 완전한 객체로 만듭니다.
-      const groupData = {
-        ...groupDataFromText,
-        goalRep: parseInt(groupDataFromText.goalRep, 10), // form-data로 받은 숫자는 문자열일 수 있으므로 변환
-        tags: Array.isArray(groupDataFromText.tags) ? groupDataFromText.tags : [groupDataFromText.tags], // 태그가 하나만 올 경우를 대비
-        photoUrl: photoUrl
-      };
+      // goalRep과 tags는 Zod 스키마에서 이미 처리되었지만,
+      // 혹시 모를 경우를 대비하여 안전하게 다시 변환합니다.
+      groupData.goalRep = parseInt(groupData.goalRep, 10);
+      groupData.tags = Array.isArray(groupData.tags) ? groupData.tags : [groupData.tags];
 
       const newGroup = await this.groupService.createGroup(groupData);
       res.status(201).json(newGroup);

@@ -176,7 +176,20 @@ export const getRecords = async (
         ...query,
       },
     });
-    const { data, total } = response.data;
+    const { data: rawData, total } = response.data;
+    
+    const data = rawData.map((record: any) => ({
+      id: record.id,
+      exerciseType: record.exerciseType,
+      description: record.description,
+      time: record.time,
+      distance: record.distance,
+      author: record.participant, // participant -> author로 변경
+      photos: record.participantPhoto
+        ? record.participantPhoto.map((p: { photoUrl: string }) => p.photoUrl)
+        : [],
+    }));
+
     return { data, total };
   } catch (error) {
     logError(error);
@@ -206,17 +219,15 @@ export const getRanks = async (
   try {
     const response = await axios.get(`/groups/${groupId}/ranks`, { // Changed to /ranks (plural)
       params: {
+        ...query,
         ranking: 'count', // Defaulting to 'count' as per gemini.md's "운동 기록 많은 순"
         duration: duration, // Pass duration for date filtering
-        page: query.page,
-        limit: query.limit,
-        order: query.order,
-        orderBy: query.orderBy,
-        search: query.search,
+        orderBy: 'recordCount', // Set a valid default for ranks
       },
     });
-    const { data, total } = response.data;
-    return { data, total };
+    // The ranks endpoint returns an array directly, not a pagination object.
+    const data = response.data;
+    return { data, total: data.length }; // Manually construct the pagination response
   } catch (error) {
     logError(error);
     throw error;

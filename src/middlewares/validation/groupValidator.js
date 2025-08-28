@@ -39,18 +39,26 @@ export const groupCreateSchema = z.object({
         z.array(z.string())
             .max(10, "태그는 최대 10개까지 입력할 수 있습니다.")
     ).optional(), // Keep optional for overall schema, but preprocess handles initial undefined/null
+    photoUrl: z.string().optional(), // URL 검증 제거
 });
 
 // 그룹 생성 유효성 미들웨어
 export const validateGroupCreate = (req, res, next) => {
+    // req.file이 존재하면 photoUrl을 req.body에 추가
+    if (req.file) {
+        req.body.photoUrl = `/uploads/${encodeURIComponent(req.file.filename)}`;
+    }
+
     const result = groupCreateSchema.safeParse(req.body);
     if (!result.success) {
-        const errors = result.error.errors.map(err => ({
-            path: err.path.join('.'),
-            message: err.message,
+        const fieldErrors = result.error.flatten().fieldErrors;
+        const errors = Object.entries(fieldErrors).map(([path, messages]) => ({
+            path,
+            message: messages.join(", "),
         }));
         return res.status(400).json({ errors });
     }
+    req.body = result.data; // 유효성 검사된 데이터로 req.body를 업데이트
     next();
 };
 
@@ -84,12 +92,14 @@ export const groupQuerySchema = z.object({
 export const validateGroupQuery = (req, res, next) => {
     const result = groupQuerySchema.safeParse(req.query);
     if (!result.success) {
-        const errors = result.error.errors.map(err => ({
-            path: err.path.join('.'),
-            message: err.message,
+        const fieldErrors = result.error.flatten().fieldErrors;
+        const errors = Object.entries(fieldErrors).map(([path, messages]) => ({
+            path,
+            message: messages.join(", "),
         }));
         return res.status(400).json({ errors });
     }
+    Object.assign(req.query, result.data);
     next();
 };
 
@@ -111,12 +121,14 @@ export const validateGroupIdParam = (req, res, next) => {
     const result = groupIdParamSchema.safeParse(req.params);
 
     if (!result.success) {
-        const errors = result.error.errors.map(err => ({
-            path: err.path.join('.'),
-            message: err.message,
+        const fieldErrors = result.error.flatten().fieldErrors;
+        const errors = Object.entries(fieldErrors).map(([path, messages]) => ({
+            path,
+            message: messages.join(", "),
         }));
         return res.status(400).json({ errors });
     }
+    Object.assign(req.params, result.data);
     next();
 };
 
@@ -133,12 +145,14 @@ export const groupUpdateSchema = groupCreateSchema
 export const validateGroupUpdate = (req, res, next) => {
     const result = groupUpdateSchema.safeParse(req.body);
     if (!result.success) {
-        const errors = result.error.errors.map(err => ({
-            path: err.path.join('.'),
-            message: err.message,
+        const fieldErrors = result.error.flatten().fieldErrors;
+        const errors = Object.entries(fieldErrors).map(([path, messages]) => ({
+            path,
+            message: messages.join(", "),
         }));
         return res.status(400).json({ errors });
     }
+    req.body = { ...req.body, ...result.data };
     next();
 };
 
@@ -153,11 +167,13 @@ export const ownerPasswordSchema = z.object({
 export const validateGroupDeleteBody = (req, res, next) => {
     const result = ownerPasswordSchema.safeParse(req.body);
     if (!result.success) {
-        const errors = result.error.errors.map(err => ({
-            path: err.path.join('.'),
-            message: err.message,
+        const fieldErrors = result.error.flatten().fieldErrors;
+        const errors = Object.entries(fieldErrors).map(([path, messages]) => ({
+            path,
+            message: messages.join(", "),
         }));
         return res.status(400).json({ errors });
     }
+    req.body = { ...req.body, ...result.data };
     next();
 };

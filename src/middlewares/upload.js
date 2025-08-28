@@ -18,8 +18,9 @@ const storage = multer.diskStorage({
   },
   //  저장할 때 파일명 정하는 거
   filename: (req, file, cb) => {
-    //  같은 파일명 중복 방지, 날짜+이름으로 저장
-    cb(null, Date.now() + "-" + file.originalname);
+    const ext = path.extname(file.originalname);
+    //  같은 파일명 중복 방지, 날짜+확장자로 저장
+    cb(null, Date.now() + ext);
   }
 });
 

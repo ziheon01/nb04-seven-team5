@@ -9,7 +9,7 @@ class ExerciseRecordController {
   createRecord = async (req, res, next) => {
     try {
       const { groupId } = req.params;
-      const recordData = req.body;
+      const recordData = req.body; // 유효성 검증을 마친 데이터
 
       const newRecord = await this.exerciseRecordService.createRecord(groupId, recordData); //service에서 post할 데이터를 받아옴
 

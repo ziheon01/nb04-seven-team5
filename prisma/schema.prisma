@@ -51,7 +51,7 @@ model ExerciseRecord {
   id                  Int                @id @default(autoincrement())
   groupId             Int
   participant         Participant        @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  exerciseType        ExerciseType       @default(running)
+  exerciseType        ExerciseType       @default(run)
   description         String
   time                Int                @default(0) //프론트 엔드의 스톱워치 시스템을 확인
   distance            Int                @default(0)
@@ -93,7 +93,7 @@ model Tag {
 }
 
 enum ExerciseType {
-  running
-  cycling
-  swimming
+  run
+  swim
+  bike
 }

@@ -1,31 +1,41 @@
 import express from 'express';
-import groupRouter from "./routers/groupRouter.js"; // groupRouter 임포트 *경로주의*
-import participantRouter from "./routers/participantRouter.js"; // participantRouter 임포트
-import exerciseRecordRouter from "./routers/exerciseRecordRouter.js"; // exerciseRecordRouter 임포트
-import rankRouter from "./routers/rankRouter.js"; // rankRouter 임포트
-import badgeRouter from "./routers/badgeRouter.js" // badgeRouter 임포트
-import  * as dotenv from 'dotenv';
+import groupRouter from "./routers/groupRouter.js";
+import participantRouter from "./routers/participantRouter.js";
+import exerciseRecordRouter from "./routers/exerciseRecordRouter.js";
+import rankRouter from "./routers/rankRouter.js";
+import badgeRouter from "./routers/badgeRouter.js";
+import imageRouter from "./routers/imageRouter.js"; // 이미지 라우터 import
+import * as dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import path from 'path'; // path 모듈 import
 
 const app = express();
 const port = 3000;
 dotenv.config();
 
+// CORS 미들웨어에 상세 설정을 추가합니다.
 app.use(cors({
   origin: 'http://localhost:3001', // 프론트엔드 서버의 주소
   credentials: true,             // 쿠키를 주고받기 위한 필수 설정
 }));
+
 app.use(express.json()); // json 요청 본문을 파싱하기 위한 미들웨어
-app.use(cookieParser());
+app.use(cookieParser()); // 쿠키 파서 미들웨어
+
+// '/uploads' 경로로 오는 요청은 프로젝트 루트의 'uploads' 폴더의 파일을 제공하도록 설정
+// Multer와 동일한 방식으로 경로를 설정하여 일관성을 유지합니다.
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+// API 라우터들을 등록합니다.
+app.use('/images', imageRouter); // 이미지 업로드 라우터
 app.use('/groups', groupRouter);
 app.use('/groups', participantRouter);
-app.use('/groups', exerciseRecordRouter); // 운동 기록 라우터 연결
+app.use('/groups', exerciseRecordRouter);
 app.use('/groups', rankRouter);
 app.use('/groups', badgeRouter);
 

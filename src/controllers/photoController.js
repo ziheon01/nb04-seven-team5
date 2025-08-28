@@ -1,4 +1,4 @@
-import { PrismaClient } from `../../generated/prisma`;
+import { PrismaClient } from '../../generated/prisma/index.js';
 const prisma = new PrismaClient();
 
 //  운동 기록 개당 사진 여러장 업로드 할 때 호출 함수
@@ -32,4 +32,15 @@ export const uploadParticipantPhotos = async (req, res) => {
     //  DB 저장 중 에러 발생하면 500상태 반환 후 에러 응답 창 띄우기
     res.status(500).json({ error: "운동기록 사진 업로드 실패", detail: err.message });
   }
+};
+
+// 범용 이미지 업로드 컨트롤러
+export const uploadImages = (req, res) => {
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ error: '업로드된 파일이 없습니다.' });
+  }
+
+  const urls = req.files.map(file => `/uploads/${file.filename}`);
+  
+  res.status(201).json({ urls });
 };

@@ -28,7 +28,7 @@ const GroupRankPage = async ({
           duration={duration}
         />
       </GroupTab>
-      <RankList ranks={ranks} />
+      <RankList ranks={ranks.data} />
     </>
   );
 };
