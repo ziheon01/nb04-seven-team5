@@ -19,8 +19,8 @@ router.put('/:groupId',
     groupValidator.validateGroupUpdate,
     groupController.updateGroup);
 router.delete('/:groupId',
-    groupValidator.groupIdParamSchema,
-    groupValidator.ownerPasswordSchema,
+    groupValidator.validateGroupIdParam,
+    groupValidator.validateGroupDeleteBody,
     groupController.deleteGroup);
 
 // 그룹 추천 API 추가

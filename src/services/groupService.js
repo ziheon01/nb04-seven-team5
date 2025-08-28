@@ -280,4 +280,4 @@ class GroupService {
   }
 }
 
-export default GroupServi
+export default GroupService
