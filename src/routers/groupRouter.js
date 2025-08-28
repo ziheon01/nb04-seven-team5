@@ -8,8 +8,12 @@ const router = express.Router();
 const groupController = new GroupController();
 
 // 그룹 생성 경로에 upload.single('groupPhoto'), 유효성 검사 미들웨어 추가
-router.post('/', upload.single('groupPhoto'), groupValidator.validateGroupCreate, groupController.createGroup);
-router.get('/', groupValidator.validateGroupQuery, groupController.getGroups);
+router.post('/', 
+    upload.single('groupPhoto'),
+    groupValidator.validateGroupCreate,
+    groupController.createGroup);
+router.get('/', groupValidator.validateGroupQuery,
+    groupController.getGroups);
 
 router.get('/:groupId',
     groupValidator.validateGroupIdParam,
