@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 class RankService {
   getRankingsByCount= async (groupId, dateFilter, skip = 0, take = 10) => {
-    return prisma.participant.findMany({
+    return prisma.participants.findMany({
       select: {
         id: true,
         nickname: true,
@@ -23,7 +23,7 @@ class RankService {
   }
 
   getRankingsByTime = async (groupId, dateFilter, skip = 0, take = 10) => {
-    return prisma.participant.findMany({
+    return prisma.participants.findMany({
       select: {
         participantId: true,
         nickname: true,

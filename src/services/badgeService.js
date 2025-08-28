@@ -11,10 +11,10 @@ export const badgeTypes = {
 class BadgeService {
   // 배지 기준 조건에 따른 상태 반환
   computeBadgeStatuses = async (groupId) => {
-    const totalParticipant = await prisma.participant.count({ where: { groupId } });
+    const totalParticipant = await prisma.participants.count({ where: { groupId } });
     const totalExerciseRecord = await prisma.exerciseRecord.count({ where: { groupId } });
     const totalLike = await prisma.like.count({
-      where: { participant: { groupId } },
+      where: { participants: { groupId } },
     });
 
     return {

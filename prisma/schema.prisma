@@ -30,11 +30,11 @@ model Group {
   ownerPassword     String
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
-  participant       Participant[]
+  participants      Participants[]
   likes             Like[]
 }
 
-model Participant {
+model Participants {
   id              Int              @id @default(autoincrement()) // 참가자를 포함할때 자동으로 id를 증가하게 만들어 줍니다.
   group           Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId         Int
@@ -53,7 +53,7 @@ model Like {
   id            Int         @id @default(autoincrement())
   group         Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId       Int
-  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participants  Participants @relation(fields: [participantId], references: [id], onDelete: Cascade)
   participantId Int
 
   @@unique([groupId, participantId])
@@ -62,7 +62,7 @@ model Like {
 model ExerciseRecord {
   id                  Int                @id @default(autoincrement())
   groupId             Int
-  participant         Participant        @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participants        Participants       @relation(fields: [participantId], references: [id], onDelete: Cascade)
   exerciseType        ExerciseType       @default(running)
   description         String
   time                Int                @default(0) //프론트 엔드의 스톱워치 시스템을 확인

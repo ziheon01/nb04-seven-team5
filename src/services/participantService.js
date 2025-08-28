@@ -18,7 +18,7 @@ class ParticipantService {
       throw new Error('Group not found')
     }
 
-    const existingParticipant = await prisma.participant.findFirst({
+    const existingParticipant = await prisma.participants.findFirst({
       where: {
         groupId,
         nickname,
@@ -28,7 +28,7 @@ class ParticipantService {
       throw new Error("Nickname already exists in this group")
     }
     //Note: 이 부분 이유가 있나요? console.log(groupId, nickname, password);
-    const newParticipant = await prisma.participant.create({
+    const newParticipant = await prisma.participants.create({
       data: {
         groupId,
         nickname,
@@ -43,7 +43,7 @@ class ParticipantService {
     const updatedGroup = await prisma.group.findUnique({
       where: { id: groupId },
       include: {
-        participant: {
+        participants: {
           select: {
             id: true,
             nickname: true,
@@ -67,7 +67,7 @@ class ParticipantService {
     }
 
     // 해당 그룹에 속해 있으면서  일치하는 닉네임,비밀번호이 있는지 확인 
-    const existingParticipant = await prisma.participant.findFirst({
+    const existingParticipant = await prisma.participants.findFirst({
       where: {
         groupId,
         nickname,
@@ -79,7 +79,7 @@ class ParticipantService {
       throw new Error('Participant not found');
     }
 
-    const deleteParticipant = await prisma.participant.delete({
+    const deleteParticipant = await prisma.participants.delete({
       where: {
         id: existingParticipant.id
       }

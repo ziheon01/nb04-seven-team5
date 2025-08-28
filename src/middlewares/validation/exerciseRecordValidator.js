@@ -1,29 +1,46 @@
 import { z } from "zod";
-import { groupIdParamSchema, validateGroupIdParam } from './groupValidator.js';
-
+import { validateGroupIdParam } from './groupValidator.js';
 export { validateGroupIdParam };
 
 // 운동 기록 생성 검증 스키마
 export const exerciseRecordSchema = z.object({
   exerciseType: z.enum(["running", "cycling", "swimming"]),
   description: z.string().min(1, "설명은 필수입력입니다").max(200, "설명은 200자 이내입니다"),
-  time: z.number().int().nonnegative("시간은 0 이상이어야 합니다"),
-  distance: z.number().int().nonnegative("거리는 0 이상이어야 합니다"),
+  time: z.preprocess(
+    (val) => Number(val),
+    z.number().int().nonnegative("시간은 0 이상이어야 합니다")
+  ),
+  distance: z.preprocess(
+    (val) => Number(val),
+    z.number().int().nonnegative("거리는 0 이상이어야 합니다")
+  ),
   participantNickname: z.string().min(1, "닉네임은 필수입력입니다").max(20, "닉네임은 20자 이내입니다"),
   participantPassword: z.string().min(1, "비밀번호는 필수입력입니다").max(20, "비밀번호는 20자 이내입니다"),
-  participantPhoto: z.array(z.string().url("유효하지 않은 URL 입니다")).max(3).optional(),
 });
 
 // 운동 기록 생성 유효성 검증 미들웨어
 export const validateExerciseRecord = (req, res, next) => {
+  // multer(upload) 결과에서 photoUrl 배열 주입
+  if (req.files && req.files.length > 0) {
+    req.body.participantPhoto = req.files.map(file => file.path); 
+  } else {
+    req.body.participantPhoto = []; 
+  }
+
   const result = exerciseRecordSchema.safeParse(req.body);
   if (!result.success) {
-    const errors = result.error.errors.map((err) => ({
-      path: err.path.join("."),
+    const errors = result.error.errors.map(err => ({
+      path: err.path.join('.'),
       message: err.message,
     }));
     return res.status(400).json({ errors });
   }
+
+  req.body = result.data; // 검증된 데이터 사용
+  // participantPhoto 는 zod schema 에 없으니 result.data 에는 안 들어감
+  // 👉 그래서 아래에서 추가로 주입
+  req.body.participantPhoto = req.files?.map(file => file.path) || [];
+
   next();
 };
 

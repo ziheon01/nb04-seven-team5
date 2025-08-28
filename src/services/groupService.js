@@ -29,7 +29,7 @@ class GroupService {
 
           // --- 핵심 수정 부분 ---
           // 1. 중첩된 쓰기를 사용해 그룹 생성과 동시에 참여자(소유주) 생성
-          participant: {
+          participants: {
             create: [
               {
                 nickname: ownerNickname,
@@ -44,7 +44,7 @@ class GroupService {
         },
         // 3. 응답에 방금 만든 참여자와 태그 정보도 포함시킴
         include: {
-          participant: true,
+          participants: true,
           tag: true,
         }
       });
@@ -73,7 +73,7 @@ class GroupService {
       orderByClause.createdAt = order;
     } else if (orderBy === 'participantCount') {
       // 'participant' 관계의 개수(_count)를 기준으로 정렬
-      orderByClause.participant = {
+      orderByClause.participants = {
         _count: order,
       };
     } else if (orderBy === 'likeCount') {
@@ -90,7 +90,7 @@ class GroupService {
         // 각 그룹의 참여자 수와, 태그 목록을 함께 가져옴
         include: {
           _count: {
-            select: { participant: true },
+            select: { participants: true },
           },
           tag: true,
         },
@@ -99,7 +99,7 @@ class GroupService {
       // 프론트엔드에서 사용하기 편하도록 데이터 구조를 가공
       const formattedGroups = groups.map(group => ({
         ...group,
-        participantCount: group._count.participant, // 참여자 수를 participantCount 필드로 추가
+        participantCount: group._count.participants, // 참여자 수를 participantCount 필드로 추가
         _count: undefined, // 기존 _count 필드는 제거
       }));
 
@@ -119,7 +119,7 @@ class GroupService {
           id: groupId,
         },
         include: {
-          participant: true,
+          participants: true,
           tag: true,
         },
       });

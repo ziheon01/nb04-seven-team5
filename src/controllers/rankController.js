@@ -9,7 +9,7 @@ class RankController {
 
   getRanks = async (req, res, next) => {
     try {
-      const { groupId } = req.params
+      const groupId = Number(req.params.groupId); 
       //ranking을 조건에 맞게 query로 받음 
       const ranking = req.query.ranking === 'recordTime' ? TIME : COUNT;
       const { skip, take } = req.pagination;

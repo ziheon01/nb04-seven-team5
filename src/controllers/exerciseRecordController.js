@@ -47,9 +47,9 @@ class ExerciseRecordController {
         time: newRecord.time,
         distance: newRecord.distance,
         participantPhoto: newRecord.participantPhoto ?? [],
-        participant: {
-          id: newRecord.participant.id,
-          nickname: newRecord.participant.nickname
+        participants: {
+          id: newRecord.participants.id,
+          nickname: newRecord.participants.nickname
         }
       });
     } catch (error) {
@@ -59,7 +59,7 @@ class ExerciseRecordController {
 
   getRecords = async (req, res, next) => {
     try {
-      const { groupId } = req.params;
+      const groupId = Number(req.params.groupId); 
       const options = req.query;
 
       const { datas, total } = await this.exerciseRecordService.getRecords(groupId, options);

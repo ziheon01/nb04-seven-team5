@@ -2,7 +2,7 @@ import express from "express";
 import GroupController from '../controllers/groupController.js';
 import upload from '../middlewares/upload.js'; // upload 미들웨어 임포트
 import * as groupValidator from '../middlewares/validation/groupValidator.js'
-import * as participantValidtor from '../middlewares/validation/participantValidator.js'
+import * as participantValidator from '../middlewares/validation/participantValidator.js'
 
 const router = express.Router();
 const groupController = new GroupController();
@@ -19,19 +19,19 @@ router.put('/:groupId',
     groupValidator.validateGroupUpdate,
     groupController.updateGroup);
 router.delete('/:groupId',
-    groupValidator.groupIdParamSchema,
-    groupValidator.ownerPasswordSchema,
+    groupValidator.validateGroupIdParam,      // ✅ 스키마 대신 미들웨어 함수 사용
+    groupValidator.validateGroupDeleteBody,   // ✅ 스키마 대신 미들웨어 함수 사용
     groupController.deleteGroup);
 
 // 그룹 추천 API 추가
 router.post('/:groupId/like',
     groupValidator.validateGroupIdParam,
-    participantValidtor.validateParticipantIdBody,
+    participantValidator.validateParticipantBody,
     groupController.likeGroup);
 // 그룹 추천 취소 API 추가
 router.delete('/:groupId/like',
     groupValidator.validateGroupIdParam,
-    participantValidtor.validateParticipantIdBody,
+    participantValidator.validateParticipantBody,
     groupController.unlikeGroup);
 
 export default router;

@@ -1,49 +1,48 @@
-import { z } from 'zod';
-import { groupIdParamSchema, validateGroupIdParam } from '../validation/groupValidator.js';
+// src/middlewares/validation/participantValidator.js
+import { z } from "zod";
 
-export { validateGroupIdParam };
+// 공용 스키마
+export const participantIdSchema = z.string();
 
-// 참가자 ID 유효성 검증 스키마
-export const participantIdBodySchema = z.object({
-    participantId: z.preprocess(
-        val => Number(val),
-        z.number({
-            required_error: 'Group ID is required.',
-            invalid_type_error: 'Group ID must be a number.',
-        })
-            .int('Participant ID must be an integer.')
-            .positive('Participant ID must be a positive number.')
-    ),
-});
+export const participantNicknameSchema = z.string()
+  .min(3, { message: "Nickname must be at least 3 characters" })
+  .max(30, { message: "Nickname must be at most 30 characters" });
 
-// 참가자 ID 유효성 검증 미들웨어
-export const validateParticipantIdBody = (req, res, next) => {
-    const result = participantIdBodySchema.safeParse(req.body);
-    if (!result.success) {
-        const errors = result.error.errors.map(err => ({
-            path: err.path.join('.'),
-            message: err.message,
-        }));
-        return res.status(400).json({ errors });
-    }
-    next();
+// 바디 검증 미들웨어
+export const validateParticipantBody = (req, res, next) => {
+  const schema = z.object({
+    nickname: participantNicknameSchema,
+    password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  });
+
+  const result = schema.safeParse(req.body);
+  if (!result.success) {
+    return res.status(400).json({ errors: result.error.errors });
+  }
+
+  req.body = result.data;
+  next();
 };
 
-// 참가자 가입/탈퇴 body (nickname, password) 스키마
-export const participantBodySchema = z.object({
-    nickname: z.string().min(1, "nickname은 필수 입력값입니다.").max(20, "nickname은 20자 이내여야 합니다."),
-    password: z.string().min(1, "password는 필수 입력값입니다.").max(20, "password는 20자 이내여야 합니다."),
-});
+// groupId param 검증 미들웨어
+export const validateGroupIdParam = (req, res, next) => {
+  const schema = z.object({
+    groupId: z.preprocess(
+      (val) => Number(val),
+      z.number({
+        required_error: "groupId is required",
+        invalid_type_error: "groupId must be a number",
+      })
+        .int("groupId must be an integer")
+        .positive("groupId must be a positive number")
+    ),
+  });
 
-// 참가자 body 유효성 검사 미들웨어
-export const validateParticipantBody = (req, res, next) => {
-    const result = participantBodySchema.safeParse(req.body);
-    if (!result.success) {
-        const errors = result.error.errors.map(err => ({
-            path: err.path.join('.'),
-            message: err.message,
-        }));
-        return res.status(400).json({ errors });
-    }
-    next();
+  const result = schema.safeParse(req.params);
+  if (!result.success) {
+    return res.status(400).json({ errors: result.error.errors });
+  }
+
+  req.params = result.data;
+  next();
 };

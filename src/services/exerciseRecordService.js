@@ -9,7 +9,7 @@ class ExerciseRecordService {
 
   getGroupWebhookUrl = async (groupId) => { //group 테이블에서 discordWebhookUrl를 가져오기 위한 코드
     const group = await prisma.group.findUnique({
-      where: { id: groupId },
+      where: { id: Number(groupId) },
       select: { discordWebhookUrl: true },
     });
 
@@ -24,40 +24,41 @@ class ExerciseRecordService {
 
     const { exerciseType, description, time, distance, participantPhoto, participantNickname, participantPassword } = recordData;
 
-    const participant = await prisma.participant.findFirst({ //participant 스키마의 '@@unique(name: "participantInfo", [nickname, password])'를 통해 한번에 검증
+    const participants = await prisma.participants.findFirst({ //participant 스키마의 '@@unique(name: "participantInfo", [nickname, password])'를 통해 한번에 검증
       where: {
+        groupId: Number(groupId),
         nickname: participantNickname,
         password: participantPassword,
       },
     });
 
-    if (!participant) {
+    if (!participants) {
       throw new Error("Participant not found");
     }
 
     const newRecord = await prisma.exerciseRecord.create({
       data: {
-        groupId,
+        groupId: Number(groupId),
         exerciseType,
         description,
-        time,
-        distance,
+        time: Number(time),
+        distance: Number(distance),
         participantPhoto: {
           //Note: 옵셔널체이닝(?.)을 사용해 값이 없을 때 에러없이 undefined로 반환하게 하여 항상 배열 형태를 만들도록함.
           create: participantPhoto?.map(url => ({ photoUrl: url })) || [], //participantPhoto를 url형식으로 저장
         },
-        participant: {
-          connect: { id: participant.id }, //위 조건에 맞는 participant의 id를 가져옴
+        participants: {
+          connect: { id: participants.id }, //위 조건에 맞는 participant의 id를 가져옴
         },
       },
       include: { //위의 participantId와 recordId에 맞는 participant, participantPhoto의 테이블 정보를 가져옴
-        participant: true,
+        participants: true,
         participantPhoto: true,
       },
     });
 
-    await prisma.participant.update({
-      where: { id: participant.id },
+    await prisma.participants.update({
+      where: { id: participants.id },
       data: {
         recordCount: {
           increment: 1,
@@ -84,7 +85,7 @@ class ExerciseRecordService {
 
     if (search && search.length > 0) {
       whereCondition = {
-        participant: {
+        participants: {
           nickname: {
             contains: search,
             mode: "insensitive",
@@ -101,16 +102,16 @@ class ExerciseRecordService {
     }
 
 
-    const records = await prisma.exerciseRecord.findMany({ //위에서 분류된 데이터들을 페이지네이션을 하기 위한 코드
-      where: { groupId, ...whereCondition },
-      skip,
-      take: limit,
-      orderBy: orderByClause,
-      include: {
-        participant: true,
-        participantPhoto: true,
-      },
-    });
+  const records = await prisma.exerciseRecord.findMany({
+    where: { groupId: Number(groupId) },   // ✅ 변환
+    skip: (Number(page) - 1) * Number(limit),  // ✅ 변환
+    take: Number(limit),                       // ✅ 변환
+    orderBy: { [orderBy]: order },
+    include: {
+      participants: true,
+      participantPhoto: true,
+    },
+  });
 
     const recordIds = records.map(record => record.id); //원하는 형태가 아닌 exerciseRecordId를 배열로 만들어주긴 위한 상수
 
@@ -136,9 +137,9 @@ class ExerciseRecordService {
         time: record.time,
         distance: record.distance,
         participantPhoto: photosForRecord,
-        participant: {
-          id: record.participant.id,
-          nickname: record.participant.nickname,
+        participants: {
+          id: record.participants.id,
+          nickname: record.participants.nickname,
         },
       };
     });

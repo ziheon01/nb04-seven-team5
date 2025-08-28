@@ -45,3 +45,5 @@ export class ParticipantController {
     }
   }
 }
+
+export default ParticipantController;
