@@ -21,7 +21,8 @@ export const validateRankQuery = (req, res, next) => {
       message: err.message,
     }));
     return res.status(400).json({ errors });
+  } else {
+    req.query = { ...req.query, ...result.data };
+    next();
   }
-  req.query = { ...req.query, ...result.data };
-  next();
 };
