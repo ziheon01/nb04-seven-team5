@@ -40,8 +40,11 @@ export const validateGroupCreate = (req, res, next) => {
             message: err.message,
         }));
         return res.status(400).json({ errors });
+    } else {
+        //Note: 검증된 된 값은 result 객체의 data속성에 담기고, 이를 다시 할당
+        req.body = result.data;
+        next();
     }
-    next();
 };
 
 // 그룹 조회검증 스키마 > 타입 유효성 default쓸 지 확인 필요
@@ -79,8 +82,10 @@ export const validateGroupQuery = (req, res, next) => {
             message: err.message,
         }));
         return res.status(400).json({ errors });
+    } else {
+        req.query = result.data;
+        next();
     }
-    next();
 };
 
 // 그룹 ID검증 스키마
@@ -98,7 +103,7 @@ export const groupIdParamSchema = z.object({
 
 // 그룹 ID 유효성 검증 미들웨어
 export const validateGroupIdParam = (req, res, next) => {
-    const result = groupIdParamSchema.safeParse(req.params);
+    const result.data = groupIdParamSchema.safeParse(req.params);
 
     if (!result.success) {
         const errors = result.error.errors.map(err => ({
@@ -106,8 +111,11 @@ export const validateGroupIdParam = (req, res, next) => {
             message: err.message,
         }));
         return res.status(400).json({ errors });
+    } else {
+        // req.params를 변환된 값으로 갱신.
+        req.params = result.data;
+        next();
     }
-    next();
 };
 
 // 그룹 업데이트 검증 스키마
@@ -116,7 +124,7 @@ export const groupUpdateSchema = groupCreateSchema
     .extend({
         ownerPassword: z.string()
             .min(1, "ownerPassword는 필수 입력값입니다.")
-            .max(20, "ownerPassword는 20자 이내여야 합니다."),        
+            .max(20, "ownerPassword는 20자 이내여야 합니다."),
     });
 
 // 그룹 업데이트 유효성 미들웨어
@@ -128,8 +136,10 @@ export const validateGroupUpdate = (req, res, next) => {
             message: err.message,
         }));
         return res.status(400).json({ errors });
+    } else {
+        req.body = result.data;
+        next();
     }
-    next();
 };
 
 // 그룹 오너 비밀번호 검증 스키마
@@ -148,7 +158,9 @@ export const validateGroupDeleteBody = (req, res, next) => {
             message: err.message,
         }));
         return res.status(400).json({ errors });
+    } else {
+        req.body = result.data;
+        next();
     }
-    next();
 };
 
