@@ -55,6 +55,7 @@ export const exerciseRecordQuerySchema = z.object({
 // 운동 기록 조회 유효성 미들웨어
 export const validateExerciseRecordQuery = (req, res, next) => {
   const result = exerciseRecordQuerySchema.safeParse(req.query);
+
   if (!result.success) {
     const errors = result.error.errors.map((err) => ({
       path: err.path.join("."),
@@ -62,7 +63,7 @@ export const validateExerciseRecordQuery = (req, res, next) => {
     }));
     return res.status(400).json({ errors });
   } else {
-    req.query = result.data
+    req.validatedQuery = result.data
     next();
   };
 };

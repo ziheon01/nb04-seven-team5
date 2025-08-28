@@ -15,6 +15,7 @@ export const rankQuerySchema = z.object({
 // 랭크 조회 쿼리 검증 미들웨어
 export const validateRankQuery = (req, res, next) => {
   const result = rankQuerySchema.safeParse(req.query);
+
   if (!result.success) {
     const errors = result.error.errors.map(err => ({
       path: err.path.join("."),
@@ -22,7 +23,7 @@ export const validateRankQuery = (req, res, next) => {
     }));
     return res.status(400).json({ errors });
   } else {
-    req.query = { ...req.query, ...result.data };
+    req.validatedQuery = { ...req.query, ...result.data };
     next();
   }
 };

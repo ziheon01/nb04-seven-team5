@@ -60,7 +60,7 @@ class ExerciseRecordController {
   getRecords = async (req, res, next) => {
     try {
       const { groupId } = req.params;
-      const options = req.query;
+      const options = req.validatedQuery || req.query;
 
       const { datas, total } = await this.exerciseRecordService.getRecords(groupId, options);
       res.status(200).json({

@@ -76,6 +76,7 @@ export const groupQuerySchema = z.object({
 // 그룹 조회 유효성 미들웨어
 export const validateGroupQuery = (req, res, next) => {
     const result = groupQuerySchema.safeParse(req.query);
+
     if (!result.success) {
         const errors = result.error.errors.map(err => ({
             path: err.path.join('.'),
@@ -83,7 +84,7 @@ export const validateGroupQuery = (req, res, next) => {
         }));
         return res.status(400).json({ errors });
     } else {
-        req.query = result.data;
+        req.validatedQuery = result.data;
         next();
     }
 };
