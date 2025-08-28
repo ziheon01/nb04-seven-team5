@@ -4,7 +4,7 @@ import { groupIdParamSchema, validateGroupIdParam } from '../validation/groupVal
 export { validateGroupIdParam };
 
 // 참가자 ID 유효성 검증 스키마
-export const participantIdBodySchema = z.object({
+export const participantIdSchema = z.object({
     participantId: z.preprocess(
         val => Number(val),
         z.number({

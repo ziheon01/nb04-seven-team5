@@ -1,13 +1,13 @@
 import { z } from "zod";
 import { groupIdParamSchema, validateGroupIdParam } from './groupValidator.js';
-import { participantIdSchema, participantNicknameSchema } from './participantValidator.js';
+import { participantIdSchema, participantBodySchema } from './participantValidator.js';
 
 export { validateGroupIdParam };
 
 // 랭크 조회 쿼리 스키마
 export const rankQuerySchema = z.object({
   participantId: participantIdSchema,
-  participantNickname: participantNicknameSchema,
+  participantNickname: participantBodySchema,
   orderBy: z.enum(["recordTime", "recordCount"]).default("recordCount"),
   order: z.enum(["asc", "desc"]).default("desc"),
 });

@@ -1,6 +1,6 @@
 import ParticipantService from '../services/participantService.js';
 
-export class ParticipantController {
+export default class ParticipantController {
   constructor() {
     this.participantService = new ParticipantService();
   }
