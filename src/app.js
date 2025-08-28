@@ -6,13 +6,18 @@ import rankRouter from "./routers/rankRouter.js"; // rankRouter 임포트
 import badgeRouter from "./routers/badgeRouter.js" // badgeRouter 임포트
 import  * as dotenv from 'dotenv';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 const port = 3000;
 dotenv.config();
 
-app.use(cors()); // CORS 미들웨어 추가
+app.use(cors({
+  origin: 'http://localhost:3001', // 프론트엔드 서버의 주소
+  credentials: true,             // 쿠키를 주고받기 위한 필수 설정
+}));
 app.use(express.json()); // json 요청 본문을 파싱하기 위한 미들웨어
+app.use(cookieParser());
 
 app.get('/', (req, res) => {
   res.send('Hello World!');

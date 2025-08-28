@@ -105,41 +105,47 @@ class GroupController {
     }
   }
 
-  // 그룹 추천 API 핸들러 추가
-  likeGroup = async (req, res, next) => {
+  // 그룹 추천 및 취소 (토글) API 핸들러
+likeGroup = async (req, res, next) => {
     try {
-      const { groupId } = req.params;
-      console.log('req.body in likeGroup:', req.body); // Add this line
-      const { participantId } = req.body; // This is line 112
+        const { groupId } = req.params;
+        // 각 그룹마다 고유한 쿠키 이름을 만듭니다 (예: 'liked_group_11')
+        const cookieName = `liked_group_${groupId}`;
 
-      const updatedGroup = await this.groupService.likeGroup(groupId, participantId);
-
-      res.status(200).json(updatedGroup); // 또는 201 Created
+        // 1. 요청에 쿠키가 있는지 확인합니다.
+        if (req.cookies[cookieName]) {
+            // 2. 쿠키가 있다면 '좋아요'를 이미 누른 상태이므로, '좋아요 취소' 로직을 실행합니다.
+            await this.groupService.unlikeGroup(groupId);
+            // 응답을 보낼 때, 해당 쿠키를 삭제하라고 브라우저에 명령합니다.
+            res.cookie(cookieName, '', { maxAge: 0 });
+            res.status(200).json({ message: 'Like removed.' });
+        } else {
+            // 3. 쿠키가 없다면 처음 누르는 것이므로, '좋아요' 로직을 실행합니다.
+            const updatedGroup = await this.groupService.likeGroup(groupId);
+            // 응답을 보낼 때, '좋아요'를 눌렀다는 쿠키를 브라우저에 저장하라고 명령합니다. (유효기간 1년)
+            res.cookie(cookieName, 'true', { maxAge: 31536000000 });
+            res.status(200).json(updatedGroup);
+        }
     } catch (error) {
-      // 이미 추천한 경우 (409 Conflict) 또는 다른 에러 처리
-      if (error.message === 'Already liked.') {
-        return res.status(409).json({ message: error.message });
-      }
-      next(error);
+        next(error);
     }
-  }
+}
 
-  // 그룹 추천 취소 API 핸들러 추가
-  unlikeGroup = async (req, res, next) => {
+// DELETE API를 위한 핸들러도 동일하게 쿠키 기반으로 수정
+unlikeGroup = async (req, res, next) => {
     try {
-      const { groupId } = req.params;
-      const { participantId } = req.body; // 누가 추천 취소했는지 (요청 Body에서 받음)
+        const { groupId } = req.params;
+        const cookieName = `liked_group_${groupId}`;
 
-      const updatedGroup = await this.groupService.unlikeGroup(groupId, participantId);
-      res.status(200).json(updatedGroup); // 또는 204 No Content
+        // 이 API는 쿠키 존재 여부와 상관없이 항상 '좋아요 취소'를 실행
+        await this.groupService.unlikeGroup(groupId);
+        // 쿠키 삭제
+        res.cookie(cookieName, '', { maxAge: 0 });
+        res.status(200).json({ message: 'Like removed successfully.' });
     } catch (error) {
-      // 추천 기록이 없는 경우 (404 Not Found) 또는 다른 에러 처리
-      if (error.message === 'Like not found.') {
-        return res.status(404).json({ message: error.message });
-      }
-      next(error);
+        next(error);
     }
-  }
+}
 }
 
 export default GroupController;
