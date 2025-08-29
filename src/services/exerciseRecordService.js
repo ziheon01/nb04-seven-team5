@@ -1,4 +1,5 @@
 import { PrismaClient } from '../../generated/prisma/index.js'; // 올바른 Prisma Client 임포트 경로
+import { ERROR } from '../const/error.js';
 import BadgeService from './badgeService.js'; //Note: 뱃지 상태 갱신을 위해 추가
 
 const prisma = new PrismaClient();
@@ -14,7 +15,7 @@ class ExerciseRecordService {
     });
 
     if (!group) {
-      throw new Error('Group not found');
+      throw new Error(ERROR.NOT_FOUND('group'));
     }
 
     return group.discordWebhookUrl;
@@ -32,7 +33,7 @@ class ExerciseRecordService {
     });
 
     if (!participant) {
-      throw new Error("Participant not found");
+      throw new Error(ERROR.NOT_FOUND('participant'));
     }
 
     const newRecord = await prisma.exerciseRecord.create({
@@ -76,7 +77,9 @@ class ExerciseRecordService {
 
   getRecords = async (groupId, options) => {
     const { page, limit, order, orderBy, search } = options;
-    const skip = (page - 1) * limit;
+    const parsePage = +page;
+    const parseLimit = +limit;
+    const skip = (parsePage - 1) * parseLimit;
 
     //search가 있을 때만 사용할 필터링할 조건에 대해 정의
     const whereCondition = {};
@@ -104,7 +107,7 @@ class ExerciseRecordService {
     const records = await prisma.exerciseRecord.findMany({ //위에서 분류된 데이터들을 페이지네이션을 하기 위한 코드
       where: { groupId, ...whereCondition },
       skip,
-      take: limit,
+      take: parseLimit,
       orderBy: orderByClause,
       include: {
         participant: true,

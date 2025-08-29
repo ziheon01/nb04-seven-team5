@@ -1,4 +1,6 @@
 import { PrismaClient } from `../../generated/prisma`;
+import { ERROR } from "../const/error";
+import { HTTP } from "../const/http";
 const prisma = new PrismaClient();
 
 //  운동 기록 개당 사진 여러장 업로드 할 때 호출 함수
@@ -9,7 +11,7 @@ export const uploadParticipantPhotos = async (req, res) => {
   //  파일 경로 배열 없거나 비었을 때 클라이언트에 에러 응답
   if (!filePaths || filePaths.length === 0) {
     //  사진이 하나도 없으면 에러 창 띄우기
-    return res.status(400).json({ error: "업로드된 파일이 없습니다." });
+    return res.status(HTTP.BAD_REQUEST).json({ error: "업로드된 파일이 없습니다." });
   }
 
   try {
@@ -27,9 +29,11 @@ export const uploadParticipantPhotos = async (req, res) => {
     );
 
     //  사진 저장 모두 성공했을 때 저장된 경로 배열을 응답
-    res.status(200).json({ urls });
+    res.status(HTTP.OK).json({ urls });
   } catch (err) {
     //  DB 저장 중 에러 발생하면 500상태 반환 후 에러 응답 창 띄우기
-    res.status(500).json({ error: "운동기록 사진 업로드 실패", detail: err.message });
+    res.status(HTTP.SERVER_ERROR).json({ error: ERROR.CREATION_FAILED('uploadparticipantphotos'), detail: err.message });
   }
 };
+
+export default ParticipantController;

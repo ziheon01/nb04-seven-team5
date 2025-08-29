@@ -6,6 +6,8 @@ import rankRouter from "./routers/rankRouter.js"; // rankRouter 임포트
 import badgeRouter from "./routers/badgeRouter.js" // badgeRouter 임포트
 import  * as dotenv from 'dotenv';
 import cors from 'cors';
+import { ERROR } from './const/error.js';
+import { HTTP } from './const/http.js';
 
 const app = express();
 const port = 3000;
@@ -27,8 +29,8 @@ app.use('/groups', badgeRouter);
 // 전역 에러 핸들러
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(err.statusCode || 500).json({
-    message: err.message || "Internal Server Error",
+  res.status(err.statusCode || HTTP.SERVER_ERROR).json({
+    message: err.message || ERROR.SERVER_ERROR,
     path: err.path // 유효성 검사 에러 시 path 필드 추가
   });
 });

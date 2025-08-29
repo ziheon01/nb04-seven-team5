@@ -1,31 +1,33 @@
 import { z } from 'zod';
+import { HTTP } from '../../const/http.js';
+import { ERROR } from '../../const/error.js';
 
 // 그룹 생성검증 스키마
 export const groupCreateSchema = z.object({
     name: z.string()
-        .min(1, "name은 필수 입력값입니다.")
-        .max(20, "name은 20자 이내여야 합니다."),
+        .min(1, ERROR.LIMIT_MIN('name',1))
+        .max(20, ERROR.LIMIT_MAX('name',20)),
     description: z.string()
-        .min(1, "description은 필수 입력값입니다.")
-        .max(200, "description은 200자 이내여야 합니다."),
+        .min(1,ERROR.LIMIT_MIN('description',1))
+        .max(200, ERROR.LIMIT_MAX('description',200)),
     discordWebhookUrl: z.string()
-        .min(1, "discordWebhookUrl은 필수 입력값입니다.")
-        .max(3000, "discordWebhookUrl은 3000자 이내여야 합니다."),
+        .min(1,ERROR.LIMIT_MIN('discordWebhookUrl',1))
+        .max(3000, ERROR.LIMIT_MAX('discordWebhookUrl',3000)),
     discordInviteUrl: z.string()
-        .min(1, "discordInviteUrl은 필수 입력값입니다.")
-        .max(3000, "discordInviteUrl은 3000자 이내여야 합니다."),
+        .min(1, ERROR.LIMIT_MIN('discordInviteUrl',1))
+        .max(3000, ERROR.LIMIT_MAX('discordInviteUrl',3000)),
     ownerNickname: z.string()
-        .min(1, "ownerNickname은 필수 입력값입니다.")
-        .max(20, "ownerNickname은 20자 이내여야 합니다."),
+        .min(1, ERROR.LIMIT_MIN('ownerNickname',1))
+        .max(20, ERROR.LIMIT_MAX('ownerNickname',20)),
     ownerPassword: z.string()
-        .min(1, "ownerPassword는 필수 입력값입니다.")
-        .max(20, "ownerPassword는 20자 이내여야 합니다."),
+        .min(1,ERROR.LIMIT_MIN('ownerPassword',1))
+        .max(20, ERROR.LIMIT_MAX('ownerPassword',20)),
     goalRep: z.number({
-        required_error: "goalRep은 필수 입력값입니다.",
-        invalid_type_error: "goalRep은 숫자여야 합니다.",
-    })
-        .int("goalRep은 정수여야 합니다.")
-        .nonnegative("goalRep은 0 이상이어야 합니다."),
+        required_error: ERROR.REQUIRED('goalRep'),
+        invalid_type_error: ERROR.MUST_BE_NUMBER('goalRep')
+        })
+        .int(ERROR.MUST_BE_INT('goalRep'))
+        .nonnegative(ERROR.LIMIT_MIN('goalRep',0)),
     tags: z.array(z.string())
         .max(10, "태그는 최대 10개까지 입력할 수 있습니다.")
         .optional(),
@@ -39,9 +41,11 @@ export const validateGroupCreate = (req, res, next) => {
             path: err.path.join('.'),
             message: err.message,
         }));
-        return res.status(400).json({ errors });
+        return res.status(HTTP.BAD_REQUEST).json({ errors });
+    } else {
+        req.parsedBody = result.data;
+        next();
     }
-    next();
 };
 
 // 그룹 조회검증 스키마 > 타입 유효성 default쓸 지 확인 필요
@@ -51,15 +55,15 @@ export const groupQuerySchema = z.object({
     //Note: 쿼리는 문자열이기 때문에 수로 변환 후 유효성 검증
     limit: z.preprocess(val => Number(val),
         z.number()
-            .int("limit은 정수여야 합니다.")
-            .min(1, "limit은 1 이상이어야 합니다.")
-            .max(50, "limit은 50 이하여야 합니다.")
+            .int(ERROR.MUST_BE_INT('limit'))
+            .min(1, ERROR.LIMIT_MIN('limit',1))
+            .max(50, ERROR.LIMIT_MAX('limit',50))
             .default(10)
     ),
     page: z.preprocess(val => Number(val),
         z.number()
-            .int("page는 정수여야 합니다.")
-            .min(1, "page는 1 이상이어야 합니다.")
+            .int(ERROR.MUST_BE_INT('page'))
+            .min(1, ERROR.LIMIT_MIN('page',1))
             .default(1)
     ),
     orderBy: z.enum(['likeCount', 'participantCount', 'createdAt']).default('createdAt'),
@@ -74,11 +78,11 @@ export const groupQuerySchema = z.object({
 export const validateGroupQuery = (req, res, next) => {
     const result = groupQuerySchema.safeParse(req.query);
     if (!result.success) {
-        const errors = result.error.errors.map(err => ({
+        const errors = result.error.errors?.map(err => ({
             path: err.path.join('.'),
             message: err.message,
         }));
-        return res.status(400).json({ errors });
+        return res.status(HTTP.BAD_REQUEST).json({ errors });
     }
     next();
 };
@@ -88,10 +92,10 @@ export const groupIdParamSchema = z.object({
     groupId: z.preprocess(
         (val) => Number(val),
         z.number({
-            required_error: 'Group ID is required.',
-            invalid_type_error: 'Group ID must be a number.',
+            required_error: ERROR.REQUIRED('groupId'),
+            invalid_type_error: ERROR.MUST_BE_NUMBER('groupId'),
         })
-            .int('Group ID must be an integer.')
+            .int(ERROR.MUST_BE_INT('groupID'))
             .positive('Group ID must be a positive number.')
     )
 });
@@ -99,15 +103,16 @@ export const groupIdParamSchema = z.object({
 // 그룹 ID 유효성 검증 미들웨어
 export const validateGroupIdParam = (req, res, next) => {
     const result = groupIdParamSchema.safeParse(req.params);
-
     if (!result.success) {
         const errors = result.error.errors.map(err => ({
             path: err.path.join('.'),
             message: err.message,
         }));
-        return res.status(400).json({ errors });
+        return res.status(HTTP.BAD_REQUEST).json({ errors });
+    } else {
+        req.parsedParams = result.data;
+        next();
     }
-    next();
 };
 
 // 그룹 업데이트 검증 스키마
@@ -115,8 +120,8 @@ export const groupUpdateSchema = groupCreateSchema
     .partial()  // 모든 필드를 optional로 만듦
     .extend({
         ownerPassword: z.string()
-            .min(1, "ownerPassword는 필수 입력값입니다.")
-            .max(20, "ownerPassword는 20자 이내여야 합니다."),        
+            .min(1, ERROR.LIMIT_MIN('ownerPassword',1))
+            .max(20, ERROR.LIMIT_MAX('ownerPassword',20)),        
     });
 
 // 그룹 업데이트 유효성 미들웨어
@@ -127,16 +132,18 @@ export const validateGroupUpdate = (req, res, next) => {
             path: err.path.join('.'),
             message: err.message,
         }));
-        return res.status(400).json({ errors });
+        return res.status(HTTP.BAD_REQUEST).json({ errors });
+    } else {
+        req.parsedBody = result.data;
+        next();
     }
-    next();
 };
 
 // 그룹 오너 비밀번호 검증 스키마
 export const ownerPasswordSchema = z.object({
     ownerPassword: z.string()
-        .min(1, "ownerPassword는 필수 입력값입니다.")
-        .max(20, "ownerPassword는 20자 이내여야 합니다."),
+        .min(1, ERROR.LIMIT_MIN('ownerPassword',1))
+        .max(20, ERROR.LIMIT_MAX('ownerPassword',20)),
 });
 
 // 그룹 삭제 유효성 미들웨어
@@ -147,8 +154,9 @@ export const validateGroupDeleteBody = (req, res, next) => {
             path: err.path.join('.'),
             message: err.message,
         }));
-        return res.status(400).json({ errors });
-    }
-    next();
-};
-
+        return res.status(HTTP.BAD_REQUEST).json({ errors });
+    } else{
+        req.parsedBody = result.data;
+        next();
+    };
+}
