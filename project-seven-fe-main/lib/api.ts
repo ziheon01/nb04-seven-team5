@@ -165,6 +165,17 @@ export const DEFAULT_RECORDS_PAGINATION_QUERY: PaginationQuery = {
   search: '',
 };
 
+// Define a type for the raw record object from the API to avoid using 'any'
+interface ApiRecord {
+  id: number;
+  exerciseType: string;
+  description: string;
+  time: number;
+  distance: number;
+  participant: { id: number; nickname: string };
+  participantPhoto?: { photoUrl: string }[];
+}
+
 export const getRecords = async (
   groupId: number,
   query: PaginationQuery
@@ -177,8 +188,8 @@ export const getRecords = async (
       },
     });
     const { data: rawData, total } = response.data;
-    
-    const data = rawData.map((record: any) => ({
+
+    const data = rawData.map((record: ApiRecord) => ({
       id: record.id,
       exerciseType: record.exerciseType,
       description: record.description,
