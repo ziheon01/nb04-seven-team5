@@ -11,7 +11,7 @@ import cookieParser from 'cookie-parser';
 import path from 'path'; // path 모듈 import
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 dotenv.config();
 
 // CORS 미들웨어에 상세 설정을 추가합니다.
