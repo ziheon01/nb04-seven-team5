@@ -17,29 +17,32 @@ import styles from './GroupList.module.css';
 const cx = classNames.bind(styles);
 
 const GroupListHeader = ({
-  query: initialQuery = DEFAULT_GROUPS_PAGINATION_QUERY,
+  initialQuery = DEFAULT_GROUPS_PAGINATION_QUERY,
 }: {
-  query: PaginationQuery;
+  initialQuery: PaginationQuery;
 }) => {
   const router = useRouter();
-  const [query, setQuery] = useState<PaginationQuery>(initialQuery);
+
+  const setUrlParams = useCallback(
+    ({ search, orderBy }: { search: string; orderBy: string }) => {
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      if (orderBy) params.set('orderBy', orderBy);
+      router.push(`?${params.toString()}`);
+    },
+    [router]
+  );
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const search = formData.get('search') as string;
-    setQuery((prev) => ({
-      ...prev,
-      search,
-    }));
+    setUrlParams({ search, orderBy: initialQuery.orderBy });
   };
 
-  useEffect(() => {
-    const urlSearchParams = new URLSearchParams(
-      Object.entries(query).filter(([, value]) => value !== '')
-    );
-    router.push(`?${urlSearchParams.toString()}`);
-  }, [router, query]);
+  const handleOrderBy = (nextOrderby: string) => {
+    setUrlParams({ search: initialQuery.search, orderBy: nextOrderby });
+  };
 
   return (
     <div className={cx('listHeader')}>
@@ -51,16 +54,15 @@ const GroupListHeader = ({
             name="search"
             id="search"
             search
-            placeholder="이름으로 검색하기"
+            placeholder="이름으로 검색하기 (엔터)"
+            defaultValue={initialQuery.search}
           />
         </form>
 
         <Dropdown
           className={cx('orderBy')}
-          value={query.orderBy}
-          onChange={(value) =>
-            setQuery((prev) => ({ ...prev, orderBy: value }))
-          }
+          value={initialQuery.orderBy}
+          onChange={handleOrderBy}
           options={[
             { label: '최신순', value: 'createdAt' },
             { label: '참여자 수', value: 'participantCount' },
@@ -77,50 +79,53 @@ const GroupListHeader = ({
 
 const GroupList = ({
   initialValues = [],
-  paginationQuery,
+  initialQuery,
   total,
 }: {
   initialValues: Group[];
-  paginationQuery: PaginationQuery;
+  initialQuery: PaginationQuery;
   total: number;
 }) => {
   const [groups, setGroups] = useState<Group[]>(initialValues);
-  const [page, setPage] = useState(paginationQuery?.page ?? 1);
-  const { ref, inView } = useInView({
-    threshold: 0.1,
-  });
+  const [page, setPage] = useState(initialQuery.page);
+  const { ref, inView } = useInView();
   const [isLoading, setIsLoading] = useState(false);
+  const hasNext = groups.length < total;
 
-  const loadMore = useCallback(
-    async () => {
-      setIsLoading(true);
-      const { data: next } = await getGroupsAction({
-        ...paginationQuery,
+  const loadMore = useCallback(async () => {
+    if (isLoading || !hasNext) return;
+    setIsLoading(true);
+    let next: Group[] = [];
+    try {
+      const res = await getGroupsAction({
+        ...initialQuery,
         page: page + 1,
       });
-      setGroups((prev) => [...prev, ...next]);
-      setPage(page + 1);
+      next = res.data;
+    } catch (error) {
+      console.error(error);
+      return;
+    } finally {
       setIsLoading(false);
-    },
-    [paginationQuery, page]
-  );
+    }
+    setGroups((prev) => [...prev, ...next]);
+    setPage(page + 1);
+  }, [initialQuery, page, hasNext, isLoading]);
 
   useEffect(() => {
-    if (inView && !isLoading) {
+    if (inView) {
       loadMore();
     }
-  }, [inView, loadMore, isLoading]);
+  }, [inView, loadMore]);
 
   useEffect(() => {
     setGroups(initialValues);
-    setPage(paginationQuery?.page ?? 1);
-  }, [initialValues, paginationQuery]);
-
-  const hasNext = groups.length < total;
+    setPage(initialQuery.page);
+  }, [initialValues, initialQuery.page]);
 
   return (
     <div className={cx('container')}>
-      <GroupListHeader query={paginationQuery} />
+      <GroupListHeader initialQuery={initialQuery} />
       <ul className={cx('list')}>
         {groups.map((group) => (
           <li key={group.id}>

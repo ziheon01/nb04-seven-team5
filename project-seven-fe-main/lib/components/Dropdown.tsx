@@ -22,8 +22,8 @@ const Dropdown = ({
   const selectedValue = value || options[0].value;
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleChange = (value: string) => {
-    onChange(value);
+  const handleChange = (nextValue: string) => {
+    onChange(nextValue);
     setIsOpen(false);
   };
 

@@ -14,12 +14,15 @@ export default async function Home({
 }: {
   searchParams: Promise<PaginationQuery>;
 }) {
-  const paginationQuery = (await searchParams) as PaginationQuery;
+  const { search = '', orderBy = 'createdAt' } = await searchParams;
 
-  const { data: groups, total } = await getGroupsAction({
+  const initialQuery = {
     ...DEFAULT_GROUPS_PAGINATION_QUERY,
-    ...paginationQuery,
-  });
+    search,
+    orderBy,
+  };
+
+  const { data: groups, total } = await getGroupsAction(initialQuery);
 
   return (
     <div className={cx('page')}>
@@ -36,7 +39,7 @@ export default async function Home({
         height={307}
       />
       <GroupList
-        paginationQuery={paginationQuery}
+        initialQuery={initialQuery}
         initialValues={groups}
         total={total}
       />

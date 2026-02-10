@@ -16,7 +16,14 @@ const GroupRecordsPage = async ({
   const groupId = Number((await params).groupId);
   const group = await getGroupAction(groupId);
 
-  const paginationQuery = (await searchParams) as PaginationQuery;
+  const { orderBy = 'createdAt', search = '' } = await searchParams;
+  const paginationQuery: PaginationQuery = {
+    page: 1,
+    limit: 6,
+    order: 'desc',
+    orderBy,
+    search,
+  };
 
   const { data: records, total: recordsTotal } = await getRecordsAction(
     groupId,
@@ -27,15 +34,11 @@ const GroupRecordsPage = async ({
     <>
       <GroupDetail group={group} />
       <GroupTab groupId={groupId} selectedTab="records">
-        <RecordTabHeader
-          groupId={groupId}
-          recordsTotal={recordsTotal}
-          initialQuery={paginationQuery}
-        />
+        <RecordTabHeader groupId={groupId} recordsTotal={recordsTotal} />
       </GroupTab>
       <RecordList
         groupId={groupId}
-        paginationQuery={paginationQuery}
+        initialQuery={paginationQuery}
         initialValues={records}
         total={recordsTotal}
       />

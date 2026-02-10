@@ -64,24 +64,9 @@ export const getGroup = async (groupId: number): Promise<Group> => {
   }
 };
 
-export const createGroup = async (
-  group: GroupCreate & { photoFile?: File | null }
-): Promise<Group> => {
+export const createGroup = async (group: GroupCreate): Promise<Group> => {
   try {
-    const formData = new FormData();
-    formData.append('name', group.name);
-    if (group.description) formData.append('description', group.description);
-    formData.append('goalRep', group.goalRep.toString());
-    if (group.discordWebhookUrl)
-      formData.append('discordWebhookUrl', group.discordWebhookUrl);
-    if (group.discordInviteUrl)
-      formData.append('discordInviteUrl', group.discordInviteUrl);
-    group.tags.forEach(tag => formData.append('tags', tag)); // Append each tag individually
-    formData.append('ownerNickname', group.ownerNickname);
-    formData.append('ownerPassword', group.ownerPassword);
-    if (group.photoFile) formData.append('groupPhoto', group.photoFile); // Append the file
-
-    const response = await axios.postForm('/groups', formData);
+    const response = await axios.post('/groups', group);
     const createdGroup = response.data;
     return createdGroup;
   } catch (error) {
@@ -137,20 +122,18 @@ export const leaveGroup = async (
   }
 };
 
-export const likeGroup = async (groupId: number): Promise<void> => { // participantId 파라미터 삭제
+export const likeGroup = async (groupId: number): Promise<void> => {
   try {
-    // 요청 본문(body) 없이, 경로로만 요청을 보냅니다.
-    await axios.post(`/groups/${groupId}/like`);
+    await axios.post(`/groups/${groupId}/likes`);
   } catch (error) {
     logError(error);
     throw error;
   }
 };
 
-export const unlikeGroup = async (groupId: number): Promise<void> => { // participantId 파라미터 삭제
+export const unlikeGroup = async (groupId: number): Promise<void> => {
   try {
-    // 요청 본문(body) 없이, 경로로만 요청을 보냅니다.
-    await axios.delete(`/groups/${groupId}/like`);
+    await axios.delete(`/groups/${groupId}/likes`);
   } catch (error) {
     logError(error);
     throw error;
@@ -165,17 +148,6 @@ export const DEFAULT_RECORDS_PAGINATION_QUERY: PaginationQuery = {
   search: '',
 };
 
-// Define a type for the raw record object from the API to avoid using 'any'
-interface ApiRecord {
-  id: number;
-  exerciseType: string;
-  description: string;
-  time: number;
-  distance: number;
-  participant: { id: number; nickname: string };
-  participantPhoto?: { photoUrl: string }[];
-}
-
 export const getRecords = async (
   groupId: number,
   query: PaginationQuery
@@ -187,20 +159,7 @@ export const getRecords = async (
         ...query,
       },
     });
-    const { data: rawData, total } = response.data;
-
-    const data = rawData.map((record: ApiRecord) => ({
-      id: record.id,
-      exerciseType: record.exerciseType,
-      description: record.description,
-      time: record.time,
-      distance: record.distance,
-      author: record.participant, // participant -> author로 변경
-      photos: record.participantPhoto
-        ? record.participantPhoto.map((p: { photoUrl: string }) => p.photoUrl)
-        : [],
-    }));
-
+    const { data, total } = response.data;
     return { data, total };
   } catch (error) {
     logError(error);
@@ -224,21 +183,14 @@ export const createRecord = async (
 
 export const getRanks = async (
   groupId: number,
-  duration: RankDuration,
-  query: PaginationQuery = DEFAULT_RECORDS_PAGINATION_QUERY
-): Promise<PaginationResponse<Rank>> => {
+  duration: RankDuration
+): Promise<Rank[]> => {
   try {
-    const response = await axios.get(`/groups/${groupId}/ranks`, { // Changed to /ranks (plural)
-      params: {
-        ...query,
-        ranking: 'count', // Defaulting to 'count' as per gemini.md's "운동 기록 많은 순"
-        duration: duration, // Pass duration for date filtering
-        orderBy: 'recordCount', // Set a valid default for ranks
-      },
+    const response = await axios.get(`/groups/${groupId}/rank`, {
+      params: { duration },
     });
-    // The ranks endpoint returns an array directly, not a pagination object.
-    const data = response.data;
-    return { data, total: data.length }; // Manually construct the pagination response
+    const ranks: Rank[] = response.data;
+    return ranks;
   } catch (error) {
     logError(error);
     throw error;
