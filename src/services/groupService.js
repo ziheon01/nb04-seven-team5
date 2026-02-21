@@ -1,27 +1,25 @@
-import { PrismaClient } from '../../generated/prisma/index.js';
-import BadgeService from './badgeService.js'; //Note: 뱃지 상태 자동 갱신을 위해 추가
+// src/services/groupService.js
+import { PrismaClient } from '@prisma/client';
+import BadgeService from './badgeService.js';
+
 const prisma = new PrismaClient();
 
 class GroupService {
   constructor() {
-        this.badgeService = new BadgeService();
-    }
+    this.badgeService = new BadgeService();
+  }
+
   createGroup = async (groupData) => {
-    const { name,
-      description,
-      photoUrl,
-      goalRep,
-      discordWebhookUrl,
-      discordInviteUrl,
-      tags, // tags 배열을 받음
-      ownerNickname,
-      ownerPassword
+    const { 
+      name, description, photoUrl, goalRep, 
+      discordWebhookUrl, discordInviteUrl, tags, 
+      ownerNickname, ownerPassword 
     } = groupData;
 
     try {
       const newGroup = await prisma.group.create({
         data: {
-          groupName: name,
+          groupName: name, // DB 컬럼명에 맞춤
           description,
           photoUrl,
           goalRep,
@@ -29,9 +27,8 @@ class GroupService {
           discordInviteUrl,
           ownerNickname,
           ownerPassword,
-
-          // --- 핵심 수정 부분 ---
-          // 1. 중첩된 쓰기를 사용해 그룹 생성과 동시에 참여자(소유주) 생성
+          
+          // 1. 소유자를 첫 번째 참여자로 등록
           participant: {
             create: [
               {
@@ -40,21 +37,29 @@ class GroupService {
               },
             ],
           },
-          // 2. tags 배열을 순회하며 관련된 Tag 레코드들을 함께 생성
+          // 2. 태그 생성
           tag: {
-            create: tags.map(tagName => ({ tagName: tagName }))
+            create: tags.map(tagName => ({ tagName }))
+          },
+          // 3. 배지 테이블 초기화 (필수! 안 하면 나중에 null 에러 남)
+          groupBadge: {
+            create: {
+              participantsOver10: false,
+              recordsOver100: false,
+              recommandationsOver100: false
+            }
           }
         },
-        // 3. 응답에 방금 만든 참여자와 태그 정보도 포함시킴
         include: {
           participant: true,
           tag: true,
+          groupBadge: true, // 배지 정보 포함
         }
       });
       return newGroup;
     } catch (error) {
       console.error('그룹 생성 중 오류발생:', error);
-      throw error; // 컨트롤러로 에러 전달
+      throw error;
     }
   }
 
@@ -67,7 +72,7 @@ class GroupService {
     if (search) {
       where.groupName = {
         contains: search,
-        mode: 'insensitive', // 대소문자 구분 없이 검색
+        mode: 'insensitive',
       };
     }
 
@@ -75,13 +80,12 @@ class GroupService {
     if (orderBy === 'createdAt') {
       orderByClause.createdAt = order;
     } else if (orderBy === 'participantCount') {
-      // 'participant' 관계의 개수(_count)를 기준으로 정렬
-      orderByClause.participant = {
-        _count: order,
-      };
+      orderByClause.participant = { _count: order };
     } else if (orderBy === 'likeCount') {
-      // likeCount 필드를 기준으로 정렬하도록 수정
       orderByClause.likeCount = order;
+    } else {
+        // 기본 정렬
+        orderByClause.createdAt = 'desc';
     }
 
     try {
@@ -90,30 +94,18 @@ class GroupService {
         take,
         where,
         orderBy: orderByClause,
-        // 각 그룹의 참여자 수와, 태그 목록을 함께 가져옴
         include: {
-          _count: {
-            select: { participant: true },
-          },
+          _count: { select: { exerciseRecord: true } }, // 기록 수 계산용
+          participant: true, // 참여자 수 계산 및 목록용
           tag: true,
+          groupBadge: true, // 배지 정보
         },
       });
 
-      // 프론트엔드에서 사용하기 편하도록 데이터 구조를 가공
-      const formattedGroups = groups.map(group => ({
-        ...group,
-        participantCount: group._count.participant, // 참여자 수를 participantCount 필드로 추가
-        _count: undefined, // 기존 _count 필드는 제거
-        owner: {
-          nickname: group.ownerNickname,
-        },
-        participants: Array(group._count.participant).fill({}),
-        tags: group.tag.map(t => t.tagName), // Map Tag objects to an array of tagNames
-      }));
-
       const total = await prisma.group.count({ where });
 
-      return { groups: formattedGroups, total };
+      // ★ 가공 없이 원본 그대로 리턴 (매퍼가 처리함)
+      return { groups, total };
     } catch (error) {
       console.error('그룹을 가져오는 중 오류발생:', error);
       throw error;
@@ -123,63 +115,43 @@ class GroupService {
   getGroupDetail = async (groupId) => {
     try {
       const group = await prisma.group.findUnique({
-        where: {
-          id: groupId,
-        },
+        where: { id: Number(groupId) },
         include: {
           participant: true,
           tag: true,
-          groupBadge: true, // Include the groupBadge relation instead of badges
+          groupBadge: true,
+          _count: { select: { exerciseRecord: true } }
         },
       });
-
-      // Map 'participant' (singular) from Prisma to 'participants' (plural) for frontend
-      if (group) {
-        group.participants = group.participant;
-        delete group.participant; // Remove the singular 'participant' field
-        group.tags = group.tag.map(t => t.tagName); // Map Tag objects to an array of tagNames
-        delete group.tag; // Remove the singular 'tag' field
-        group.owner = { // Construct the owner object for the frontend
-          nickname: group.ownerNickname,
-        };
-        // Map Badge objects to an array of badge names (BadgeType)
-        // Use groupBadge to construct the badges array
-        if (group.groupBadge) {
-          const badgesArray = [];
-          if (group.groupBadge.participantsOver10) badgesArray.push('PARTICIPATION_10');
-          if (group.groupBadge.recordsOver100) badgesArray.push('RECORD_100');
-          if (group.groupBadge.recommandationsOver100) badgesArray.push('LIKE_100');
-          group.badges = badgesArray;
-        } else {
-          group.badges = []; // No badges if groupBadge is null
-        }
-      }
+      
+      // ★ 가공 없이 원본 그대로 리턴
       return group;
     } catch (error) {
-      console.error('그룹을 가져오는 중 오류발생:', error);
+      console.error('그룹 상세 조회 중 오류발생:', error);
       throw error;
     }
   }
 
   updateGroup = async (groupId, updateData, ownerPassword) => {
     try {
-      const group = await prisma.group.findUnique({
-        where: { id: groupId },
-      });
+      const numericGroupId = Number(groupId);
+      
+      // 권한 확인을 위해 먼저 조회
+      const group = await prisma.group.findUnique({ where: { id: numericGroupId } });
+      if (!group) throw new Error('Group not found.');
+      if (group.ownerPassword !== ownerPassword) throw new Error('Invalid owner password.');
 
-      if (!group) {
-        //Note: 컨트롤러 기준으로 수정
-        throw new Error('Group not found');
-      }
-
-      //Note: 컨트롤러 기준으로 수정
-      if (group.ownerPassword !== ownerPassword) {
-        throw new Error('Invalid owner password.');
-      }
-
+      // 태그 등 복잡한 업데이트 로직이 있다면 여기서 처리
+      // (단순 필드 업데이트만 가정)
+      
       const updatedGroup = await prisma.group.update({
-        where: { id: groupId },
+        where: { id: numericGroupId },
         data: updateData,
+        include: { // 업데이트 후 최신 정보 반환을 위해 include
+            participant: true,
+            tag: true,
+            groupBadge: true,
+        }
       });
 
       return updatedGroup;
@@ -188,49 +160,45 @@ class GroupService {
       throw error;
     }
   }
-  // 
+
   deleteGroup = async (groupId, ownerPassword) => {
     try {
-      const numericGroupId = Number(groupId); // <-- groupId를 숫자로 변환!
+      const numericGroupId = Number(groupId);
 
-      const group = await prisma.group.findUnique({
-        where: { id: numericGroupId }, // <-- 숫자 타입 ID 사용
-      });
-
-      if (!group) {
-        throw new Error("Group not found.");
-      }
-
-      if (group.ownerPassword !== ownerPassword) {
-        throw new "Invalid owner password."();
-      }
-      await prisma.group.delete({
-        where: { id: numericGroupId }, // <-- 숫자 타입 ID 사용
-      });
+      const group = await prisma.group.findUnique({ where: { id: numericGroupId } });
+      if (!group) throw new Error("Group not found.");
+      if (group.ownerPassword !== ownerPassword) throw new Error("Invalid owner password.");
+      
+      await prisma.group.delete({ where: { id: numericGroupId } });
       return;
     } catch (error) {
-      console.error(" 삭제 중 에러 발생: ", error);
+      console.error("삭제 중 에러 발생: ", error);
       throw error;
     }
   }
 
-  // 그룹 추천 로직 추가
-  likeGroup = async (groupId) => { // Removed participantId parameter
+  likeGroup = async (groupId) => { 
     try {
-      // Only increment likeCount, no participant tracking
+      const numericGroupId = Number(groupId);
+      
       const updatedGroup = await prisma.group.update({
-        where: { id: Number(groupId) },
-        data: {
-          likeCount: {
-            increment: 1,
-          },
-        },
+        where: { id: numericGroupId },
+        data: { likeCount: { increment: 1 } },
+        include: { groupBadge: true } // 배지 갱신 확인용
       });
 
-      // 추천 후 뱃지 자동 갱신
-      await this.badgeService.autoUpdateBadges(groupId);
+      // 배지 갱신
+      await this.badgeService.autoUpdateBadges(numericGroupId);
 
-      return updatedGroup;
+      // 갱신된 정보 다시 조회 (배지가 바뀌었을 수 있으므로)
+      return prisma.group.findUnique({
+          where: { id: numericGroupId },
+          include: { 
+              groupBadge: true,
+              tag: true,
+              participant: true 
+            }
+      });
 
     } catch (error) {
       console.error('그룹 추천 중 오류 발생:', error);
@@ -238,23 +206,25 @@ class GroupService {
     }
   }
 
-  // 그룹 추천 취소 로직 추가
-  unlikeGroup = async (groupId) => { // Removed participantId parameter
+  unlikeGroup = async (groupId) => { 
     try {
-      // Only decrement likeCount, no participant tracking
+      const numericGroupId = Number(groupId);
+
       const updatedGroup = await prisma.group.update({
-        where: { id: Number(groupId) },
-        data: {
-          likeCount: {
-            decrement: 1,
-          },
-        },
+        where: { id: numericGroupId },
+        data: { likeCount: { decrement: 1 } },
       });
 
-      // 추천 취소 후 뱃지 자동 갱신
-      await this.badgeService.autoUpdateBadges(groupId);
+      await this.badgeService.autoUpdateBadges(numericGroupId);
 
-      return updatedGroup;
+      return prisma.group.findUnique({
+        where: { id: numericGroupId },
+        include: { 
+            groupBadge: true,
+            tag: true,
+            participant: true 
+          }
+    });
 
     } catch (error) {
       console.error('그룹 추천 취소 중 오류 발생:', error);

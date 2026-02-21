@@ -1,5 +1,6 @@
 import ExerciseRecordService from '../services/exerciseRecordService.js';
 import axios from 'axios';
+import { toRecordResponse } from '../utils/responseMapper.js';
 
 class ExerciseRecordController {
   constructor() {
@@ -9,11 +10,12 @@ class ExerciseRecordController {
   createRecord = async (req, res, next) => {
     try {
       const { groupId } = req.params;
-      const recordData = req.body; // 유효성 검증을 마친 데이터
+      const recordData = req.body; 
 
-      const newRecord = await this.exerciseRecordService.createRecord(groupId, recordData); //service에서 post할 데이터를 받아옴
+      const newRecord = await this.exerciseRecordService.createRecord(groupId, recordData); 
 
-      const webhookURL = await this.exerciseRecordService.getGroupWebhookUrl(groupId); //service에서 group에서 꺼내온 discordWebhookUrl을 받음
+      // --- 디스코드 웹훅 로직 (유지) ---
+      const webhookURL = await this.exerciseRecordService.getGroupWebhookUrl(groupId); 
 
       if (webhookURL) {
         try {
@@ -37,21 +39,12 @@ class ExerciseRecordController {
           console.log('Discord Webhook 전송 완료');
         } catch (webhookError) {
           console.warn('Discord Webhook 전송 실패:', webhookError.message);
-          // 실패하더라도 무시하고 계속 진행
         }
       }
 
-      res.status(201).json({
-        exerciseType: newRecord.exerciseType,
-        description: newRecord.description,
-        time: newRecord.time,
-        distance: newRecord.distance,
-        participantPhoto: newRecord.participantPhoto ?? [],
-        participant: {
-          id: newRecord.participant.id,
-          nickname: newRecord.participant.nickname
-        }
-      });
+      // 복잡한 객체 조립을 Mapper에게 위임
+      res.status(201).json(toRecordResponse(newRecord));
+
     } catch (error) {
       next(error);
     }
@@ -59,16 +52,20 @@ class ExerciseRecordController {
 
   getRecords = async (req, res, next) => {
     try {
-      const groupId = parseInt(req.params.groupId, 10); // Explicitly convert groupId to number
+      const groupId = parseInt(req.params.groupId, 10);
       const options = {
         ...req.query,
-        limit: parseInt(req.query.limit, 10) || 10, // Explicitly convert limit to number
-        page: parseInt(req.query.page, 10) || 1, // Explicitly convert page to number
+        limit: parseInt(req.query.limit, 10) || 10,
+        page: parseInt(req.query.page, 10) || 1,
       };
 
       const { datas, total } = await this.exerciseRecordService.getRecords(groupId, options);
+      
+      // 목록 데이터 변환
+      const formattedRecords = datas.map(record => toRecordResponse(record));
+
       res.status(200).json({
-        data: datas,
+        data: formattedRecords, // 변환된 데이터 전달
         total,
       });
     } catch (error) {

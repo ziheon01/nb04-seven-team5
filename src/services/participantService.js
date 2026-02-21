@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../generated/prisma/index.js'; // 올바른 Prisma Client 임포트 경로
+import { PrismaClient } from '@prisma/client';
 import BadgeService from './badgeService.js'; //Note: 뱃지 갱신을 위해 추가
 
 const prisma = new PrismaClient();
