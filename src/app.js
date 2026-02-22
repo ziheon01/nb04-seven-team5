@@ -9,10 +9,13 @@ import * as dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path'; // path 모듈 import
+import pinoHttp from 'pino-http';
+import logger from './utils/logger.js'; 
+
+dotenv.config(); // 환경변수 로딩을 위로 올렸습니다.
 
 const app = express();
 const port = process.env.PORT || 3000;
-dotenv.config();
 
 // CORS 미들웨어에 상세 설정을 추가합니다.
 app.use(cors({
@@ -22,6 +25,10 @@ app.use(cors({
 
 app.use(express.json()); // json 요청 본문을 파싱하기 위한 미들웨어
 app.use(cookieParser()); // 쿠키 파서 미들웨어
+app.use(pinoHttp({
+  logger,
+  autoLogging: true, 
+}));
 
 // '/uploads' 경로로 오는 요청은 프로젝트 루트의 'uploads' 폴더의 파일을 제공하도록 설정
 // Multer와 동일한 방식으로 경로를 설정하여 일관성을 유지합니다.
@@ -41,7 +48,12 @@ app.use('/groups', badgeRouter);
 
 // 전역 에러 핸들러
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  logger.error({ 
+    err: err, 
+    url: req.url, 
+    method: req.method 
+  }, '🔥 전역 에러 발생');
+
   res.status(err.statusCode || 500).json({
     message: err.message || "Internal Server Error",
     path: err.path // 유효성 검사 에러 시 path 필드 추가
@@ -49,5 +61,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  logger.info(`🚀 Server is running on port ${port}`);
 });
