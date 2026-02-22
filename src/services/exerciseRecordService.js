@@ -15,25 +15,35 @@ class ExerciseRecordService {
       where: { id: Number(groupId) },
       select: { discordWebhookUrl: true },
     });
-    return group?.discordWebhookUrl || null; // 없으면 null 반환
+    return group?.discordWebhookUrl || null; 
   };
 
   createRecord = async (groupId, recordData) => {
     const numericGroupId = Number(groupId);
-    const { exerciseType, description, time, distance, participantPhoto, participantNickname, participantPassword } = recordData;
+    const { 
+      exerciseType, description, time, distance, participantPhoto, 
+      participantNickname, participantPassword,
+      authorNickname, authorPassword 
+    } = recordData;
+    const targetNickname = participantNickname || authorNickname;
+    const targetPassword = participantPassword || authorPassword;
+
+    // 닉네임이나 비밀번호가 아예 안 넘어왔을 경우 에러 처리 (안전장치)
+    if (!targetNickname || !targetPassword) {
+      throw new Error("작성자 닉네임과 비밀번호가 필요합니다.");
+    }
 
     // 1. 닉네임과 비밀번호로 참여자 찾기
     const participant = await prisma.participant.findFirst({
       where: {
-        nickname: participantNickname,
-        // 실제로는 비밀번호 비교 로직이 필요하지만, 여기선 일단 그대로 둠 (해싱 등 고려)
-        password: participantPassword, 
-        groupId: numericGroupId // 해당 그룹의 참여자인지도 체크
+        nickname: targetNickname,
+        password: targetPassword, 
+        groupId: numericGroupId 
       },
     });
 
     if (!participant) {
-      throw new Error("Participant not found");
+      throw new Error("해당 그룹에 일치하는 닉네임과 비밀번호를 가진 참여자가 없습니다.");
     }
 
     // 2. 기록 생성
@@ -44,14 +54,12 @@ class ExerciseRecordService {
         description,
         time,
         distance,
-        participantId: participant.id, // connect 대신 직접 ID 할당이 더 직관적일 때가 있음
+        participantId: participant.id, 
         
-        // 사진 저장 (문자열 배열 -> 객체 배열 변환)
         participantPhoto: {
           create: (participantPhoto || []).map(url => ({ photoUrl: url })),
         },
       },
-      // 생성 후 리턴할 때 필요한 정보들 include
       include: {
         participant: true,
         participantPhoto: true,
@@ -78,7 +86,6 @@ class ExerciseRecordService {
     const { page, limit, order, orderBy, search } = options;
     const skip = (page - 1) * limit;
 
-    // 검색 조건 구성
     const whereCondition = {
       groupId: numericGroupId,
       ...(search ? {
@@ -88,29 +95,26 @@ class ExerciseRecordService {
       } : {})
     };
 
-    // 정렬 조건 구성
     const orderByClause = {};
     if (orderBy === 'time') {
       orderByClause.time = order || 'desc';
     } else {
-      orderByClause.createdAt = order || 'desc'; // 기본값
+      orderByClause.createdAt = order || 'desc'; 
     }
 
-    // DB 조회
     const records = await prisma.exerciseRecord.findMany({
       where: whereCondition,
       skip,
       take: limit,
       orderBy: orderByClause,
       include: {
-        participant: true,       // 작성자 정보
-        participantPhoto: true,  // 사진 정보
+        participant: true,       
+        participantPhoto: true,  
       },
     });
 
     const total = await prisma.exerciseRecord.count({ where: whereCondition });
 
-    // 가공하지 않고 원본 그대로 리턴 (datas -> records 이름 변경)
     return { datas: records, total }; 
   }
 }

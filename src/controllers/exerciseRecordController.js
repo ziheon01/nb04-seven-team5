@@ -12,6 +12,10 @@ class ExerciseRecordController {
       const { groupId } = req.params;
       const recordData = req.body; 
 
+      if (recordData.photos && Array.isArray(recordData.photos)) {
+        recordData.participantPhoto = recordData.photos;
+      }
+
       const newRecord = await this.exerciseRecordService.createRecord(groupId, recordData); 
 
       // --- 디스코드 웹훅 로직 (유지) ---

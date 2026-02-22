@@ -8,7 +8,7 @@ export const toUserResponse = (user) => {
   return {
     id: user.id,
     nickname: user.nickname,
-    profileUrl: user.profileUrl || "", 
+    profileUrl: user.profileUrl || null, 
   };
 };
 
@@ -40,7 +40,7 @@ export const toGroupResponse = (group) => {
     owner: {
       id: 0, 
       nickname: group.ownerNickname, // DB에 있는 닉네임 문자열을 바로 꽂아줌
-      profileUrl: "", 
+      profileUrl: null, 
     },
 
     participants: group.participant ? group.participant.map(p => toUserResponse(p)) : [],
