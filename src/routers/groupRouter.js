@@ -24,11 +24,11 @@ router.delete('/:groupId',
     groupController.deleteGroup);
 
 // 그룹 추천 API 추가
-router.post('/:groupId/like',
+router.post('/:groupId/likes',
     groupValidator.validateGroupIdParam,
     groupController.likeGroup);
 // 그룹 추천 취소 API 추가
-router.delete('/:groupId/like',
+router.delete('/:groupId/likes',
     groupValidator.validateGroupIdParam,
     groupController.unlikeGroup);
 

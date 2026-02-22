@@ -22,9 +22,9 @@ export const toGroupResponse = (group) => {
 
   const badges = [];
   if (group.groupBadge) {
-    if (group.groupBadge.participantsOver10) badges.push("participantsOver10");
-    if (group.groupBadge.recordsOver100) badges.push("recordsOver100");
-    if (group.groupBadge.recommandationsOver100) badges.push("recommandationsOver100");
+    if (group.groupBadge.participantsOver10) badges.push("PARTICIPATION_10");
+    if (group.groupBadge.recordsOver100) badges.push("RECORD_100");
+    if (group.groupBadge.recommandationsOver100) badges.push("LIKE_100");
   }
 
   return {
