@@ -141,13 +141,27 @@ class GroupService {
       if (!group) throw new Error('Group not found.');
       if (group.ownerPassword !== ownerPassword) throw new Error('Invalid owner password.');
 
-      // 태그 등 복잡한 업데이트 로직이 있다면 여기서 처리
-      // (단순 필드 업데이트만 가정)
-      
+      // 1. name -> groupName 변환
+      if (updateData.name) {
+        updateData.groupName = updateData.name;
+        delete updateData.name; 
+      }
+
+      if (updateData.tags) {
+        const tagsArray = updateData.tags;
+        delete updateData.tags;
+
+        // 기존 태그를 싹 지우고 새로 받은 태그들로 교체하는 로직
+        updateData.tag = {
+          deleteMany: {}, // 이 그룹에 연결된 기존 태그들 전부 삭제
+          create: tagsArray.map(tagStr => ({ tagName: tagStr })) // 새 태그 생성
+        };
+      }
+
       const updatedGroup = await prisma.group.update({
         where: { id: numericGroupId },
         data: updateData,
-        include: { // 업데이트 후 최신 정보 반환을 위해 include
+        include: { 
             participant: true,
             tag: true,
             groupBadge: true,

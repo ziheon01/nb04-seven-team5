@@ -14,7 +14,7 @@ router.get('/', groupValidator.validateGroupQuery, groupController.getGroups);
 router.get('/:groupId',
     groupValidator.validateGroupIdParam,
     groupController.getGroupDetail);
-router.put('/:groupId',
+router.patch('/:groupId',
     groupValidator.validateGroupIdParam,
     groupValidator.validateGroupUpdate,
     groupController.updateGroup);
