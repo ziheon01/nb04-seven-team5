@@ -31,7 +31,7 @@ model Participant {
   id              Int              @id @default(autoincrement())
   group           Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId         Int
-  nickname        String           @unique
+  nickname        String
   password        String
   recordCount     Int              @default(0)
   recordTime      Int              @default(0)
@@ -39,7 +39,7 @@ model Participant {
   updatedAt       DateTime         @updatedAt
   exerciseRecords ExerciseRecord[]
 
-  @@unique(name: "participantInfo", [nickname, password])
+  @@unique([groupId, nickname])
 }
 
 model ExerciseRecord {
