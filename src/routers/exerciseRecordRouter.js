@@ -20,4 +20,9 @@ router.get('/:groupId/records',
     exerciseRecordValidtor.validateExerciseRecordQuery,
     exerciseRecordController.getRecords);
 
+// 운동 기록 상세 조회
+router.get('/:groupId/records/:recordId',
+    exerciseRecordValidtor.validateGroupIdParam,
+    exerciseRecordController.getRecordDetail);
+
 export default router;

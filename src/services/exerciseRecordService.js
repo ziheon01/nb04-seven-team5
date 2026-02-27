@@ -117,6 +117,26 @@ class ExerciseRecordService {
 
     return { datas: records, total }; 
   }
+
+  getRecordDetail = async (groupId, recordId) => {
+    const record = await prisma.exerciseRecord.findUnique({
+      where: {
+        id: Number(recordId),
+      },
+      include: {
+        participant: true,
+        participantPhoto: true,
+      },
+    });
+
+    if (!record || record.groupId !== Number(groupId)) {
+      const error = new Error("존재하지 않는 운동 기록입니다.");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return record;
+  };
 }
 
 export default ExerciseRecordService;

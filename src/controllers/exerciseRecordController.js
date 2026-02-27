@@ -76,6 +76,16 @@ class ExerciseRecordController {
       next(error);
     }
   }
+
+  getRecordDetail = async (req, res, next) => {
+    try {
+      const { groupId, recordId } = req.params;
+      const record = await this.exerciseRecordService.getRecordDetail(groupId, recordId);
+      res.status(200).json(toRecordResponse(record));
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default ExerciseRecordController;
