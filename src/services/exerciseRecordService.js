@@ -21,23 +21,15 @@ class ExerciseRecordService {
   createRecord = async (groupId, recordData) => {
     const numericGroupId = Number(groupId);
     const { 
-      exerciseType, description, time, distance, participantPhoto, 
-      participantNickname, participantPassword,
-      authorNickname, authorPassword 
+      exerciseType, description, time, distance, 
+      participantNickname, participantPassword, participantPhoto 
     } = recordData;
-    const targetNickname = participantNickname || authorNickname;
-    const targetPassword = participantPassword || authorPassword;
-
-    // 닉네임이나 비밀번호가 아예 안 넘어왔을 경우 에러 처리 (안전장치)
-    if (!targetNickname || !targetPassword) {
-      throw new Error("작성자 닉네임과 비밀번호가 필요합니다.");
-    }
 
     // 1. 닉네임과 비밀번호로 참여자 찾기
     const participant = await prisma.participant.findFirst({
       where: {
-        nickname: targetNickname,
-        password: targetPassword, 
+        nickname: participantNickname,
+        password: participantPassword, 
         groupId: numericGroupId 
       },
     });

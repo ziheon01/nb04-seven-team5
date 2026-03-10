@@ -11,7 +11,7 @@ const exerciseRecordController = new ExerciseRecordController();
 router.post('/:groupId/records',
     upload.array('photos', 3),
     exerciseRecordValidtor.validateGroupIdParam,
-    exerciseRecordValidtor.validateExerciseRecord,
+    exerciseRecordValidtor.validateCreateRecordBody,
     exerciseRecordController.createRecord);
 
 // 운동 기록 목록 조회
