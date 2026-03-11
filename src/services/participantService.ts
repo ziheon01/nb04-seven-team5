@@ -1,18 +1,22 @@
-import { PrismaClient } from '@prisma/client';
-import BadgeService from './badgeService.js'; //Note: 뱃지 갱신을 위해 추가
+import { PrismaClient, Participant, Group } from '@prisma/client';
+import BadgeService from './badgeService.js';
+import { ParticipantBodyDto } from '../middlewares/validation/participantValidator.js';
 
 const prisma = new PrismaClient();
 
 class ParticipantService {
-  //Note: BadgeService 인스턴스 생성
+  private badgeService: BadgeService;
+
   constructor() {
     this.badgeService = new BadgeService();
   }
 
-  joinGroup = async (groupId, nickname, password) => {
+  joinGroup = async (groupId: string | number, participantData: ParticipantBodyDto): Promise<any> => {
+    const numericGroupId = Number(groupId);
+    const { nickname, password } = participantData;
 
     const existingGroup = await prisma.group.findUnique({
-      where: { id: groupId },
+      where: { id: numericGroupId },
     });
     if (!existingGroup) {
       throw new Error('Group not found')
@@ -20,28 +24,26 @@ class ParticipantService {
 
     const existingParticipant = await prisma.participant.findFirst({
       where: {
-        groupId,
+        groupId: numericGroupId,
         nickname,
       }
     });
     if (existingParticipant) {
       throw new Error("Nickname already exists in this group")
     }
-    //Note: 이 부분 이유가 있나요? console.log(groupId, nickname, password);
-    const newParticipant = await prisma.participant.create({
+    
+    await prisma.participant.create({
       data: {
-        groupId,
+        groupId: numericGroupId,
         nickname,
         password,
       }
     });
-    console.log(newParticipant);
 
-    // Note: 참가자 추가 후 뱃지 자동 갱신
-    await this.badgeService.autoUpdateBadges(groupId);
+    await this.badgeService.autoUpdateBadges(numericGroupId);
 
     const updatedGroup = await prisma.group.findUnique({
-      where: { id: groupId },
+      where: { id: numericGroupId },
       include: {
         participant: {
           select: {
@@ -54,22 +56,23 @@ class ParticipantService {
       }
     });
 
-    console.log(`Joining group ${groupId} with ${nickname}`);
-    return updatedGroup
+    return updatedGroup;
   }
 
-  leaveGroup = async (groupId, nickname, password) => {
+  leaveGroup = async (groupId: string | number, participantData: ParticipantBodyDto): Promise<Participant> => {
+    const numericGroupId = Number(groupId);
+    const { nickname, password } = participantData;
+
     const existingGroup = await prisma.group.findUnique({
-      where: { id: groupId }
+      where: { id: numericGroupId }
     })
     if (!existingGroup) {
       throw new Error('Group not found');
     }
 
-    // 해당 그룹에 속해 있으면서  일치하는 닉네임,비밀번호이 있는지 확인 
     const existingParticipant = await prisma.participant.findFirst({
       where: {
-        groupId,
+        groupId: numericGroupId,
         nickname,
         password,
       },
@@ -79,17 +82,15 @@ class ParticipantService {
       throw new Error('Participant not found');
     }
 
-    const deleteParticipant = await prisma.participant.delete({
+    const deletedParticipant = await prisma.participant.delete({
       where: {
         id: existingParticipant.id
       }
     });
 
-    //  참가자 탈퇴 후 뱃지 자동 갱신
-    await this.badgeService.autoUpdateBadges(groupId);
+    await this.badgeService.autoUpdateBadges(numericGroupId);
 
-    console.log(`Leaving group ${groupId} with ${nickname}`);
-    return deleteParticipant;
+    return deletedParticipant;
   }
 }
 

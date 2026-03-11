@@ -1,17 +1,17 @@
 import express from 'express';
 import { ParticipantController } from '../controllers/participantController.js';
-import * as participantValidtor from '../middlewares/validation/participantValidator.js'
+import * as participantValidator from '../middlewares/validation/participantValidator.js'
 
 const router = express.Router();
 const participantController = new ParticipantController();
 
 router.post('/:groupId/participants', 
-    participantValidtor.validateGroupIdParam,
-    participantValidtor.validateParticipantBody,
+    participantValidator.validateGroupIdParam,
+    participantValidator.validateParticipantBody,
     participantController.joinGroup);
 router.delete('/:groupId/participants', 
-    participantValidtor.validateGroupIdParam,
-    participantValidtor.validateParticipantBody,
+    participantValidator.validateGroupIdParam,
+    participantValidator.validateParticipantBody,
     participantController.leaveGroup);
 
 export default router;

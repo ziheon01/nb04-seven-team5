@@ -1,9 +1,9 @@
-// src/utils/responseMapper.js
+// src/utils/responseMapper.ts
 
 /**
  * [User/Participant 매퍼]
  */
-export const toUserResponse = (user) => {
+export const toUserResponse = (user: any) => {
   if (!user) return null;
   return {
     id: user.id,
@@ -15,7 +15,7 @@ export const toUserResponse = (user) => {
 /**
  * [Group 매퍼]
  */
-export const toGroupResponse = (group) => {
+export const toGroupResponse = (group: any) => {
   if (!group) return null;
 
   const recordCount = group._count ? group._count.exerciseRecord : (group.recordCount || 0);
@@ -35,15 +35,15 @@ export const toGroupResponse = (group) => {
     goalRep: group.goalRep,
     likeCount: group.likeCount || 0,
     recordCount: recordCount, 
-    tags: group.tag ? group.tag.map(t => t.tagName) : [],
+    tags: group.tag ? group.tag.map((t: any) => t.tagName) : [],
     badges: badges, 
     owner: {
       id: 0, 
-      nickname: group.ownerNickname, // DB에 있는 닉네임 문자열을 바로 꽂아줌
+      nickname: group.ownerNickname, 
       profileUrl: null, 
     },
 
-    participants: group.participant ? group.participant.map(p => toUserResponse(p)) : [],
+    participants: group.participant ? group.participant.map((p: any) => toUserResponse(p)) : [],
     discordWebhookUrl: group.discordWebhookUrl,
     discordInviteUrl: group.discordInviteUrl,
   };
@@ -52,7 +52,7 @@ export const toGroupResponse = (group) => {
 /**
  * [Record 매퍼]
  */
-export const toRecordResponse = (record) => {
+export const toRecordResponse = (record: any) => {
   if (!record) return null;
 
   return {
@@ -63,14 +63,14 @@ export const toRecordResponse = (record) => {
     distance: record.distance,
     createdAt: record.createdAt,
     author: record.participant ? toUserResponse(record.participant) : null,
-    photos: record.participantPhoto ? record.participantPhoto.map(p => p.photoUrl) : [],
+    photos: record.participantPhoto ? record.participantPhoto.map((p: any) => p.photoUrl) : [],
   };
 };
 
 /**
  * [Rank 매퍼]
  */
-export const toRankResponse = (rank) => {
+export const toRankResponse = (rank: any) => {
   if (!rank) return null;
   
   return {

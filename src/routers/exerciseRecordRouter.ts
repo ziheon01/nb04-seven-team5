@@ -1,10 +1,9 @@
-import express from 'express';
+import { Router } from 'express';
 import ExerciseRecordController from '../controllers/exerciseRecordController.js';
 import * as exerciseRecordValidtor from "../middlewares/validation/exerciseRecordValidator.js";
 import upload from '../middlewares/upload.js';
 
-
-const router = express.Router();
+const router: Router = Router();
 const exerciseRecordController = new ExerciseRecordController();
 
 // 운동 기록 생성

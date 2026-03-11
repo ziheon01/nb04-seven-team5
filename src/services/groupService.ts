@@ -1,15 +1,28 @@
-// src/services/groupService.js
-import { PrismaClient } from '@prisma/client';
+// src/services/groupService.ts
+import { PrismaClient, Group, Participant, Tag, GroupBadge } from '@prisma/client';
 import BadgeService from './badgeService.js';
+import { CreateGroupDto, GroupQueryDto, UpdateGroupDto } from '../middlewares/validation/groupValidator.js';
 
 const prisma = new PrismaClient();
 
+export type GroupWithRelations = Group & {
+  participant?: Participant[];
+  tag?: Tag[];
+  groupBadge?: GroupBadge | null;
+  _count?: {
+    exerciseRecord: number;
+    participant?: number;
+  };
+};
+
 class GroupService {
+  private badgeService: BadgeService;
+
   constructor() {
     this.badgeService = new BadgeService();
   }
 
-  createGroup = async (groupData) => {
+  createGroup = async (groupData: CreateGroupDto): Promise<GroupWithRelations> => {
     const { 
       name, description, photoUrl, goalRep, 
       discordWebhookUrl, discordInviteUrl, tags, 
@@ -19,7 +32,7 @@ class GroupService {
     try {
       const newGroup = await prisma.group.create({
         data: {
-          groupName: name, // DB 컬럼명에 맞춤
+          groupName: name,
           description,
           photoUrl,
           goalRep,
@@ -28,7 +41,6 @@ class GroupService {
           ownerNickname,
           ownerPassword,
           
-          // 1. 소유자를 첫 번째 참여자로 등록
           participant: {
             create: [
               {
@@ -37,11 +49,9 @@ class GroupService {
               },
             ],
           },
-          // 2. 태그 생성
           tag: {
-            create: tags.map(tagName => ({ tagName }))
+            create: (tags || []).map(tagName => ({ tagName }))
           },
-          // 3. 배지 테이블 초기화 (필수! 안 하면 나중에 null 에러 남)
           groupBadge: {
             create: {
               participantsOver10: false,
@@ -53,22 +63,25 @@ class GroupService {
         include: {
           participant: true,
           tag: true,
-          groupBadge: true, // 배지 정보 포함
+          groupBadge: true,
         }
       });
-      return newGroup;
+      return newGroup as GroupWithRelations;
     } catch (error) {
       console.error('그룹 생성 중 오류발생:', error);
       throw error;
     }
   }
 
-  getGroups = async (options) => {
+  getGroups = async (options: GroupQueryDto): Promise<{ groups: GroupWithRelations[], total: number }> => {
     const { page, limit, order, orderBy, search } = options;
-    const skip = (page - 1) * limit;
-    const take = limit;
+    const numericPage = Number(page);
+    const numericLimit = Number(limit);
 
-    const where = {};
+    const skip = (numericPage - 1) * numericLimit;
+    const take = numericLimit;
+
+    const where: any = {};
     if (search) {
       where.groupName = {
         contains: search,
@@ -76,7 +89,7 @@ class GroupService {
       };
     }
 
-    const orderByClause = {};
+    const orderByClause: any = {};
     if (orderBy === 'createdAt') {
       orderByClause.createdAt = order;
     } else if (orderBy === 'participantCount') {
@@ -84,7 +97,6 @@ class GroupService {
     } else if (orderBy === 'likeCount') {
       orderByClause.likeCount = order;
     } else {
-        // 기본 정렬
         orderByClause.createdAt = 'desc';
     }
 
@@ -95,16 +107,15 @@ class GroupService {
         where,
         orderBy: orderByClause,
         include: {
-          _count: { select: { exerciseRecord: true } }, // 기록 수 계산용
-          participant: true, // 참여자 수 계산 및 목록용
+          _count: { select: { exerciseRecord: true } },
+          participant: true,
           tag: true,
-          groupBadge: true, // 배지 정보
+          groupBadge: true,
         },
-      });
+      }) as GroupWithRelations[];
 
       const total = await prisma.group.count({ where });
 
-      // ★ 가공 없이 원본 그대로 리턴 (매퍼가 처리함)
       return { groups, total };
     } catch (error) {
       console.error('그룹을 가져오는 중 오류발생:', error);
@@ -112,7 +123,7 @@ class GroupService {
     }
   }
 
-  getGroupDetail = async (groupId) => {
+  getGroupDetail = async (groupId: string | number): Promise<GroupWithRelations | null> => {
     try {
       const group = await prisma.group.findUnique({
         where: { id: Number(groupId) },
@@ -124,43 +135,40 @@ class GroupService {
         },
       });
       
-      // ★ 가공 없이 원본 그대로 리턴
-      return group;
+      return group as GroupWithRelations | null;
     } catch (error) {
       console.error('그룹 상세 조회 중 오류발생:', error);
       throw error;
     }
   }
 
-  updateGroup = async (groupId, updateData, ownerPassword) => {
+  updateGroup = async (groupId: string | number, updateData: UpdateGroupDto, ownerPassword: string): Promise<GroupWithRelations> => {
     try {
       const numericGroupId = Number(groupId);
       
-      // 권한 확인을 위해 먼저 조회
       const group = await prisma.group.findUnique({ where: { id: numericGroupId } });
       if (!group) throw new Error('Group not found.');
       if (group.ownerPassword !== ownerPassword) throw new Error('Invalid owner password.');
 
-      // 1. name -> groupName 변환
-      if (updateData.name) {
-        updateData.groupName = updateData.name;
-        delete updateData.name; 
+      const prismaUpdateData: any = { ...updateData };
+      if (prismaUpdateData.name) {
+        prismaUpdateData.groupName = prismaUpdateData.name;
+        delete prismaUpdateData.name; 
       }
 
-      if (updateData.tags) {
-        const tagsArray = updateData.tags;
-        delete updateData.tags;
+      if (prismaUpdateData.tags) {
+        const tagsArray = prismaUpdateData.tags;
+        delete prismaUpdateData.tags;
 
-        // 기존 태그를 싹 지우고 새로 받은 태그들로 교체하는 로직
-        updateData.tag = {
-          deleteMany: {}, // 이 그룹에 연결된 기존 태그들 전부 삭제
-          create: tagsArray.map(tagStr => ({ tagName: tagStr })) // 새 태그 생성
+        prismaUpdateData.tag = {
+          deleteMany: {},
+          create: tagsArray.map((tagStr: string) => ({ tagName: tagStr }))
         };
       }
 
       const updatedGroup = await prisma.group.update({
         where: { id: numericGroupId },
-        data: updateData,
+        data: prismaUpdateData,
         include: { 
             participant: true,
             tag: true,
@@ -168,14 +176,14 @@ class GroupService {
         }
       });
 
-      return updatedGroup;
+      return updatedGroup as GroupWithRelations;
     } catch (error) {
       console.error('그룹 업데이트 중 오류 발생:', error);
       throw error;
     }
   }
 
-  deleteGroup = async (groupId, ownerPassword) => {
+  deleteGroup = async (groupId: string | number, ownerPassword: string): Promise<void> => {
     try {
       const numericGroupId = Number(groupId);
 
@@ -191,20 +199,17 @@ class GroupService {
     }
   }
 
-  likeGroup = async (groupId) => { 
+  likeGroup = async (groupId: string | number): Promise<GroupWithRelations | null> => { 
     try {
       const numericGroupId = Number(groupId);
       
-      const updatedGroup = await prisma.group.update({
+      await prisma.group.update({
         where: { id: numericGroupId },
         data: { likeCount: { increment: 1 } },
-        include: { groupBadge: true } // 배지 갱신 확인용
       });
 
-      // 배지 갱신
       await this.badgeService.autoUpdateBadges(numericGroupId);
 
-      // 갱신된 정보 다시 조회 (배지가 바뀌었을 수 있으므로)
       return prisma.group.findUnique({
           where: { id: numericGroupId },
           include: { 
@@ -212,7 +217,7 @@ class GroupService {
               tag: true,
               participant: true 
             }
-      });
+      }) as Promise<GroupWithRelations | null>;
 
     } catch (error) {
       console.error('그룹 추천 중 오류 발생:', error);
@@ -220,11 +225,11 @@ class GroupService {
     }
   }
 
-  unlikeGroup = async (groupId) => { 
+  unlikeGroup = async (groupId: string | number): Promise<GroupWithRelations | null> => { 
     try {
       const numericGroupId = Number(groupId);
 
-      const updatedGroup = await prisma.group.update({
+      await prisma.group.update({
         where: { id: numericGroupId },
         data: { likeCount: { decrement: 1 } },
       });
@@ -238,7 +243,7 @@ class GroupService {
             tag: true,
             participant: true 
           }
-    });
+    }) as Promise<GroupWithRelations | null>;
 
     } catch (error) {
       console.error('그룹 추천 취소 중 오류 발생:', error);

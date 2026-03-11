@@ -1,13 +1,11 @@
 import express from "express";
 import GroupController from '../controllers/groupController.js';
-import upload from '../middlewares/upload.js'; // upload 미들웨어 임포트
+import upload from '../middlewares/upload.js';
 import * as groupValidator from '../middlewares/validation/groupValidator.js'
-import * as participantValidtor from '../middlewares/validation/participantValidator.js'
 
 const router = express.Router();
 const groupController = new GroupController();
 
-// 그룹 생성 경로에 upload.single('groupPhoto'), 유효성 검사 미들웨어 추가
 router.post('/', upload.single('groupPhoto'), groupValidator.validateGroupCreate, groupController.createGroup);
 router.get('/', groupValidator.validateGroupQuery, groupController.getGroups);
 
@@ -23,11 +21,9 @@ router.delete('/:groupId',
     groupValidator.validateGroupDeleteBody,
     groupController.deleteGroup);
 
-// 그룹 추천 API 추가
 router.post('/:groupId/likes',
     groupValidator.validateGroupIdParam,
     groupController.likeGroup);
-// 그룹 추천 취소 API 추가
 router.delete('/:groupId/likes',
     groupValidator.validateGroupIdParam,
     groupController.unlikeGroup);

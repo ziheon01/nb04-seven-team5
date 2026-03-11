@@ -1,20 +1,20 @@
+import { Request, Response, NextFunction } from 'express';
 import ExerciseRecordService from '../services/exerciseRecordService.js';
 import axios from 'axios';
 import { toRecordResponse } from '../utils/responseMapper.js';
 
 class ExerciseRecordController {
+  private exerciseRecordService: ExerciseRecordService;
+
   constructor() {
     this.exerciseRecordService = new ExerciseRecordService();
   }
 
-  createRecord = async (req, res, next) => {
+  createRecord = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { groupId } = req.params;
+      const groupId = req.params.groupId as string;
+      // validateCreateRecordBody에서 이미 DTO로 변환되어 req.body에 담겨 있음
       const recordData = req.body; 
-
-      if (recordData.photos && Array.isArray(recordData.photos)) {
-        recordData.participantPhoto = recordData.photos;
-      }
 
       const newRecord = await this.exerciseRecordService.createRecord(groupId, recordData); 
 
@@ -41,7 +41,7 @@ class ExerciseRecordController {
             ],
           });
           console.log('Discord Webhook 전송 완료');
-        } catch (webhookError) {
+        } catch (webhookError: any) {
           console.warn('Discord Webhook 전송 실패:', webhookError.message);
         }
       }
@@ -54,13 +54,13 @@ class ExerciseRecordController {
     }
   }
 
-  getRecords = async (req, res, next) => {
+  getRecords = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const groupId = parseInt(req.params.groupId, 10);
+      const groupId = parseInt(req.params.groupId as string, 10);
       const options = {
         ...req.query,
-        limit: parseInt(req.query.limit, 10) || 10,
-        page: parseInt(req.query.page, 10) || 1,
+        limit: parseInt(req.query.limit as string, 10) || 10,
+        page: parseInt(req.query.page as string, 10) || 1,
       };
 
       const { datas, total } = await this.exerciseRecordService.getRecords(groupId, options);
@@ -69,7 +69,7 @@ class ExerciseRecordController {
       const formattedRecords = datas.map(record => toRecordResponse(record));
 
       res.status(200).json({
-        data: formattedRecords, // 변환된 데이터 전달
+        data: formattedRecords, 
         total,
       });
     } catch (error) {
@@ -77,9 +77,10 @@ class ExerciseRecordController {
     }
   }
 
-  getRecordDetail = async (req, res, next) => {
+  getRecordDetail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { groupId, recordId } = req.params;
+      const groupId = req.params.groupId as string;
+      const recordId = req.params.recordId as string;
       const record = await this.exerciseRecordService.getRecordDetail(groupId, recordId);
       res.status(200).json(toRecordResponse(record));
     } catch (error) {

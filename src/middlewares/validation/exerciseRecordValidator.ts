@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Request, Response, NextFunction } from "express";
 import { groupIdParamSchema, validateGroupIdParam } from './groupValidator.js';
 
 export { validateGroupIdParam };
@@ -38,16 +39,18 @@ export const createRecordBodySchema = z.object({
   participantPhoto: data.photos,
 }));
 
+// z.infer를 이용한 타입 추출
+export type CreateRecordDto = z.infer<typeof createRecordBodySchema>;
+
 // 운동 기록 생성 유효성 검증 미들웨어
-export const validateCreateRecordBody = (req, res, next) => {
+export const validateCreateRecordBody = (req: Request, res: Response, next: NextFunction) => {
   // multer로 처리된 req.files가 있다면 req.body.photos 배열로 매핑
   if (Array.isArray(req.files) && req.files.length > 0) {
-    req.body.photos = req.files.map(file => `/uploads/${encodeURIComponent(file.filename)}`);
+    req.body.photos = req.files.map((file: any) => `/uploads/${encodeURIComponent(file.filename)}`);
   }
 
   const result = createRecordBodySchema.safeParse(req.body);
   if (!result.success) {
-    // result.error.issues가 표준 배열입니다.
     const errors = (result.error?.issues || []).map((err) => ({
       path: err.path.join("."),
       message: err.message,
@@ -84,10 +87,10 @@ export const exerciseRecordQuerySchema = z.object({
 });
 
 // 운동 기록 조회 유효성 미들웨어
-export const validateExerciseRecordQuery = (req, res, next) => {
+export const validateExerciseRecordQuery = (req: Request, res: Response, next: NextFunction) => {
   const result = exerciseRecordQuerySchema.safeParse(req.query);
   if (!result.success) {
-    const errors = result.error.errors.map((err) => ({
+    const errors = (result.error?.issues || []).map((err) => ({
       path: err.path.join("."),
       message: err.message,
     }));

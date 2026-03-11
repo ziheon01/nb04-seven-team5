@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Request, Response, NextFunction } from "express";
 import { groupIdParamSchema, validateGroupIdParam } from './groupValidator.js';
 
 export { validateGroupIdParam };
@@ -14,19 +15,19 @@ export const rankQuerySchema = z.object({
   search: z.string().optional(),
 });
 
+export type RankQueryDto = z.infer<typeof rankQuerySchema>;
+
 // 랭크 조회 쿼리 검증 미들웨어
-export const validateRankQuery = (req, res, next) => {
+export const validateRankQuery = (req: Request, res: Response, next: NextFunction) => {
   const result = rankQuerySchema.safeParse(req.query);
   if (!result.success) {
-    // Zod 에러를 더 안전하게 처리하기 위해 flatten() 사용
-    const fieldErrors = result.error.flatten().fieldErrors;
-    const errors = Object.entries(fieldErrors).map(([path, messages]) => ({
-      path,
-      message: messages.join(", "),
+    const errors = (result.error?.issues || []).map((err) => ({
+      path: err.path.join("."),
+      message: err.message,
     }));
     return res.status(400).json({ errors });
   }
-  // req.query를 직접 재할당하는 대신 Object.assign으로 속성을 업데이트합니다.
+  Object.keys(req.query).forEach(key => delete req.query[key]);
   Object.assign(req.query, result.data);
   next();
 };

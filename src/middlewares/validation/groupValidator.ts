@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { Request, Response, NextFunction } from 'express';
 
 // 그룹 생성검증 스키마
 export const groupCreateSchema = z.object({
@@ -21,52 +22,47 @@ export const groupCreateSchema = z.object({
         .min(1, "ownerPassword는 필수 입력값입니다.")
         .max(20, "ownerPassword는 20자 이내여야 합니다."),
     goalRep: z.preprocess(
-        (val) => Number(val), // Convert to number
-        z.number({
-            required_error: "goalRep은 필수 입력값입니다.",
-            invalid_type_error: "goalRep은 숫자여야 합니다.",
-        })
+        (val) => Number(val), 
+        z.number()
             .int("goalRep은 정수여야 합니다.")
             .nonnegative("goalRep은 0 이상이어야 합니다.")
     ),
     tags: z.preprocess(
         (val) => {
-            if (val === undefined || val === null) return []; // Treat undefined/null as empty array
-            if (Array.isArray(val)) return val; // Already an array
-            if (typeof val === 'string') return [val]; // Single string to array
-            return val; // Let Zod handle other types
+            if (val === undefined || val === null) return [];
+            if (Array.isArray(val)) return val;
+            if (typeof val === 'string') return [val];
+            return val;
         },
         z.array(z.string())
             .max(10, "태그는 최대 10개까지 입력할 수 있습니다.")
-    ).optional(), // Keep optional for overall schema, but preprocess handles initial undefined/null
-    photoUrl: z.string().optional(), // URL 검증 제거
+    ).default([]),
+    photoUrl: z.string().optional(),
 });
 
+export type CreateGroupDto = z.infer<typeof groupCreateSchema>;
+
 // 그룹 생성 유효성 미들웨어
-export const validateGroupCreate = (req, res, next) => {
-    // req.file이 존재하면 photoUrl을 req.body에 추가
+export const validateGroupCreate = (req: Request, res: Response, next: NextFunction) => {
     if (req.file) {
         req.body.photoUrl = `/uploads/${encodeURIComponent(req.file.filename)}`;
     }
 
     const result = groupCreateSchema.safeParse(req.body);
     if (!result.success) {
-        const fieldErrors = result.error.flatten().fieldErrors;
-        const errors = Object.entries(fieldErrors).map(([path, messages]) => ({
-            path,
-            message: messages.join(", "),
+        const errors = (result.error?.issues || []).map((err) => ({
+            path: err.path.join("."),
+            message: err.message,
         }));
         return res.status(400).json({ errors });
     }
-    req.body = result.data; // 유효성 검사된 데이터로 req.body를 업데이트
+    req.body = result.data;
     next();
 };
 
-// 그룹 조회검증 스키마 > 타입 유효성 default쓸 지 확인 필요
+// 그룹 조회검증 스키마
 export const groupQuerySchema = z.object({
-    //Note: 검색 쿼리가 옵셔널함을 표시
     search: z.string().optional(),
-    //Note: 쿼리는 문자열이기 때문에 수로 변환 후 유효성 검증
     limit: z.preprocess(val => Number(val),
         z.number()
             .int("limit은 정수여야 합니다.")
@@ -85,21 +81,24 @@ export const groupQuerySchema = z.object({
         .transform(val => val.toLowerCase())
         .pipe(z.enum(['asc', 'desc']))
         .default('desc'),
-
 });
 
+export type GroupQueryDto = z.infer<typeof groupQuerySchema>;
+
 // 그룹 조회 유효성 미들웨어
-export const validateGroupQuery = (req, res, next) => {
+export const validateGroupQuery = (req: Request, res: Response, next: NextFunction) => {
     const result = groupQuerySchema.safeParse(req.query);
     if (!result.success) {
-        const fieldErrors = result.error.flatten().fieldErrors;
-        const errors = Object.entries(fieldErrors).map(([path, messages]) => ({
-            path,
-            message: messages.join(", "),
+        const errors = (result.error?.issues || []).map((err) => ({
+            path: err.path.join("."),
+            message: err.message,
         }));
         return res.status(400).json({ errors });
     }
+    
+    Object.keys(req.query).forEach(key => delete req.query[key]);
     Object.assign(req.query, result.data);
+    
     next();
 };
 
@@ -107,52 +106,52 @@ export const validateGroupQuery = (req, res, next) => {
 export const groupIdParamSchema = z.object({
     groupId: z.preprocess(
         (val) => Number(val),
-        z.number({
-            required_error: 'Group ID is required.',
-            invalid_type_error: 'Group ID must be a number.',
-        })
+        z.number()
             .int('Group ID must be an integer.')
             .positive('Group ID must be a positive number.')
     )
 });
 
 // 그룹 ID 유효성 검증 미들웨어
-export const validateGroupIdParam = (req, res, next) => {
+export const validateGroupIdParam = (req: Request, res: Response, next: NextFunction) => {
     const result = groupIdParamSchema.safeParse(req.params);
 
     if (!result.success) {
-        const fieldErrors = result.error.flatten().fieldErrors;
-        const errors = Object.entries(fieldErrors).map(([path, messages]) => ({
-            path,
-            message: messages.join(", "),
+        const errors = (result.error?.issues || []).map((err) => ({
+            path: err.path.join("."),
+            message: err.message,
         }));
         return res.status(400).json({ errors });
     }
+    
+    Object.keys(req.params).forEach(key => delete req.params[key]);
     Object.assign(req.params, result.data);
+    
     next();
 };
 
 // 그룹 업데이트 검증 스키마
 export const groupUpdateSchema = groupCreateSchema
-    .partial()  // 모든 필드를 optional로 만듦
+    .partial()
     .extend({
         ownerPassword: z.string()
             .min(1, "ownerPassword는 필수 입력값입니다.")
             .max(20, "ownerPassword는 20자 이내여야 합니다."),        
     });
 
+export type UpdateGroupDto = z.infer<typeof groupUpdateSchema>;
+
 // 그룹 업데이트 유효성 미들웨어
-export const validateGroupUpdate = (req, res, next) => {
+export const validateGroupUpdate = (req: Request, res: Response, next: NextFunction) => {
     const result = groupUpdateSchema.safeParse(req.body);
     if (!result.success) {
-        const fieldErrors = result.error.flatten().fieldErrors;
-        const errors = Object.entries(fieldErrors).map(([path, messages]) => ({
-            path,
-            message: messages.join(", "),
+        const errors = (result.error?.issues || []).map((err) => ({
+            path: err.path.join("."),
+            message: err.message,
         }));
         return res.status(400).json({ errors });
     }
-    req.body = { ...req.body, ...result.data };
+    req.body = result.data;
     next();
 };
 
@@ -163,17 +162,18 @@ export const ownerPasswordSchema = z.object({
         .max(20, "ownerPassword는 20자 이내여야 합니다."),
 });
 
+export type OwnerPasswordDto = z.infer<typeof ownerPasswordSchema>;
+
 // 그룹 삭제 유효성 미들웨어
-export const validateGroupDeleteBody = (req, res, next) => {
+export const validateGroupDeleteBody = (req: Request, res: Response, next: NextFunction) => {
     const result = ownerPasswordSchema.safeParse(req.body);
     if (!result.success) {
-        const fieldErrors = result.error.flatten().fieldErrors;
-        const errors = Object.entries(fieldErrors).map(([path, messages]) => ({
-            path,
-            message: messages.join(", "),
+        const errors = (result.error?.issues || []).map((err) => ({
+            path: err.path.join("."),
+            message: err.message,
         }));
         return res.status(400).json({ errors });
     }
-    req.body = { ...req.body, ...result.data };
+    req.body = result.data;
     next();
 };

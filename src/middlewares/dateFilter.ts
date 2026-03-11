@@ -1,7 +1,9 @@
+import { Request, Response, NextFunction } from 'express';
+
 // 기간 관련 유틸 함수
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
-export function dateFilter(req, res, next) {
+export function dateFilter(req: Request, res: Response, next: NextFunction) {
   const duration = req.query.duration;
   const now = new Date();
 

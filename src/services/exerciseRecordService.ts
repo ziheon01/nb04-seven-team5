@@ -1,16 +1,25 @@
-// src/services/exerciseRecordService.js
+// src/services/exerciseRecordService.ts
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, ExerciseRecord, Participant, ParticipantPhoto } from '@prisma/client';
 import BadgeService from './badgeService.js';
+import { CreateRecordDto } from '../middlewares/validation/exerciseRecordValidator.js';
 
 const prisma = new PrismaClient();
 
+// Prisma가 반환하는 복합 타입 정의 (include를 사용하는 경우)
+export type ExerciseRecordWithRelations = ExerciseRecord & {
+  participant: Participant;
+  participantPhoto: ParticipantPhoto[];
+};
+
 class ExerciseRecordService {
+  private badgeService: BadgeService;
+
   constructor() {
     this.badgeService = new BadgeService();
   }
 
-  getGroupWebhookUrl = async (groupId) => {
+  getGroupWebhookUrl = async (groupId: string | number): Promise<string | null> => {
     const group = await prisma.group.findUnique({
       where: { id: Number(groupId) },
       select: { discordWebhookUrl: true },
@@ -18,7 +27,7 @@ class ExerciseRecordService {
     return group?.discordWebhookUrl || null; 
   };
 
-  createRecord = async (groupId, recordData) => {
+  createRecord = async (groupId: string | number, recordData: CreateRecordDto): Promise<ExerciseRecordWithRelations> => {
     const numericGroupId = Number(groupId);
     const { 
       exerciseType, description, time, distance, 
@@ -56,7 +65,7 @@ class ExerciseRecordService {
         participant: true,
         participantPhoto: true,
       },
-    });
+    }) as ExerciseRecordWithRelations;
 
     // 3. 통계 업데이트
     await prisma.participant.update({
@@ -73,12 +82,12 @@ class ExerciseRecordService {
     return newRecord;
   }
 
-  getRecords = async (groupId, options) => {
+  getRecords = async (groupId: string | number, options: any): Promise<{ datas: ExerciseRecordWithRelations[], total: number }> => {
     const numericGroupId = Number(groupId);
     const { page, limit, order, orderBy, search } = options;
     const skip = (page - 1) * limit;
 
-    const whereCondition = {
+    const whereCondition: any = {
       groupId: numericGroupId,
       ...(search ? {
         participant: {
@@ -87,7 +96,7 @@ class ExerciseRecordService {
       } : {})
     };
 
-    const orderByClause = {};
+    const orderByClause: any = {};
     if (orderBy === 'time') {
       orderByClause.time = order || 'desc';
     } else {
@@ -103,14 +112,14 @@ class ExerciseRecordService {
         participant: true,       
         participantPhoto: true,  
       },
-    });
+    }) as ExerciseRecordWithRelations[];
 
     const total = await prisma.exerciseRecord.count({ where: whereCondition });
 
     return { datas: records, total }; 
   }
 
-  getRecordDetail = async (groupId, recordId) => {
+  getRecordDetail = async (groupId: string | number, recordId: string | number): Promise<ExerciseRecordWithRelations> => {
     const record = await prisma.exerciseRecord.findUnique({
       where: {
         id: Number(recordId),
@@ -119,10 +128,10 @@ class ExerciseRecordService {
         participant: true,
         participantPhoto: true,
       },
-    });
+    }) as ExerciseRecordWithRelations;
 
     if (!record || record.groupId !== Number(groupId)) {
-      const error = new Error("존재하지 않는 운동 기록입니다.");
+      const error: any = new Error("존재하지 않는 운동 기록입니다.");
       error.statusCode = 404;
       throw error;
     }
