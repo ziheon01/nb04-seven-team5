@@ -42,7 +42,7 @@ app.use('/groups', exerciseRecordRouter);
 app.use('/groups', rankRouter);
 app.use('/groups', badgeRouter);
 
-app.use((err: Error & { statusCode?: number; path?: string }, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error & { statusCode?: number; path?: string }, req: Request, res: Response, _next: NextFunction) => {
   logger.error({ 
     err: err, 
     url: req.url, 

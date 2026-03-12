@@ -1,3 +1,3 @@
-import { groupIdParamSchema, validateGroupIdParam } from './groupValidator.js';
+import { validateGroupIdParam } from './groupValidator.js';
 
 export { validateGroupIdParam };

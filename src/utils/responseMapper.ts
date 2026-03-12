@@ -14,7 +14,7 @@ export const toUserResponse = (user: Participant | null): UserResponseDto | null
   return {
     id: user.id,
     nickname: user.nickname,
-    profileUrl: (user as any).profileUrl || null, // Participant 모델에 profileUrl이 없으므로 일단 as any 유지하되 추후 DB 확인 필요
+    profileUrl: (user as unknown as { profileUrl?: string }).profileUrl || null, // Participant 모델에 profileUrl이 없으므로 일단 타입 확장을 통해 처리
   };
 };
 

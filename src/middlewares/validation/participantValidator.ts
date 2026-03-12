@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Request, Response, NextFunction } from 'express';
-import { groupIdParamSchema, validateGroupIdParam } from './groupValidator.js';
+import { validateGroupIdParam } from './groupValidator.js';
 
 export { validateGroupIdParam };
 
