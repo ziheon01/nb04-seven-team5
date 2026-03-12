@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 //  운동 기록 개당 사진 여러장 업로드 할 때 호출 함수
-export const uploadParticipantPhotos = async (req: Request, res: Response): Promise<any> => {
+export const uploadParticipantPhotos = async (req: Request, res: Response): Promise<void | Response> => {
   const { recordId } = req.params;
   const filePaths = req.filePaths;
 
@@ -25,8 +25,9 @@ export const uploadParticipantPhotos = async (req: Request, res: Response): Prom
     );
 
     res.status(200).json({ urls });
-  } catch (err: any) {
-    res.status(500).json({ error: "운동기록 사진 업로드 실패", detail: err.message });
+  } catch (err) {
+    const error = err as Error;
+    res.status(500).json({ error: "운동기록 사진 업로드 실패", detail: error.message });
   }
 };
 

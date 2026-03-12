@@ -16,7 +16,7 @@ router.post(
     req.filePaths = files.map(file => "/uploads/" + file.filename);
     next();
   },
-  uploadParticipantPhotos as any
+  uploadParticipantPhotos
 );
 
 export default router;

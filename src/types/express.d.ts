@@ -3,7 +3,11 @@ import { Request } from 'express';
 declare global {
   namespace Express {
     interface Request {
-      dateFilter?: any;
+      dateFilter?: {
+        createdAt?: {
+          gte?: Date;
+        };
+      };
       pagination?: {
         skip: number;
         take: number;

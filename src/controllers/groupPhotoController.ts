@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 //  그룹 대표사진 업로드 처리 함수
-export const uploadGroupPhoto = async (req: Request, res: Response): Promise<any> => {
+export const uploadGroupPhoto = async (req: Request, res: Response): Promise<void | Response> => {
   const { groupId } = req.params;
   const filePath = req.filePath;
 
@@ -19,7 +19,8 @@ export const uploadGroupPhoto = async (req: Request, res: Response): Promise<any
     });
 
     res.status(200).json({ photoUrl: groupPhoto.photoUrl });
-  } catch (err: any) {
-    res.status(500).json({ error: "대표사진 업로드 실패", detail: err.message });
+  } catch (err) {
+    const error = err as Error;
+    res.status(500).json({ error: "대표사진 업로드 실패", detail: error.message });
   }
 };

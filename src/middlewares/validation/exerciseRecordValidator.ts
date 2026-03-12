@@ -46,7 +46,8 @@ export type CreateRecordDto = z.infer<typeof createRecordBodySchema>;
 export const validateCreateRecordBody = (req: Request, res: Response, next: NextFunction) => {
   // multer로 처리된 req.files가 있다면 req.body.photos 배열로 매핑
   if (Array.isArray(req.files) && req.files.length > 0) {
-    req.body.photos = req.files.map((file: any) => `/uploads/${encodeURIComponent(file.filename)}`);
+    const files = req.files as Express.Multer.File[];
+    req.body.photos = files.map((file) => `/uploads/${encodeURIComponent(file.filename)}`);
   }
 
   const result = createRecordBodySchema.safeParse(req.body);

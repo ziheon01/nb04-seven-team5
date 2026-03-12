@@ -1,8 +1,21 @@
-import { PrismaClient, Participant, Group } from '@prisma/client';
+import { PrismaClient, Participant, Prisma } from '@prisma/client';
 import BadgeService from './badgeService.js';
 import { ParticipantBodyDto } from '../middlewares/validation/participantValidator.js';
 
 const prisma = new PrismaClient();
+
+export type JoinGroupResponse = Prisma.GroupGetPayload<{
+  include: {
+    participant: {
+      select: {
+        id: true;
+        nickname: true;
+        createdAt: true;
+        updatedAt: true;
+      };
+    };
+  };
+}>;
 
 class ParticipantService {
   private badgeService: BadgeService;
@@ -11,12 +24,11 @@ class ParticipantService {
     this.badgeService = new BadgeService();
   }
 
-  joinGroup = async (groupId: string | number, participantData: ParticipantBodyDto): Promise<any> => {
-    const numericGroupId = Number(groupId);
+  joinGroup = async (groupId: number, participantData: ParticipantBodyDto): Promise<JoinGroupResponse | null> => {
     const { nickname, password } = participantData;
 
     const existingGroup = await prisma.group.findUnique({
-      where: { id: numericGroupId },
+      where: { id: groupId },
     });
     if (!existingGroup) {
       throw new Error('Group not found')
@@ -24,7 +36,7 @@ class ParticipantService {
 
     const existingParticipant = await prisma.participant.findFirst({
       where: {
-        groupId: numericGroupId,
+        groupId: groupId,
         nickname,
       }
     });
@@ -34,16 +46,16 @@ class ParticipantService {
     
     await prisma.participant.create({
       data: {
-        groupId: numericGroupId,
+        groupId: groupId,
         nickname,
         password,
       }
     });
 
-    await this.badgeService.autoUpdateBadges(numericGroupId);
+    await this.badgeService.autoUpdateBadges(groupId);
 
     const updatedGroup = await prisma.group.findUnique({
-      where: { id: numericGroupId },
+      where: { id: groupId },
       include: {
         participant: {
           select: {
@@ -59,12 +71,11 @@ class ParticipantService {
     return updatedGroup;
   }
 
-  leaveGroup = async (groupId: string | number, participantData: ParticipantBodyDto): Promise<Participant> => {
-    const numericGroupId = Number(groupId);
+  leaveGroup = async (groupId: number, participantData: ParticipantBodyDto): Promise<Participant> => {
     const { nickname, password } = participantData;
 
     const existingGroup = await prisma.group.findUnique({
-      where: { id: numericGroupId }
+      where: { id: groupId }
     })
     if (!existingGroup) {
       throw new Error('Group not found');
@@ -72,7 +83,7 @@ class ParticipantService {
 
     const existingParticipant = await prisma.participant.findFirst({
       where: {
-        groupId: numericGroupId,
+        groupId: groupId,
         nickname,
         password,
       },
@@ -88,7 +99,7 @@ class ParticipantService {
       }
     });
 
-    await this.badgeService.autoUpdateBadges(numericGroupId);
+    await this.badgeService.autoUpdateBadges(groupId);
 
     return deletedParticipant;
   }

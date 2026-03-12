@@ -17,15 +17,12 @@ export type BadgeStatuses = {
 
 class BadgeService {
   // 배지 기준 조건에 따른 상태 반환
-  computeBadgeStatuses = async (groupId: string | number): Promise<BadgeStatuses> => {
-    // groupId를 숫자로 변환
-    const numericGroupId = Number(groupId);
-
-    const totalParticipant = await prisma.participant.count({ where: { groupId: numericGroupId } });
-    const totalExerciseRecord = await prisma.exerciseRecord.count({ where: { groupId: numericGroupId } });
+  computeBadgeStatuses = async (groupId: number): Promise<BadgeStatuses> => {
+    const totalParticipant = await prisma.participant.count({ where: { groupId } });
+    const totalExerciseRecord = await prisma.exerciseRecord.count({ where: { groupId } });
     
     const group = await prisma.group.findUnique({
-      where: { id: numericGroupId },
+      where: { id: groupId },
       select: { likeCount: true },
     });
     const totalLike = group ? group.likeCount : 0;
@@ -38,19 +35,16 @@ class BadgeService {
   }
 
   // 실제 DB에 상태 저장
-  updateBadgeStatus = async (groupId: string | number, badgeStatusObj: BadgeStatuses): Promise<void> => {
-    // groupId를 숫자로 변환
-    const numericGroupId = Number(groupId);
-
+  updateBadgeStatus = async (groupId: number, badgeStatusObj: BadgeStatuses): Promise<void> => {
     await prisma.groupBadge.upsert({
-      where: { groupId: numericGroupId },
+      where: { groupId },
       update: badgeStatusObj,
-      create: { groupId: numericGroupId, ...badgeStatusObj },
+      create: { groupId, ...badgeStatusObj },
     });
   }
 
   // 뱃지 상태를 자동 갱신(유틸 메서드)
-  autoUpdateBadges = async (groupId: string | number): Promise<BadgeStatuses | null> => {
+  autoUpdateBadges = async (groupId: number): Promise<BadgeStatuses | null> => {
     try {
       const badgeStatuses = await this.computeBadgeStatuses(groupId);
       await this.updateBadgeStatus(groupId, badgeStatuses);

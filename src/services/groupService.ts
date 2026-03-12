@@ -1,19 +1,18 @@
 // src/services/groupService.ts
-import { PrismaClient, Group, Participant, Tag, GroupBadge } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import BadgeService from './badgeService.js';
 import { CreateGroupDto, GroupQueryDto, UpdateGroupDto } from '../middlewares/validation/groupValidator.js';
 
 const prisma = new PrismaClient();
 
-export type GroupWithRelations = Group & {
-  participant?: Participant[];
-  tag?: Tag[];
-  groupBadge?: GroupBadge | null;
-  _count?: {
-    exerciseRecord: number;
-    participant?: number;
+export type GroupWithRelations = Prisma.GroupGetPayload<{
+  include: {
+    participant: true;
+    tag: true;
+    groupBadge: true;
+    _count: { select: { exerciseRecord: true } };
   };
-};
+}>;
 
 class GroupService {
   private badgeService: BadgeService;
@@ -64,9 +63,10 @@ class GroupService {
           participant: true,
           tag: true,
           groupBadge: true,
+          _count: { select: { exerciseRecord: true } }
         }
       });
-      return newGroup as GroupWithRelations;
+      return newGroup;
     } catch (error) {
       console.error('그룹 생성 중 오류발생:', error);
       throw error;
@@ -81,7 +81,7 @@ class GroupService {
     const skip = (numericPage - 1) * numericLimit;
     const take = numericLimit;
 
-    const where: any = {};
+    const where: Prisma.GroupWhereInput = {};
     if (search) {
       where.groupName = {
         contains: search,
@@ -89,13 +89,13 @@ class GroupService {
       };
     }
 
-    const orderByClause: any = {};
+    const orderByClause: Prisma.GroupOrderByWithRelationInput = {};
     if (orderBy === 'createdAt') {
-      orderByClause.createdAt = order;
+      orderByClause.createdAt = order as Prisma.SortOrder;
     } else if (orderBy === 'participantCount') {
-      orderByClause.participant = { _count: order };
+      orderByClause.participant = { _count: order as Prisma.SortOrder };
     } else if (orderBy === 'likeCount') {
-      orderByClause.likeCount = order;
+      orderByClause.likeCount = order as Prisma.SortOrder;
     } else {
         orderByClause.createdAt = 'desc';
     }
@@ -107,12 +107,12 @@ class GroupService {
         where,
         orderBy: orderByClause,
         include: {
-          _count: { select: { exerciseRecord: true } },
           participant: true,
           tag: true,
           groupBadge: true,
+          _count: { select: { exerciseRecord: true } },
         },
-      }) as GroupWithRelations[];
+      });
 
       const total = await prisma.group.count({ where });
 
@@ -123,10 +123,10 @@ class GroupService {
     }
   }
 
-  getGroupDetail = async (groupId: string | number): Promise<GroupWithRelations | null> => {
+  getGroupDetail = async (groupId: number): Promise<GroupWithRelations | null> => {
     try {
       const group = await prisma.group.findUnique({
-        where: { id: Number(groupId) },
+        where: { id: groupId },
         include: {
           participant: true,
           tag: true,
@@ -135,63 +135,58 @@ class GroupService {
         },
       });
       
-      return group as GroupWithRelations | null;
+      return group;
     } catch (error) {
       console.error('그룹 상세 조회 중 오류발생:', error);
       throw error;
     }
   }
 
-  updateGroup = async (groupId: string | number, updateData: UpdateGroupDto, ownerPassword: string): Promise<GroupWithRelations> => {
+  updateGroup = async (groupId: number, updateData: UpdateGroupDto, ownerPassword: string): Promise<GroupWithRelations> => {
     try {
-      const numericGroupId = Number(groupId);
-      
-      const group = await prisma.group.findUnique({ where: { id: numericGroupId } });
+      const group = await prisma.group.findUnique({ where: { id: groupId } });
       if (!group) throw new Error('Group not found.');
       if (group.ownerPassword !== ownerPassword) throw new Error('Invalid owner password.');
 
-      const prismaUpdateData: any = { ...updateData };
-      if (prismaUpdateData.name) {
-        prismaUpdateData.groupName = prismaUpdateData.name;
-        delete prismaUpdateData.name; 
-      }
+      const { name, tags, ...rest } = updateData;
 
-      if (prismaUpdateData.tags) {
-        const tagsArray = prismaUpdateData.tags;
-        delete prismaUpdateData.tags;
+      const prismaUpdateData: Prisma.GroupUpdateInput = {
+        ...rest,
+        groupName: name,
+      };
 
+      if (tags) {
         prismaUpdateData.tag = {
           deleteMany: {},
-          create: tagsArray.map((tagStr: string) => ({ tagName: tagStr }))
+          create: tags.map((tagStr: string) => ({ tagName: tagStr }))
         };
       }
 
       const updatedGroup = await prisma.group.update({
-        where: { id: numericGroupId },
+        where: { id: groupId },
         data: prismaUpdateData,
         include: { 
             participant: true,
             tag: true,
             groupBadge: true,
+            _count: { select: { exerciseRecord: true } }
         }
       });
 
-      return updatedGroup as GroupWithRelations;
+      return updatedGroup;
     } catch (error) {
       console.error('그룹 업데이트 중 오류 발생:', error);
       throw error;
     }
   }
 
-  deleteGroup = async (groupId: string | number, ownerPassword: string): Promise<void> => {
+  deleteGroup = async (groupId: number, ownerPassword: string): Promise<void> => {
     try {
-      const numericGroupId = Number(groupId);
-
-      const group = await prisma.group.findUnique({ where: { id: numericGroupId } });
+      const group = await prisma.group.findUnique({ where: { id: groupId } });
       if (!group) throw new Error("Group not found.");
       if (group.ownerPassword !== ownerPassword) throw new Error("Invalid owner password.");
       
-      await prisma.group.delete({ where: { id: numericGroupId } });
+      await prisma.group.delete({ where: { id: groupId } });
       return;
     } catch (error) {
       console.error("삭제 중 에러 발생: ", error);
@@ -199,25 +194,24 @@ class GroupService {
     }
   }
 
-  likeGroup = async (groupId: string | number): Promise<GroupWithRelations | null> => { 
+  likeGroup = async (groupId: number): Promise<GroupWithRelations | null> => { 
     try {
-      const numericGroupId = Number(groupId);
-      
       await prisma.group.update({
-        where: { id: numericGroupId },
+        where: { id: groupId },
         data: { likeCount: { increment: 1 } },
       });
 
-      await this.badgeService.autoUpdateBadges(numericGroupId);
+      await this.badgeService.autoUpdateBadges(groupId);
 
       return prisma.group.findUnique({
-          where: { id: numericGroupId },
+          where: { id: groupId },
           include: { 
               groupBadge: true,
               tag: true,
-              participant: true 
+              participant: true,
+              _count: { select: { exerciseRecord: true } }
             }
-      }) as Promise<GroupWithRelations | null>;
+      });
 
     } catch (error) {
       console.error('그룹 추천 중 오류 발생:', error);
@@ -225,25 +219,24 @@ class GroupService {
     }
   }
 
-  unlikeGroup = async (groupId: string | number): Promise<GroupWithRelations | null> => { 
+  unlikeGroup = async (groupId: number): Promise<GroupWithRelations | null> => { 
     try {
-      const numericGroupId = Number(groupId);
-
       await prisma.group.update({
-        where: { id: numericGroupId },
+        where: { id: groupId },
         data: { likeCount: { decrement: 1 } },
       });
 
-      await this.badgeService.autoUpdateBadges(numericGroupId);
+      await this.badgeService.autoUpdateBadges(groupId);
 
       return prisma.group.findUnique({
-        where: { id: numericGroupId },
+        where: { id: groupId },
         include: { 
             groupBadge: true,
             tag: true,
-            participant: true 
+            participant: true,
+            _count: { select: { exerciseRecord: true } }
           }
-    }) as Promise<GroupWithRelations | null>;
+    });
 
     } catch (error) {
       console.error('그룹 추천 취소 중 오류 발생:', error);

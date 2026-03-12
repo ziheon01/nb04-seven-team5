@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import GroupService from '../services/groupService.js';
 import { toGroupResponse } from '../utils/responseMapper.js'; 
+import { CreateGroupDto, GroupQueryDto, UpdateGroupDto } from '../middlewares/validation/groupValidator.js';
 
 class GroupController {
   private groupService: GroupService;
@@ -11,7 +12,7 @@ class GroupController {
 
   createGroup = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const groupData = req.body; 
+      const groupData = req.body as CreateGroupDto; 
       const newGroup = await this.groupService.createGroup(groupData);
       res.status(201).json(toGroupResponse(newGroup));
     } catch (error) {
@@ -21,7 +22,8 @@ class GroupController {
 
   getGroups = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { groups, total } = await this.groupService.getGroups(req.query as any);
+      const query = req.query as unknown as GroupQueryDto;
+      const { groups, total } = await this.groupService.getGroups(query);
       const formattedGroups = groups.map(group => toGroupResponse(group));
       res.status(200).json({ data: formattedGroups, total });
     } catch (error) {
@@ -31,8 +33,8 @@ class GroupController {
 
   getGroupDetail = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { groupId } = req.params;
-      const group = await this.groupService.getGroupDetail(groupId as any);
+      const groupId = Number(req.params.groupId);
+      const group = await this.groupService.getGroupDetail(groupId);
 
       if (!group) {
         return res.status(404).json({ message: 'Group not found.' });
@@ -46,17 +48,18 @@ class GroupController {
 
   updateGroup = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { groupId } = req.params;
-      const updateData = req.body;
+      const groupId = Number(req.params.groupId);
+      const updateData = req.body as UpdateGroupDto;
 
-      const updatedGroup = await this.groupService.updateGroup(groupId as any, updateData, updateData.ownerPassword);
+      const updatedGroup = await this.groupService.updateGroup(groupId, updateData, updateData.ownerPassword);
       res.status(200).json(toGroupResponse(updatedGroup));
-    } catch (error: any) {
-      if (error.message === 'Group not found.') {
-        return res.status(404).json({ message: error.message });
+    } catch (error) {
+      const err = error as Error;
+      if (err.message === 'Group not found.') {
+        return res.status(404).json({ message: err.message });
       }
-      if (error.message === 'Invalid owner password.') {
-        return res.status(403).json({ message: error.message }); 
+      if (err.message === 'Invalid owner password.') {
+        return res.status(403).json({ message: err.message }); 
       }
       next(error);
     }
@@ -64,17 +67,18 @@ class GroupController {
 
   deleteGroup = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { groupId } = req.params;
+      const groupId = Number(req.params.groupId);
       const { ownerPassword } = req.body; 
 
-      await this.groupService.deleteGroup(groupId as any, ownerPassword);
+      await this.groupService.deleteGroup(groupId, ownerPassword);
       res.status(204).send(); 
-    } catch (error: any) {
-      if (error.message === 'Group not found.') {
-        return res.status(404).json({ message: error.message });
+    } catch (error) {
+      const err = error as Error;
+      if (err.message === 'Group not found.') {
+        return res.status(404).json({ message: err.message });
       }
-      if (error.message === 'Invalid owner password.') {
-        return res.status(403).json({ message: error.message }); 
+      if (err.message === 'Invalid owner password.') {
+        return res.status(403).json({ message: err.message }); 
       }
       next(error);
     }
@@ -82,15 +86,15 @@ class GroupController {
 
   likeGroup = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { groupId } = req.params;
+        const groupId = Number(req.params.groupId);
         const cookieName = `liked_group_${groupId}`;
 
         if (req.cookies?.[cookieName]) {
-            await this.groupService.unlikeGroup(groupId as any);
+            await this.groupService.unlikeGroup(groupId);
             res.cookie(cookieName, '', { maxAge: 0 });
             res.status(200).json({ message: 'Like removed.' });
         } else {
-            const updatedGroup = await this.groupService.likeGroup(groupId as any);
+            const updatedGroup = await this.groupService.likeGroup(groupId);
             res.cookie(cookieName, 'true', { maxAge: 31536000000 });
             res.status(200).json(toGroupResponse(updatedGroup));
         }
@@ -101,10 +105,10 @@ class GroupController {
 
   unlikeGroup = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { groupId } = req.params;
+        const groupId = Number(req.params.groupId);
         const cookieName = `liked_group_${groupId}`;
 
-        await this.groupService.unlikeGroup(groupId as any);
+        await this.groupService.unlikeGroup(groupId);
         res.cookie(cookieName, '', { maxAge: 0 });
         res.status(200).json({ message: 'Like removed successfully.' });
     } catch (error) {

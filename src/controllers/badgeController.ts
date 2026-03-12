@@ -10,11 +10,11 @@ class BadgeController {
 
   updateGroupBadges = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { groupId } = req.params;
+      const groupId = Number(req.params.groupId);
 
-      const badgeStatuses = await this.badgeService.computeBadgeStatuses(groupId as any);
+      const badgeStatuses = await this.badgeService.computeBadgeStatuses(groupId);
 
-      await this.badgeService.updateBadgeStatus(groupId as any, badgeStatuses);
+      await this.badgeService.updateBadgeStatus(groupId, badgeStatuses);
 
       res.status(200).json({
         message: 'Badge status updated successfully',

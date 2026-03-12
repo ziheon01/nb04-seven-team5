@@ -1,26 +1,41 @@
-// src/utils/responseMapper.ts
+import { Group, Participant, Tag, GroupBadge, ExerciseRecord, ParticipantPhoto } from '@prisma/client';
+import { 
+  UserResponseDto, 
+  GroupResponseDto, 
+  RecordResponseDto, 
+  RankResponseDto 
+} from '../types/dto.js';
 
 /**
  * [User/Participant 매퍼]
  */
-export const toUserResponse = (user: any) => {
+export const toUserResponse = (user: Participant | null): UserResponseDto | null => {
   if (!user) return null;
   return {
     id: user.id,
     nickname: user.nickname,
-    profileUrl: user.profileUrl || null, 
+    profileUrl: (user as any).profileUrl || null, // Participant 모델에 profileUrl이 없으므로 일단 as any 유지하되 추후 DB 확인 필요
+  };
+};
+
+type GroupWithRelations = Group & {
+  tag?: Tag[];
+  groupBadge?: GroupBadge | null;
+  participant?: Participant[];
+  _count?: {
+    exerciseRecord: number;
   };
 };
 
 /**
  * [Group 매퍼]
  */
-export const toGroupResponse = (group: any) => {
+export const toGroupResponse = (group: GroupWithRelations | null): GroupResponseDto | null => {
   if (!group) return null;
 
-  const recordCount = group._count ? group._count.exerciseRecord : (group.recordCount || 0);
+  const recordCount = group._count ? group._count.exerciseRecord : 0;
 
-  const badges = [];
+  const badges: string[] = [];
   if (group.groupBadge) {
     if (group.groupBadge.participantsOver10) badges.push("PARTICIPATION_10");
     if (group.groupBadge.recordsOver100) badges.push("RECORD_100");
@@ -29,30 +44,34 @@ export const toGroupResponse = (group: any) => {
 
   return {
     id: group.id,
-    name: group.groupName || group.name, 
+    name: group.groupName,
     description: group.description,
     photoUrl: group.photoUrl,
     goalRep: group.goalRep,
-    likeCount: group.likeCount || 0,
-    recordCount: recordCount, 
-    tags: group.tag ? group.tag.map((t: any) => t.tagName) : [],
-    badges: badges, 
+    likeCount: group.likeCount,
+    recordCount: recordCount,
+    tags: group.tag ? group.tag.map((t) => t.tagName) : [],
+    badges: badges,
     owner: {
-      id: 0, 
-      nickname: group.ownerNickname, 
-      profileUrl: null, 
+      id: 0,
+      nickname: group.ownerNickname,
+      profileUrl: null,
     },
-
-    participants: group.participant ? group.participant.map((p: any) => toUserResponse(p)) : [],
+    participants: group.participant ? group.participant.map((p) => toUserResponse(p)!).filter(Boolean) : [],
     discordWebhookUrl: group.discordWebhookUrl,
     discordInviteUrl: group.discordInviteUrl,
   };
 };
 
+type ExerciseRecordWithRelations = ExerciseRecord & {
+  participant?: Participant | null;
+  participantPhoto?: ParticipantPhoto[];
+};
+
 /**
  * [Record 매퍼]
  */
-export const toRecordResponse = (record: any) => {
+export const toRecordResponse = (record: ExerciseRecordWithRelations | null): RecordResponseDto | null => {
   if (!record) return null;
 
   return {
@@ -63,20 +82,27 @@ export const toRecordResponse = (record: any) => {
     distance: record.distance,
     createdAt: record.createdAt,
     author: record.participant ? toUserResponse(record.participant) : null,
-    photos: record.participantPhoto ? record.participantPhoto.map((p: any) => p.photoUrl) : [],
+    photos: record.participantPhoto ? record.participantPhoto.map((p) => p.photoUrl) : [],
   };
 };
+
+interface RankInput {
+  id: number;
+  nickname: string;
+  recordCount: number;
+  recordTime: number;
+}
 
 /**
  * [Rank 매퍼]
  */
-export const toRankResponse = (rank: any) => {
+export const toRankResponse = (rank: RankInput | null): RankResponseDto | null => {
   if (!rank) return null;
   
   return {
-    participantId: rank.id, 
+    participantId: rank.id,
     nickname: rank.nickname,
-    recordCount: Number(rank.recordCount), 
+    recordCount: Number(rank.recordCount),
     recordTime: Number(rank.recordTime),
   };
 };

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import ExerciseRecordService from '../services/exerciseRecordService.js';
 import axios from 'axios';
 import { toRecordResponse } from '../utils/responseMapper.js';
+import { CreateRecordDto } from '../middlewares/validation/exerciseRecordValidator.js';
 
 class ExerciseRecordController {
   private exerciseRecordService: ExerciseRecordService;
@@ -12,9 +13,8 @@ class ExerciseRecordController {
 
   createRecord = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const groupId = req.params.groupId as string;
-      // validateCreateRecordBody에서 이미 DTO로 변환되어 req.body에 담겨 있음
-      const recordData = req.body; 
+      const groupId = Number(req.params.groupId);
+      const recordData = req.body as CreateRecordDto; 
 
       const newRecord = await this.exerciseRecordService.createRecord(groupId, recordData); 
 
@@ -41,8 +41,9 @@ class ExerciseRecordController {
             ],
           });
           console.log('Discord Webhook 전송 완료');
-        } catch (webhookError: any) {
-          console.warn('Discord Webhook 전송 실패:', webhookError.message);
+        } catch (webhookError) {
+          const err = webhookError as Error;
+          console.warn('Discord Webhook 전송 실패:', err.message);
         }
       }
 
@@ -56,11 +57,15 @@ class ExerciseRecordController {
 
   getRecords = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const groupId = parseInt(req.params.groupId as string, 10);
+      const groupId = Number(req.params.groupId);
+      const { page, limit, order, orderBy, search } = req.query;
+      
       const options = {
-        ...req.query,
-        limit: parseInt(req.query.limit as string, 10) || 10,
-        page: parseInt(req.query.page as string, 10) || 1,
+        page: Number(page) || 1,
+        limit: Number(limit) || 10,
+        order: order as 'asc' | 'desc',
+        orderBy: orderBy as 'time' | 'createdAt',
+        search: search as string | undefined,
       };
 
       const { datas, total } = await this.exerciseRecordService.getRecords(groupId, options);
@@ -79,8 +84,8 @@ class ExerciseRecordController {
 
   getRecordDetail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const groupId = req.params.groupId as string;
-      const recordId = req.params.recordId as string;
+      const groupId = Number(req.params.groupId);
+      const recordId = Number(req.params.recordId);
       const record = await this.exerciseRecordService.getRecordDetail(groupId, recordId);
       res.status(200).json(toRecordResponse(record));
     } catch (error) {

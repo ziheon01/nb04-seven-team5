@@ -15,7 +15,7 @@ router.post(
     req.filePath = "/uploads/" + req.file.filename;
     next();
   },
-  uploadGroupPhoto as any
+  uploadGroupPhoto
 );
 
 export default router;

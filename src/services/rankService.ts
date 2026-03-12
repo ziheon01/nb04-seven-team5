@@ -1,5 +1,5 @@
 // src/services/rankService.ts
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -10,16 +10,22 @@ export interface CalculatedRank {
   recordCount: number;
 }
 
+export interface DateFilter {
+  createdAt?: {
+    gte?: Date;
+  };
+}
+
 class RankService {
   /**
    * 공통 랭킹 집계 로직
    */
-  async _getRankings(groupId: string | number, filter: any, rankingType: 'count' | 'time', skip = 0, take = 10): Promise<CalculatedRank[]> {
+  async _getRankings(groupId: number, filter: DateFilter | undefined, rankingType: 'count' | 'time', skip = 0, take = 10): Promise<CalculatedRank[]> {
     const startDate = filter?.createdAt?.gte;
 
     const participants = await prisma.participant.findMany({
       where: {
-        groupId: Number(groupId),
+        groupId: groupId,
       },
       include: {
         exerciseRecords: {
@@ -50,11 +56,11 @@ class RankService {
     return calculatedRanks.slice(skip, skip + take);
   }
 
-  getRankingsByCount = async (groupId: string | number, dateFilter: any, skip = 0, take = 10): Promise<CalculatedRank[]> => {
+  getRankingsByCount = async (groupId: number, dateFilter: DateFilter | undefined, skip = 0, take = 10): Promise<CalculatedRank[]> => {
     return this._getRankings(groupId, dateFilter, 'count', skip, take);
   }
 
-  getRankingsByTime = async (groupId: string | number, dateFilter: any, skip = 0, take = 10): Promise<CalculatedRank[]> => {
+  getRankingsByTime = async (groupId: number, dateFilter: DateFilter | undefined, skip = 0, take = 10): Promise<CalculatedRank[]> => {
     return this._getRankings(groupId, dateFilter, 'time', skip, take);
   }
 }
