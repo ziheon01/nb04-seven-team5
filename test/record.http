@@ -1,0 +1,10 @@
+### 악성 유저 테스트 (시간 24시간 초과)
+POST http://localhost:3000/groups/1/records
+Content-Type: application/json
+
+{
+  "authorNickname": "테스터",
+  "authorPassword": "password123",
+  "time": 90000, 
+  "distance": 5
+}

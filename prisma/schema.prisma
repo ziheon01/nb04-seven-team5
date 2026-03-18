@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -15,49 +8,53 @@ datasource db {
 }
 
 model Group {
-  id                Int           @id @default(autoincrement())
-  groupName         String        @unique
+  id                Int              @id @default(autoincrement())
+  groupName         String           @unique
   description       String?
   photoUrl          String?
   groupPhoto        GroupPhoto?
   groupBadge        GroupBadge?
-  goalRep           Int           @default(0)
-  likeCount         Int           @default(0)
-  discordWebhookUrl String        @unique
-  discordInviteUrl  String        @unique
+  goalRep           Int              @default(0)
+  likeCount         Int              @default(0)
+  discordWebhookUrl String           @unique
+  discordInviteUrl  String           @unique
   tag               Tag[]
-  ownerNickname     String        @unique
+  ownerNickname     String           @unique
   ownerPassword     String
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
   participant       Participant[]
+  exerciseRecord   ExerciseRecord[] 
 }
 
 model Participant {
-  id              Int              @id @default(autoincrement()) // 참가자를 포함할때 자동으로 id를 증가하게 만들어 줍니다.
+  id              Int              @id @default(autoincrement())
   group           Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId         Int
-  nickname        String           @unique
+  nickname        String
   password        String
-  recordCount     Int              @default(0) //RecordId 데이터를 participantId랑 일치시킨 갯수를 파악해서 기입하도록
-  recordTime      Int              @default(0) //Record에서 time의 총합을 계산해서 저장할 수 있도록 확인
+  recordCount     Int              @default(0)
+  recordTime      Int              @default(0)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
-  exerciseRecords ExerciseRecord[] 
-  @@unique(name: "participantInfo", [nickname, password])
+  exerciseRecords ExerciseRecord[]
+
+  @@unique([groupId, nickname])
 }
 
 model ExerciseRecord {
-  id                  Int                @id @default(autoincrement())
-  groupId             Int
-  participant         Participant        @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  exerciseType        ExerciseType       @default(run)
-  description         String
-  time                Int                @default(0) //프론트 엔드의 스톱워치 시스템을 확인
-  distance            Int                @default(0)
-  participantId       Int
-  participantPhoto    ParticipantPhoto[]
-  createdAt           DateTime           @default(now())
+  id               Int                @id @default(autoincrement())
+  groupId          Int
+  group            Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  participant      Participant        @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  exerciseType     ExerciseType       @default(run)
+  description      String
+  time             Int                @default(0)
+  distance         Int                @default(0)
+  participantId    Int
+  participantPhoto ParticipantPhoto[]
+  createdAt        DateTime           @default(now())
 }
 
 model ParticipantPhoto {

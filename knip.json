@@ -1,0 +1,7 @@
+{
+  "entry": ["src/app.ts!"],
+  "project": ["src/**/*.ts!"],
+  "ignore": ["frontend/**", "dist/**", "node_modules/**"],
+  "ignoreBinaries": ["tsx"],
+  "ignoreDependencies": ["tsx", "nodemon", "@faker-js/faker", "pino-pretty"]
+}
