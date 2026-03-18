@@ -7,11 +7,6 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 시딩을 시작합니다...');
 
-  // 0. 기존 데이터 삭제 (필요시 주석 해제 - id 초기화는 안됨)
-  // await prisma.exerciseRecord.deleteMany();
-  // await prisma.participant.deleteMany();
-  // await prisma.group.deleteMany();
-
   const salt = await bcrypt.genSalt(10);
   const commonPassword = await bcrypt.hash('password123', salt);
 
@@ -40,24 +35,33 @@ async function main() {
     '비매너 사절, 눈팅 사절. 열정 있는 분들만 오세요!'
   ];
 
-  // 1. 그룹 생성 (준비된 제목만큼 생성)
+  // 1. 그룹 검사 및 생성
   for (let i = 0; i < realGroupNames.length; i++) {
     const groupName = realGroupNames[i];
     
-    // ★ 닉네임도 'User3948' 대신 '김철수', '이영희' 처럼 변경
+    // ★ 멱등성 보장: 이미 그룹이 존재하는지 검사
+    const existingGroup = await prisma.group.findUnique({
+      where: { groupName: groupName }
+    });
+
+    if (existingGroup) {
+      console.log(`⏩ 기존 데이터 유지 (생성 스킵): ${groupName}`);
+      continue; // 이미 존재하면 하위 데이터(참가자, 기록) 생성 생략
+    }
+    
     const ownerName = faker.person.lastName() + faker.person.firstName(); 
 
     const group = await prisma.group.create({
       data: {
         groupName, 
-        description: descriptions[i % descriptions.length], // 설명 돌아가면서 쓰기
+        description: descriptions[i % descriptions.length],
         photoUrl: `https://picsum.photos/seed/${faker.string.uuid()}/800/600`,
         goalRep: faker.number.int({ min: 10, max: 100 }),
-        likeCount: faker.number.int({ min: 10, max: 300 }), // 추천수 좀 있게
+        likeCount: faker.number.int({ min: 10, max: 300 }),
         discordWebhookUrl: faker.internet.url(),
         discordInviteUrl: `https://discord.gg/${faker.string.alphanumeric(8)}`,
         
-        ownerNickname: `${ownerName}_리더`, // 예: 김철수_대장
+        ownerNickname: `${ownerName}_리더`,
         ownerPassword: commonPassword,
         
         tag: {
@@ -69,7 +73,7 @@ async function main() {
         groupBadge: {
           create: {
             participantsOver10: faker.datatype.boolean(),
-            recordsOver100: true, // 배지 좀 보이게 true
+            recordsOver100: true,
             recommandationsOver100: faker.datatype.boolean(),
           }
         }
@@ -87,7 +91,7 @@ async function main() {
       const participant = await prisma.participant.create({
         data: {
           groupId: group.id,
-          nickname: `${pName}${faker.number.int({min:1, max:99})}`, // 예: 이영희42
+          nickname: `${pName}${faker.number.int({min:1, max:99})}`,
           password: commonPassword,
         }
       });
